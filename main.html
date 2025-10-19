@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>QR Attendance System</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="shortcut icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; min-height: 100vh; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .card { background: rgba(255, 255, 255, 0.95); border-radius: 16px; padding: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); color: #1a202c; margin-bottom: 20px; }
+        .header { text-align: center; margin-bottom: 24px; padding-top: 8px; }
+        .header h1 { font-size: 26px; font-weight: 800; color: #667eea; margin-bottom: 8px; }
+        .header p { color: #718096; font-size: 13px; }
+        /* Logo Animations - Premium Effects */
+         @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        }
+        @keyframes glow {
+        0%, 100% { box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3), 0 0 0 rgba(102, 126, 234, 0); }
+        50% { box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5), 0 0 30px rgba(102, 126, 234, 0.4); }
+        }
+        @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+        }
+        @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        }
+
+        .logo { 
+        width: 110px; 
+        height: 110px; 
+        margin-bottom: 20px; 
+        border-radius: 50%; 
+        object-fit: cover; 
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); 
+        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); 
+        border: 3px solid #667eea;
+        animation: float 3s ease-in-out infinite, glow 2s ease-in-out infinite;
+        cursor: pointer;
+        }
+        .logo:hover { 
+        transform: scale(1.15) rotate(360deg);
+        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6), 0 0 40px rgba(118, 75, 162, 0.5);
+        border-color: #764ba2;
+        }
+        .logo:active {
+        transform: scale(0.95);
+        } 
+        /* Logo Click Popup Styles */
+        .logo-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.3s;
+        }
+        .logo-popup-overlay.active {
+            display: flex;
+}
+.logo-popup-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 48px 40px;
+    border-radius: 24px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    color: white;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    animation: popupScale 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    position: relative;
+}
+@keyframes popupScale {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+.logo-popup-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+.logo-popup-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+.logo-popup-emoji {
+    font-size: 64px;
+    margin-bottom: 20px;
+    animation: bounce 1s infinite;
+}
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+.logo-popup-title {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 16px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.logo-popup-text {
+    font-size: 18px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    opacity: 0.95;
+}
+.logo-popup-gift {
+    background: white;
+    color: #667eea;
+    padding: 20px;
+    border-radius: 16px;
+    margin: 24px 0;
+    font-weight: 600;
+    font-size: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.logo-popup-button {
+    background: white;
+    color: #667eea;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
+.logo-popup-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.4);
+}
+
+        .header-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; }
+        .info-btn { background: #667eea; color: white; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3); transition: all 0.3s; flex-shrink: 0; }
+        .info-btn:hover { transform: scale(1.1); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5); }
+        .status-badge { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+        .status-badge.online { background: #d1fae5; color: #065f46; }
+        .status-badge.offline { background: #fee2e2; color: #991b1b; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .status-badge.online .status-dot { background: #10b981; animation: pulse 2s infinite; }
+        .status-badge.offline .status-dot { background: #ef4444; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .logout-btn { background: rgba(239, 68, 68, 0.9); color: white; border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px; flex-shrink: 0; transition: all 0.3s; }
+        .logout-btn:hover { background: rgba(220, 38, 38, 0.9); }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #2d3748; font-size: 14px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px; transition: all 0.3s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.3s; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 8px; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
+        .btn-success { background: #10b981; color: #fff; }
+        .btn-danger { background: #ef4444; color: #fff; }
+        .btn-secondary { background: #64748b; color: #fff; }
+        .btn-small { width: auto; padding: 8px 16px; font-size: 13px; margin: 4px; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; background: #f1f5f9; padding: 6px; border-radius: 12px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #64748b; font-weight: 600; cursor: pointer; border-radius: 8px; transition: all 0.3s; font-size: 13px; }
+        .tab-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; }
+        .tab { display: none; }
+        .tab.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .qr-container { background: #f8fafc; padding: 24px; border-radius: 12px; text-align: center; margin: 16px 0; border: 2px dashed #667eea; }
+        #qrcode { display: inline-block; padding: 16px; background: white; border-radius: 8px; }
+        .qr-timer { color: #ef4444; font-weight: 600; margin-top: 12px; font-size: 14px; }
+        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; text-align: center; color: white; }
+        .stat-value { font-size: 32px; font-weight: 800; }
+        .stat-label { font-size: 12px; opacity: 0.9; margin-top: 4px; text-transform: uppercase; }
+        .list-item { background: #f8fafc; padding: 14px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+        .list-item-info { flex: 1; min-width: 0; }
+        .list-item-name { font-weight: 600; color: #1a202c; }
+        .list-item-roll { font-size: 13px; color: #718096; margin-top: 4px; }
+        .list-item-time { font-size: 12px; color: #667eea; margin-top: 4px; }
+        .list-item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .message { padding: 12px; border-radius: 8px; margin: 12px 0; font-weight: 600; font-size: 14px; }
+        .message.success { background: #d1fae5; color: #065f46; }
+        .message.error { background: #fee2e2; color: #991b1b; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; padding: 28px; border-radius: 16px; width: 100%; max-width: 500px; max-height: 80vh; overflow-y: auto; color: #1a202c; }
+        .modal-header { font-size: 22px; font-weight: 700; margin-bottom: 20px; color: #667eea; }
+        .modal-close { float: right; font-size: 28px; cursor: pointer; color: #718096; line-height: 1; }
+        .empty-state { text-align: center; padding: 40px 20px; color: #718096; }
+        .empty-icon { font-size: 48px; margin-bottom: 16px; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        .info-text { background: #eff6ff; color: #1e40af; padding: 12px; border-radius: 8px; font-size: 13px; margin: 12px 0; border-left: 4px solid #3b82f6; line-height: 1.6; }
+        .student-list { max-height: 300px; overflow-y: auto; }
+        .history-card { background: #f8fafc; padding: 16px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid #667eea; }
+        .history-date { font-weight: 600; color: #1a202c; margin-bottom: 4px; }
+        .history-subject { font-size: 13px; color: #667eea; font-weight: 600; }
+        .history-count { font-size: 13px; color: #718096; margin-top: 4px; }
+        .download-all-btn { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .guide-section { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 2px solid #e2e8f0; }
+        .guide-section:last-child { border-bottom: none; }
+        .guide-title { font-size: 18px; font-weight: 700; color: #667eea; margin-bottom: 12px; }
+        .guide-text { color: #4a5568; line-height: 1.6; margin-bottom: 8px; }
+        .copy-prompt-btn { background: #10b981; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 12px; transition: all 0.3s; }
+        .copy-prompt-btn:hover { background: #059669; }
+        .contact-dev-btn { background: linear-gradient(135deg, #e1306c 0%, #fd1d1d 100%); color: white; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; margin-top: 20px; font-size: 15px; transition: all 0.3s; }
+        .contact-dev-btn:hover { transform: translateY(-2px); }
+        .forgot-password { text-align: center; margin-top: 12px; color: #667eea; cursor: pointer; font-size: 13px; text-decoration: underline; }
+        .danger-zone { background: #fee2e2; padding: 16px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #ef4444; }
+        .danger-title { color: #991b1b; font-weight: 700; margin-bottom: 8px; }
+        .danger-text { color: #7f1d1d; font-size: 13px; margin-bottom: 12px; line-height: 1.6; }
+    </style>
+</head>
+<body>
+        <script>
+        (function() {
+            // Check if this is student attendance link
+            const urlParams = new URLSearchParams(window.location.search);
+            const hasAttendanceCode = urlParams.has('code');
+            
+            // If student is marking attendance, allow without beta check
+            if (hasAttendanceCode) {
+                console.log('Student attendance - Beta check bypassed');
+                return;
+            }
+            
+            // For CR access, check beta session
+            const betaAccess = sessionStorage.getItem('betaAccess');
+            const betaTimestamp = sessionStorage.getItem('betaTimestamp');
+            const currentTime = new Date().getTime();
+            const BETA_VALIDITY = 30 * 1000; // 30 seconds for testing (change to 7 * 24 * 60 * 60 * 1000 for 7 days in production)
+            
+            if (!betaAccess || betaAccess !== 'granted' || !betaTimestamp || 
+                (currentTime - parseInt(betaTimestamp)) > BETA_VALIDITY) {
+                
+                // Clear expired session
+                sessionStorage.removeItem('betaAccess');
+                sessionStorage.removeItem('betaTimestamp');
+                
+                // Redirect to beta page
+                alert('⚠️ Beta access expired or invalid. Please enter beta code again.');
+                window.location.href = 'coming-soon.html';
+                return;
+            }
+            
+            console.log('✅ Beta access verified - Session valid');
+        })();
+    </script>
+    <div class="container">
+        <!-- LOGIN SCREEN -->
+      
+
+
+        <div id="login-screen" class="screen active">
+            <div class="card">
+                <div class="header">
+<img src="logo.png" alt="Attendance System Logo" class="logo" onclick="openLogoPopup()">
+                    <h1>🎓 Attendance System</h1>
+                    <p>Login or Register your class</p>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchLoginTab('login')">Login</button>
+                    <button class="tab-btn" onclick="switchLoginTab('register')">Register</button>
+                </div>
+
+                <!-- LOGIN TAB -->
+                <div id="login-tab" class="tab active">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="login-username" placeholder="e.g., 29DTUCSE5">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="login-password" placeholder="Enter password">
+                    </div>
+                    <button class="btn btn-primary" onclick="loginUser()">Login</button>
+                    <div class="forgot-password" onclick="openForgotPassword()">Forgot Password?</div>
+                    <div id="login-message"></div>
+                </div>
+
+                <!-- REGISTER TAB -->
+                <div id="register-tab" class="tab">
+                    <div class="form-group">
+                        <label>Passout Year (Last 2 digits)</label>
+                        <input type="text" id="reg-year" placeholder="e.g., 29 (for 2029)" maxlength="2">
+                    </div>
+                    <div class="form-group">
+                        <label>College</label>
+                        <input type="text" id="reg-college" placeholder="e.g., DTU">
+                    </div>
+                    <div class="form-group">
+                        <label>Branch</label>
+                        <input type="text" id="reg-branch" placeholder="e.g., CSE">
+                    </div>
+                    <div class="form-group">
+                        <label>Section</label>
+                        <input type="text" id="reg-section" placeholder="e.g., 5">
+                    </div>
+                    <div class="form-group">
+                        <label>CR Mobile Number (for OTP verification)</label>
+                        <input type="tel" id="reg-phone" placeholder="e.g., 9876543210" maxlength="10">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="reg-password" placeholder="Create password">
+                    </div>
+                    <div class="form-group">
+                        <label>Subjects (one per line)</label>
+                        <textarea id="reg-subjects" rows="4" placeholder="MATHEMATICS-1&#10;PHYSICS&#10;BASIC CIVIL ENGINEERING"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Students (format: Name - Roll Number, one per line)</label>
+                        <textarea id="reg-students" rows="6" placeholder="JOHN DOE - 25/B09/001&#10;JANE SMITH - 25/B09/002&#10;AMIT KUMAR - 25/B09/003"></textarea>
+                        <button class="copy-prompt-btn" onclick="copyStudentPrompt()">📋 Copy ChatGPT Prompt</button>
+                    </div>
+                    <div class="info-text">ℹ️ Username format: PASSOUT_YEAR+COLLEGE+BRANCH+SECTION<br>Example: If passout year is 2029, enter 29 → Username: 29DTUCSE5<br><br>📝 Student format: NAME - ROLLNO (one per line)<br><br>💡 Click "Copy ChatGPT Prompt" button, paste in ChatGPT with your student list, then copy result here!</div>
+                    <button class="btn btn-primary" onclick="registerUser()">Register Class</button>
+                    <div id="register-message"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN APP SCREEN -->
+        <div id="app-screen" class="screen">
+            <div class="card">
+                <div class="header-controls">
+                    <button class="info-btn" onclick="openGuideModal()">i</button>
+                    <div class="status-badge online" id="connection-status">
+                        <span class="status-dot"></span>
+                        <span>Connected</span>
+                    </div>
+                    <button class="logout-btn" onclick="logoutUser()">Logout</button>
+                </div>
+                
+                <div class="header">
+<img src="logo.png" alt="Attendance System Logo" class="logo" onclick="openLogoPopup()">
+                    <h1>📱 Attendance System</h1>
+                    <p id="class-info"></p>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchAppTab('cr')">CR</button>
+                    <button class="tab-btn" onclick="switchAppTab('students')">Students</button>
+                    <button class="tab-btn" onclick="switchAppTab('history')">History</button>
+                </div>
+
+                <!-- CR TAB -->
+                <div id="cr-tab" class="tab active">
+                    <div class="form-group">
+                        <label>Select Subject</label>
+                        <select id="subject-select" onchange="onSubjectChange()">
+                            <option value="">-- Choose Subject --</option>
+                        </select>
+                    </div>
+
+                    <a href="subjects.html" style="display: block; margin-bottom: 16px;">
+                        <button class="btn btn-secondary" type="button" style="margin: 0;">📚 Manage Subjects</button>
+                    </a>
+
+                    <button class="btn btn-primary" onclick="generateQRCode()">📲 Generate QR Code</button>
+
+                    <div id="qr-section" style="display: none;">
+                        <div class="qr-container">
+                            <div id="qrcode"></div>
+                            <div class="qr-timer" id="qr-timer"></div>
+                        </div>
+                        <button class="btn btn-secondary" onclick="copyQRLink()">📋 Copy Link</button>
+                        <button class="btn btn-danger" onclick="resetQR()">✕ Clear QR</button>
+                    </div>
+
+                    <div class="stats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="present-count">0</div>
+                            <div class="stat-label">Present</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-count">0</div>
+                            <div class="stat-label">Total</div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin: 20px 0 12px 0; font-weight: 600;">Today's Attendance</h3>
+                    <div id="attendance-list"></div>
+
+                    <button class="btn btn-success" onclick="downloadTodayAttendance()">📊 Download Today's Excel</button>
+                    <button class="btn btn-primary download-all-btn" onclick="downloadFullAttendance()">📦 Download Full Attendance</button>
+                </div>
+
+                <!-- STUDENTS TAB -->
+                <div id="students-tab" class="tab">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px;">
+                        <h3 style="font-weight: 600; flex: 1;">Student List</h3>
+                        <button class="btn-small btn-success" onclick="openAddStudentModal()">+ Add Student</button>
+                    </div>
+                    <div id="students-list" class="student-list"></div>
+                </div>
+
+                <!-- HISTORY TAB -->
+                <div id="history-tab" class="tab">
+                    <h3 style="margin-bottom: 16px; font-weight: 600;">Attendance History</h3>
+                    <div id="history-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- LOGO CLICK POPUP -->
+<div id="logo-popup" class="logo-popup-overlay">
+    <div class="logo-popup-content">
+        <button class="logo-popup-close" onclick="closeLogoPopup()">&times;</button>
+        <div class="logo-popup-emoji">🎁</div>
+        <h2 class="logo-popup-title">Hey! Welcome! 👋</h2>
+        <p class="logo-popup-text">
+            Welcome to <strong>QR Attendance System</strong>!<br>
+            With a thinking to help you, we designed a small gift for you...
+        </p>
+        <div class="logo-popup-gift">
+            🌟 Aapka gift: Ek complete, easy-to-use attendance system jo time bachaye, paperwork khatam kare, aur aapki life ko aasaan banaye!
+        </div>
+        <p class="logo-popup-text" style="font-size: 15px; opacity: 0.9;">
+            💡 Pro tip: Dashboard mein "i" button pe click karke complete guide dekho!
+        </p>
+        <button class="logo-popup-button" onclick="closeLogoPopup()">Awesome! Let's Go 🚀</button>
+    </div>
+</div>
+    <!-- STUDENT ATTENDANCE MODAL -->
+    <div id="student-modal" class="modal">
+        <div class="modal-content">
+            <!-- <span class="modal-close" onclick="closeStudentModal()">&times;</span> -->
+            <h2 class="modal-header">Mark Attendance</h2>
+            <div class="form-group">
+                <label>Subject</label>
+                <input type="text" id="modal-subject" disabled>
+            </div>
+            <div class="form-group">
+                <label>Your Roll Number</label>
+                <input type="text" id="student-roll" placeholder="Enter your roll number">
+            </div>
+            <button class="btn btn-success" onclick="submitAttendance()">✓ Submit</button>
+            <div id="modal-message"></div>
+        </div>
+    </div>
+
+    <!-- ADD/EDIT STUDENT MODAL -->
+    <div id="add-student-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeAddStudentModal()">&times;</span>
+            <h2 class="modal-header" id="student-modal-title">Add Student</h2>
+            <div class="form-group">
+                <label>Roll Number</label>
+                <input type="text" id="new-roll" placeholder="e.g., 25/B09/001">
+            </div>
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="new-name" placeholder="Student name">
+            </div>
+            <button class="btn btn-success" onclick="saveStudent()">💾 Save</button>
+            <button class="btn btn-danger" onclick="closeAddStudentModal()">Cancel</button>
+            <div id="add-student-message"></div>
+        </div>
+    </div>
+
+    <!-- GUIDE MODAL -->
+    <div id="guide-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeGuideModal()">&times;</span>
+            <h2 class="modal-header">📚 How to Use This System</h2>
+            
+            <div class="guide-section">
+                <div class="guide-title">🎯 For CR (Class Representative)</div>
+                <div class="guide-text"><strong>Registration:</strong></div>
+                <div class="guide-text">1. Click "Register" tab on login screen</div>
+                <div class="guide-text">2. Enter passout year (last 2 digits), college, branch, section</div>
+                <div class="guide-text">3. Enter your mobile number (for OTP verification)</div>
+                <div class="guide-text">4. Create a password</div>
+                <div class="guide-text">5. Add subjects (one per line)</div>
+                <div class="guide-text">6. Add students: Click "Copy ChatGPT Prompt" → Paste in ChatGPT with your student list → Copy formatted result → Paste in student field</div>
+                <div class="guide-text">7. Click "Register Class"</div>
+                <div class="guide-text" style="margin-top: 12px;"><strong>Taking Attendance:</strong></div>
+                <div class="guide-text">1. Login with your username (e.g., 29DTUCSE5)</div>
+                <div class="guide-text">2. Go to "CR" tab</div>
+                <div class="guide-text">3. Select subject from dropdown</div>
+                <div class="guide-text">4. Click "Generate QR Code"</div>
+                <div class="guide-text">5. Students scan QR or use link (valid for 10 minutes)</div>
+                <div class="guide-text">6. View attendance in real-time</div>
+                <div class="guide-text">7. Download Excel sheets anytime</div>
+            </div>
+
+            <div class="guide-section">
+                <div class="guide-title">👨‍🎓 For Students</div>
+                <div class="guide-text">1. Scan QR code shown by CR or click shared link</div>
+                <div class="guide-text">2. Enter your roll number exactly as registered</div>
+                <div class="guide-text">3. Click "Submit"</div>
+                <div class="guide-text">4. You'll see confirmation message</div>
+                <div class="guide-text">⚠️ <strong>Note:</strong> You can only mark attendance once per session!</div>
+            </div>
+
+            <div class="guide-section">
+                <div class="guide-title">📊 Managing Students</div>
+                <div class="guide-text">• Go to "Students" tab to view all students</div>
+                <div class="guide-text">• Add new students anytime with "+ Add Student"</div>
+                <div class="guide-text">• Edit student details with "Edit" button</div>
+                <div class="guide-text">• Remove students with "Delete" button</div>
+            </div>
+
+            <div class="guide-section">
+                <div class="guide-title">📈 Viewing History</div>
+                <div class="guide-text">• Go to "History" tab</div>
+                <div class="guide-text">• View attendance grouped by subject and date</div>
+                <div class="guide-text">• Download full attendance with all subjects</div>
+            </div>
+
+            <div class="guide-section">
+                <div class="guide-title">🔐 Password & Account Management</div>
+                <div class="guide-text">• Forgot password? Click "Forgot Password" on login</div>
+                <div class="guide-text">• Enter username → Get OTP on registered mobile</div>
+                <div class="guide-text">• Enter OTP and set new password</div>
+            </div>
+
+            <div class="guide-section danger-zone">
+                <div class="danger-title">⚠️ DELETE ACCOUNT</div>
+                <div class="danger-text">Warning: This will permanently delete your account, all students, and attendance records. This action cannot be undone!</div>
+                <button class="btn btn-danger" onclick="initiateDeleteAccount()">🗑️ Delete My Account</button>
+            </div>
+
+            <button class="contact-dev-btn" onclick="contactDeveloper()">📞 Contact Developer on Instagram</button>
+        </div>
+    </div>
+
+    <!-- FORGOT PASSWORD MODAL -->
+    <div id="forgot-password-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeForgotPassword()">&times;</span>
+            <h2 class="modal-header">🔑 Reset Password</h2>
+            
+            <div id="forgot-step-1">
+                <div class="form-group">
+                    <label>Enter Username</label>
+                    <input type="text" id="forgot-username" placeholder="e.g., 29DTUCSE5">
+                </div>
+                <button class="btn btn-primary" onclick="sendOTP()">Send OTP</button>
+            </div>
+
+            <div id="forgot-step-2" style="display: none;">
+                <div class="form-group">
+                    <label>Enter OTP (sent to your mobile)</label>
+                    <input type="text" id="forgot-otp" placeholder="Enter 6-digit OTP" maxlength="6">
+                </div>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="forgot-new-password" placeholder="Enter new password">
+                </div>
+                <button class="btn btn-success" onclick="resetPassword()">Reset Password</button>
+            </div>
+
+            <div id="forgot-message"></div>
+        </div>
+    </div>
+
+    <!-- DELETE ACCOUNT MODAL -->
+    <div id="delete-account-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeDeleteAccount()">&times;</span>
+            <h2 class="modal-header" style="color: #ef4444;">⚠️ Delete Account</h2>
+            
+            <div class="danger-zone" style="margin-top: 0;">
+                <div class="danger-text" style="font-size: 15px; margin-bottom: 16px;">
+                    <strong>This will permanently delete:</strong><br>
+                    • Your account and login credentials<br>
+                    • All student records<br>
+                    • All attendance history<br>
+                    • All subjects and data<br><br>
+                    <strong>This action CANNOT be undone!</strong>
+                </div>
+            </div>
+
+            <div id="delete-step-1">
+                <div class="form-group">
+                    <label>Enter Your Password to Confirm</label>
+                    <input type="password" id="delete-password" placeholder="Enter password">
+                </div>
+                <button class="btn btn-primary" onclick="sendDeleteOTP()">Send OTP for Deletion</button>
+            </div>
+
+            <div id="delete-step-2" style="display: none;">
+                <div class="form-group">
+                    <label>Enter OTP (sent to your mobile)</label>
+                    <input type="text" id="delete-otp" placeholder="Enter 6-digit OTP" maxlength="6">
+                </div>
+                <button class="btn btn-danger" onclick="confirmDeleteAccount()">🗑️ Confirm Delete Account</button>
+            </div>
+
+            <div id="delete-message"></div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAqe1sudjw-ATS_bv7f3pNyqAK_sw26cr4",
+            authDomain: "qr-attendance-system-a8a8a.firebaseapp.com",
+            databaseURL: "https://qr-attendance-10d7d-default-rtdb.firebaseio.com",
+            projectId: "qr-attendance-system-a8a8a",
+            storageBucket: "qr-attendance-system-a8a8a.firebasestorage.app",
+            messagingSenderId: "81759182063",
+            appId: "1:81759182063:web:37f3ec343d251c30dd191a"
+        };
+                // ========== SMS OTP INTEGRATION ==========
+const FAST2SMS_API_KEY = "htSm7MDdv5lATweo9q48BLiHx6fnuFI0rUb3RjazZsYWJ1NcEPw2soKcZAOEVRYQN3LpCexhIfbzrTvD"; // Replace with your actual key
+
+// Function to send OTP via SMS
+async function sendSMSOTP(phoneNumber, otp, purpose = 'verification') {
+    try {
+        const message = purpose === 'delete' 
+            ? `Your OTP for Account Deletion is: ${otp}. Valid for 5 minutes. DO NOT share this OTP.`
+            : `Your OTP for Password Reset is: ${otp}. Valid for 5 minutes. QR Attendance System`;
+
+        const response = await fetch('https://www.fast2sms.com/dev/bulkV2', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'authorization': FAST2SMS_API_KEY
+            },
+            body: JSON.stringify({
+                route: 'v3',
+                sender_id: 'FSTSMS',
+                message: message,
+                language: 'english',
+                flash: 0,
+                numbers: phoneNumber
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.return === true) {
+            return { success: true, message: 'OTP sent successfully' };
+        } else {
+            throw new Error(data.message || 'Failed to send OTP');
+        }
+    } catch (error) {
+        console.error('SMS Error:', error);
+        return { success: false, message: error.message };
+    }
+}
+// ========== END SMS INTEGRATION ==========
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let currentUser = null;
+        let currentSubject = null;
+        let currentQRCode = null;
+        let qrExpireTime = null;
+        let editingStudent = null;
+        
+
+        // Store current user in sessionStorage for subject management page
+       function storeUserSession() {
+         if (currentUser) {
+        sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+         }
+}
+
+// Update storeUserSession when user logs in
+
+
+        let otpStore = {};
+
+        // Connection status monitoring
+        const connectedRef = db.ref('.info/connected');
+        connectedRef.on('value', (snapshot) => {
+            const statusBadge = document.getElementById('connection-status');
+            if (statusBadge) {
+                if (snapshot.val() === true) {
+                    statusBadge.className = 'status-badge online';
+                    statusBadge.innerHTML = '<span class="status-dot"></span><span>Connected</span>';
+                } else {
+                    statusBadge.className = 'status-badge offline';
+                    statusBadge.innerHTML = '<span class="status-dot"></span><span>Offline</span>';
+                }
+            }
+        });
+
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+
+            if (code) {
+                handleStudentLink(code);
+            } else {
+                showScreen('login-screen');
+            }
+        };
+
+        function handleStudentLink(code) {
+            const parts = code.split('_');
+            if (parts.length >= 3) {
+                const subject = parts.slice(2).join('_');
+                document.getElementById('modal-subject').value = subject;
+                document.getElementById('student-modal').classList.add('active');
+                document.getElementById('student-roll').focus();
+            }
+        }
+
+        function copyStudentPrompt() {
+            const prompt = `Please format the following student list in this exact format only, with no additional text or explanation:
+
+NAME - ROLLNO
+NAME - ROLLNO
+
+Rules:
+- Each line must have: NAME - ROLLNO (with space-dash-space between)
+- NAME should be in UPPERCASE
+- ROLLNO should be in UPPERCASE
+- One student per line
+- No numbering, bullets, or extra formatting
+- Only output the formatted list, nothing else
+
+Example output format:
+JOHN DOE - 25/B09/001
+JANE SMITH - 25/B09/002
+AMIT KUMAR - 25/B09/003
+
+Now format this student list:
+[Paste your student list here]`;
+
+            navigator.clipboard.writeText(prompt).then(() => {
+                alert('✅ Prompt copied! Now:\n1. Open ChatGPT\n2. Paste this prompt\n3. Add your student list\n4. Copy the result\n5. Paste in the Students field above');
+            }).catch(() => {
+                alert('❌ Failed to copy. Please try again.');
+            });
+        }
+
+        function switchLoginTab(tab) {
+            document.querySelectorAll('#login-screen .tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('#login-screen .tab-btn').forEach(b => b.classList.remove('active'));
+            
+            if (tab === 'login') {
+                document.getElementById('login-tab').classList.add('active');
+                document.querySelectorAll('#login-screen .tab-btn')[0].classList.add('active');
+            } else {
+                document.getElementById('register-tab').classList.add('active');
+                document.querySelectorAll('#login-screen .tab-btn')[1].classList.add('active');
+            }
+        }
+
+        function registerUser() {
+            const year = document.getElementById('reg-year').value.trim();
+            const college = document.getElementById('reg-college').value.trim().toUpperCase();
+            const branch = document.getElementById('reg-branch').value.trim().toUpperCase();
+            const section = document.getElementById('reg-section').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const subjects = document.getElementById('reg-subjects').value.trim().split('\n').filter(s => s.trim());
+            const studentsInput = document.getElementById('reg-students').value.trim().split('\n').filter(s => s.trim());
+
+            const msgDiv = document.getElementById('register-message');
+
+            if (!year || !college || !branch || !section || !phone || !password || subjects.length === 0) {
+                msgDiv.innerHTML = '<div class="message error">❌ Please fill all required fields</div>';
+                return;
+            }
+
+            if (phone.length !== 10 || !/^\d+$/.test(phone)) {
+                msgDiv.innerHTML = '<div class="message error">❌ Invalid mobile number (must be 10 digits)</div>';
+                return;
+            }
+
+            const students = [];
+            if (studentsInput.length > 0) {
+                for (let line of studentsInput) {
+                    const parts = line.split('-').map(p => p.trim());
+                    if (parts.length === 2) {
+                        const name = parts[0].toUpperCase();
+                        const rollNo = parts[1].toUpperCase();
+                        if (name && rollNo) {
+                            students.push({ name, rollNo });
+                        }
+                    } else {
+                        msgDiv.innerHTML = '<div class="message error">❌ Invalid student format. Use: NAME - ROLLNO</div>';
+                        return;
+                    }
+                }
+            }
+
+            const username = year + college + branch + section;
+
+            db.ref('users/' + username).once('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    msgDiv.innerHTML = '<div class="message error">⚠️ Class already registered</div>';
+                    return;
+                }
+
+                db.ref('users/' + username).set({
+                    year, college, branch, section, phone, password,
+                    subjects: subjects,
+                    students: students,
+                    createdAt: Date.now()
+                }).then(() => {
+                    msgDiv.innerHTML = `<div class="message success">✅ Registered! Username: ${username}<br>Students added: ${students.length}</div>`;
+                    setTimeout(() => {
+                        switchLoginTab('login');
+                        document.getElementById('login-username').value = username;
+                    }, 2000);
+                }).catch((error) => {
+                    msgDiv.innerHTML = '<div class="message error">❌ Error: ' + error.message + '</div>';
+                });
+            });
+        }
+
+        function loginUser() {
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+            const msgDiv = document.getElementById('login-message');
+
+            if (!username || !password) {
+                msgDiv.innerHTML = '<div class="message error">❌ Please enter credentials</div>';
+                return;
+            }
+
+            db.ref('users/' + username).once('value', (snapshot) => {
+                if (!snapshot.exists()) {
+                    msgDiv.innerHTML = '<div class="message error">❌ Class not registered. Please register first!</div>';
+                    return;
+                }
+
+                const userData = snapshot.val();
+                if (userData.password !== password) {
+                    msgDiv.innerHTML = '<div class="message error">❌ Wrong password</div>';
+                    return;
+                }
+
+                currentUser = { username, ...userData };
+                showScreen('app-screen');
+                initializeApp();
+                storeUserSession();
+            });
+        }
+
+        function logoutUser() {
+            currentUser = null;
+            currentSubject = null;
+            showScreen('login-screen');
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+            document.getElementById('login-message').innerHTML = '';
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function initializeApp() {
+            document.getElementById('class-info').textContent = 
+                `Passout ${20}${currentUser.year} - ${currentUser.college} ${currentUser.branch} Section ${currentUser.section}`;
+            
+            const select = document.getElementById('subject-select');
+            select.innerHTML = '<option value="">-- Choose Subject --</option>';
+            currentUser.subjects.forEach(subj => {
+                const opt = document.createElement('option');
+                opt.value = subj;
+                opt.textContent = subj;
+                select.appendChild(opt);
+            });
+
+            loadStudents();
+            renderHistory();
+        }
+
+        function switchAppTab(tab) {
+            document.querySelectorAll('#app-screen .tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('#app-screen .tab-btn').forEach(b => b.classList.remove('active'));
+            
+            const index = tab === 'cr' ? 0 : (tab === 'students' ? 1 : 2);
+            document.querySelectorAll('#app-screen .tab')[index].classList.add('active');
+            document.querySelectorAll('#app-screen .tab-btn')[index].classList.add('active');
+
+            if (tab === 'students') loadStudents();
+            if (tab === 'history') renderHistory();
+        }
+
+        function onSubjectChange() {
+            currentSubject = document.getElementById('subject-select').value;
+            resetQR();
+            updateAttendanceDisplay();
+        }
+
+        function generateQRCode() {
+            if (!currentSubject) {
+                alert('⚠️ Please select a subject first');
+                return;
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            const code = `${currentUser.username}_${today}_${currentSubject}`;
+            
+            const baseURL = window.location.origin + window.location.pathname;
+            const url = `${baseURL}?code=${code}`;
+
+            currentQRCode = { code, url };
+            qrExpireTime = Date.now() + (10 * 60 * 1000);
+
+            document.getElementById('qrcode').innerHTML = '';
+            new QRCode(document.getElementById('qrcode'), {
+                text: url,
+                width: 200,
+                height: 200
+            });
+
+            document.getElementById('qr-section').style.display = 'block';
+            startQRTimer();
+        }
+
+        function startQRTimer() {
+            const timer = setInterval(() => {
+                const remaining = Math.max(0, Math.floor((qrExpireTime - Date.now()) / 1000));
+                const mins = Math.floor(remaining / 60);
+                const secs = remaining % 60;
+                document.getElementById('qr-timer').textContent = 
+                    `Expires in ${mins}:${String(secs).padStart(2, '0')}`;
+
+                if (remaining <= 0) {
+                    clearInterval(timer);
+                    resetQR();
+                }
+            }, 1000);
+        }
+
+        function resetQR() {
+            document.getElementById('qr-section').style.display = 'none';
+            document.getElementById('qrcode').innerHTML = '';
+            currentQRCode = null;
+        }
+
+        function copyQRLink() {
+            if (currentQRCode) {
+                navigator.clipboard.writeText(currentQRCode.url).then(() => {
+                    alert('✅ Link copied!');
+                });
+            }
+        }
+
+        function updateAttendanceDisplay() {
+            if (!currentSubject) {
+                document.getElementById('attendance-list').innerHTML = 
+                    '<div class="empty-state"><div class="empty-icon">📋</div><div>Select a subject</div></div>';
+                document.getElementById('present-count').textContent = '0';
+                document.getElementById('total-count').textContent = currentUser.students.length;
+                return;
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            const key = `${currentUser.username}_${today}_${currentSubject}`;
+
+            db.ref('attendance/' + key).on('value', (snapshot) => {
+                const data = snapshot.val();
+                const records = data ? Object.values(data) : [];
+
+                let html = '';
+                if (records.length === 0) {
+                    html = '<div class="empty-state"><div class="empty-icon">⏳</div><div>No attendance yet</div></div>';
+                } else {
+                    html = records.map(r => `
+                        <div class="list-item">
+                            <div class="list-item-info">
+                                <div class="list-item-name">${r.name}</div>
+                                <div class="list-item-roll">${r.rollNo}</div>
+                                <div class="list-item-time">${r.time}</div>
+                            </div>
+                            <div class="list-item-actions">
+                                <button class="btn-small btn-danger" onclick="deleteAttendance('${key}', '${r.rollNo}')">Delete</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                document.getElementById('attendance-list').innerHTML = html;
+                document.getElementById('present-count').textContent = records.length;
+                document.getElementById('total-count').textContent = currentUser.students.length;
+            });
+        }
+
+        function deleteAttendance(key, rollNo) {
+            if (confirm('Delete this record?')) {
+                db.ref('attendance/' + key).orderByChild('rollNo').equalTo(rollNo).once('value', (snapshot) => {
+                    snapshot.forEach(child => child.ref.remove());
+                });
+            }
+        }
+
+      function submitAttendance() {
+    const roll = document.getElementById('student-roll').value.trim().toUpperCase();
+    const msgDiv = document.getElementById('modal-message');
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const parts = code.split('_');
+    const username = parts[0];
+    const subject = parts.slice(2).join('_');
+
+    db.ref('users/' + username).once('value', (userSnapshot) => {
+        if (!userSnapshot.exists()) {
+            msgDiv.innerHTML = '<div class="message error">❌ Invalid link</div>';
+            return;
+        }
+
+        const userData = userSnapshot.val();
+        const student = userData.students.find(s => s.rollNo.toUpperCase() === roll);
+
+        if (!student) {
+            msgDiv.innerHTML = '<div class="message error">❌ Invalid roll number</div>';
+            document.getElementById('student-roll').value = '';
+            return;
+        }
+
+        const key = code;
+
+        db.ref('attendance/' + key).orderByChild('rollNo').equalTo(student.rollNo).once('value', (snapshot) => {
+            if (snapshot.exists()) {
+                msgDiv.innerHTML = '<div class="message error">⚠️ Attendance already marked! You cannot mark twice.</div>';
+                return;
+            }
+
+            const currentTime = new Date().toLocaleTimeString('en-IN');
+
+            db.ref('attendance/' + key).push({
+                rollNo: student.rollNo,
+                name: student.name,
+                time: currentTime,
+                timestamp: Date.now()
+            }).then(() => {
+                // Redirect to success page with details
+                const successURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(currentTime)}`;
+                window.location.href = successURL;
+            });
+        });
+    });
+}
+
+        function closeStudentModal() {
+            document.getElementById('student-modal').classList.remove('active');
+            document.getElementById('modal-message').innerHTML = '';
+        }
+
+        function loadStudents() {
+            const list = document.getElementById('students-list');
+            if (!currentUser.students || currentUser.students.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><div>No students added yet</div></div>';
+                return;
+            }
+
+            let html = currentUser.students.map(s => `
+                <div class="list-item">
+                    <div class="list-item-info">
+                        <div class="list-item-name">${s.name}</div>
+                        <div class="list-item-roll">${s.rollNo}</div>
+                    </div>
+                    <div class="list-item-actions">
+                        <button class="btn-small btn-primary" onclick="editStudent('${s.rollNo}')">Edit</button>
+                        <button class="btn-small btn-danger" onclick="deleteStudent('${s.rollNo}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+
+            list.innerHTML = html;
+        }
+
+        function openAddStudentModal() {
+            editingStudent = null;
+            document.getElementById('student-modal-title').textContent = 'Add Student';
+            document.getElementById('new-roll').value = '';
+            document.getElementById('new-name').value = '';
+            document.getElementById('new-roll').disabled = false;
+            document.getElementById('add-student-message').innerHTML = '';
+            document.getElementById('add-student-modal').classList.add('active');
+        }
+
+        function editStudent(rollNo) {
+            const student = currentUser.students.find(s => s.rollNo === rollNo);
+            if (!student) return;
+
+            editingStudent = rollNo;
+            document.getElementById('student-modal-title').textContent = 'Edit Student';
+            document.getElementById('new-roll').value = student.rollNo;
+            document.getElementById('new-name').value = student.name;
+            document.getElementById('new-roll').disabled = true;
+            document.getElementById('add-student-message').innerHTML = '';
+            document.getElementById('add-student-modal').classList.add('active');
+        }
+
+        function saveStudent() {
+            const roll = document.getElementById('new-roll').value.trim().toUpperCase();
+            const name = document.getElementById('new-name').value.trim();
+            const msgDiv = document.getElementById('add-student-message');
+
+            if (!roll || !name) {
+                msgDiv.innerHTML = '<div class="message error">❌ Fill all fields</div>';
+                return;
+            }
+
+            if (editingStudent) {
+                const index = currentUser.students.findIndex(s => s.rollNo === editingStudent);
+                if (index !== -1) {
+                    currentUser.students[index].name = name;
+                    
+                    db.ref('users/' + currentUser.username + '/students').set(currentUser.students).then(() => {
+                        msgDiv.innerHTML = '<div class="message success">✅ Student updated!</div>';
+                        setTimeout(() => {
+                            closeAddStudentModal();
+                            loadStudents();
+                        }, 1500);
+                    });
+                }
+            } else {
+                const exists = currentUser.students.some(s => s.rollNo === roll);
+                if (exists) {
+                    msgDiv.innerHTML = '<div class="message error">⚠️ Roll number already exists</div>';
+                    return;
+                }
+
+                currentUser.students.push({ rollNo: roll, name: name });
+                
+                db.ref('users/' + currentUser.username + '/students').set(currentUser.students).then(() => {
+                    msgDiv.innerHTML = '<div class="message success">✅ Student added!</div>';
+                    setTimeout(() => {
+                        closeAddStudentModal();
+                        loadStudents();
+                    }, 1500);
+                });
+            }
+        }
+
+        function deleteStudent(rollNo) {
+            if (!confirm('Delete this student?')) return;
+
+            currentUser.students = currentUser.students.filter(s => s.rollNo !== rollNo);
+            
+            db.ref('users/' + currentUser.username + '/students').set(currentUser.students).then(() => {
+                loadStudents();
+            });
+        }
+
+        function closeAddStudentModal() {
+            document.getElementById('add-student-modal').classList.remove('active');
+            document.getElementById('add-student-message').innerHTML = '';
+        }
+
+        function downloadTodayAttendance() {
+            if (!currentSubject) {
+                alert('⚠️ Please select a subject first');
+                return;
+            }
+
+            if (typeof XLSX === 'undefined') {
+                alert('❌ Excel library not loaded');
+                return;
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            const key = `${currentUser.username}_${today}_${currentSubject}`;
+
+            db.ref('attendance/' + key).once('value', (snapshot) => {
+                const data = snapshot.val();
+                const records = data ? Object.values(data) : [];
+
+                if (records.length === 0) {
+                    alert('⚠️ No attendance records for today');
+                    return;
+                }
+
+                const excelData = currentUser.students.map(student => {
+                    const record = records.find(r => r.rollNo === student.rollNo);
+                    return {
+                        'Roll No': student.rollNo,
+                        'Name': student.name,
+                        'Status': record ? 'Present' : 'Absent',
+                        'Time': record ? record.time : '-'
+                    };
+                });
+
+                const ws = XLSX.utils.json_to_sheet(excelData);
+                ws['!cols'] = [{ wch: 15 }, { wch: 30 }, { wch: 10 }, { wch: 12 }];
+
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+
+                const filename = `Attendance_${currentSubject}_${today}.xlsx`;
+                XLSX.writeFile(wb, filename);
+
+                alert(`✅ Downloaded!\nPresent: ${records.length}/${currentUser.students.length}`);
+            });
+        }
+
+        function downloadFullAttendance() {
+            if (typeof XLSX === 'undefined') {
+                alert('❌ Excel library not loaded');
+                return;
+            }
+
+            db.ref('attendance').orderByKey().startAt(currentUser.username).endAt(currentUser.username + '\uf8ff').once('value', (snapshot) => {
+                const allData = snapshot.val();
+                
+                if (!allData) {
+                    alert('⚠️ No attendance records found');
+                    return;
+                }
+
+                const wb = XLSX.utils.book_new();
+                const subjectData = {};
+
+                Object.entries(allData).forEach(([key, records]) => {
+                    const parts = key.split('_');
+                    if (parts[0] !== currentUser.username) return;
+                    
+                    const date = parts[1];
+                    const subject = parts.slice(2).join('_');
+
+                    if (!subjectData[subject]) {
+                        subjectData[subject] = [];
+                    }
+
+                    const recordsArray = Object.values(records);
+                    
+                    currentUser.students.forEach(student => {
+                        const record = recordsArray.find(r => r.rollNo === student.rollNo);
+                        subjectData[subject].push({
+                            'Date': date,
+                            'Roll No': student.rollNo,
+                            'Name': student.name,
+                            'Status': record ? 'Present' : 'Absent',
+                            'Time': record ? record.time : '-'
+                        });
+                    });
+                });
+
+                Object.entries(subjectData).forEach(([subject, data]) => {
+                    const ws = XLSX.utils.json_to_sheet(data);
+                    ws['!cols'] = [{ wch: 12 }, { wch: 15 }, { wch: 30 }, { wch: 10 }, { wch: 12 }];
+                    
+                    let sheetName = subject.substring(0, 31).replace(/[:\\/?*\[\]]/g, '');
+                    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+                });
+
+                if (wb.SheetNames.length === 0) {
+                    alert('⚠️ No attendance data to download');
+                    return;
+                }
+
+                const filename = `Full_Attendance_${currentUser.username}.xlsx`;
+                XLSX.writeFile(wb, filename);
+
+                alert(`✅ Full attendance downloaded!\n${wb.SheetNames.length} subject(s) included`);
+            });
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('history-container');
+
+            db.ref('attendance').orderByKey().startAt(currentUser.username).endAt(currentUser.username + '\uf8ff').once('value', (snapshot) => {
+                const data = snapshot.val();
+                
+                if (!data) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div>No history yet</div></div>';
+                    return;
+                }
+
+                const grouped = {};
+                
+                Object.entries(data).forEach(([key, records]) => {
+                    const parts = key.split('_');
+                    if (parts[0] !== currentUser.username) return;
+                    
+                    const date = parts[1];
+                    const subject = parts.slice(2).join('_');
+
+                    if (!grouped[subject]) {
+                        grouped[subject] = [];
+                    }
+
+                    const recordsArray = Object.values(records);
+                    grouped[subject].push({ date, count: recordsArray.length });
+                });
+
+                let html = '';
+                Object.entries(grouped).forEach(([subject, entries]) => {
+                    html += `<h3 style="margin-top: 20px; margin-bottom: 12px; color: #667eea; font-weight: 600; font-size: 14px;">${subject}</h3>`;
+                    
+                    entries.sort((a, b) => b.date.localeCompare(a.date));
+                    
+                    entries.forEach(entry => {
+                        html += `
+                            <div class="history-card">
+                                <div class="history-date">📅 ${entry.date}</div>
+                                <div class="history-count">👥 ${entry.count} students present</div>
+                            </div>
+                        `;
+                    });
+                });
+
+                if (html === '') {
+                    html = '<div class="empty-state"><div class="empty-icon">📊</div><div>No history yet</div></div>';
+                }
+
+                container.innerHTML = html;
+            });
+        }
+
+        function openGuideModal() {
+            document.getElementById('guide-modal').classList.add('active');
+        }
+
+        function closeGuideModal() {
+            document.getElementById('guide-modal').classList.remove('active');
+        }
+
+        function contactDeveloper() {
+            window.open('https://www.instagram.com/yesss.shivam/', '_blank');
+        }
+
+        function openForgotPassword() {
+            document.getElementById('forgot-step-1').style.display = 'block';
+            document.getElementById('forgot-step-2').style.display = 'none';
+            document.getElementById('forgot-message').innerHTML = '';
+            document.getElementById('forgot-password-modal').classList.add('active');
+        }
+
+        function closeForgotPassword() {
+            document.getElementById('forgot-password-modal').classList.remove('active');
+        }
+
+        function generateOTP() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        function sendOTP() {
+    const username = document.getElementById('forgot-username').value.trim();
+    const msgDiv = document.getElementById('forgot-message');
+
+    if (!username) {
+        msgDiv.innerHTML = '<div class="message error">❌ Please enter username</div>';
+        return;
+    }
+
+    msgDiv.innerHTML = '<div class="message" style="background: #fef3c7; color: #92400e;">⏳ Sending OTP...</div>';
+
+    db.ref('users/' + username).once('value', async (snapshot) => {
+        if (!snapshot.exists()) {
+            msgDiv.innerHTML = '<div class="message error">❌ Username not found</div>';
+            return;
+        }
+
+        const userData = snapshot.val();
+        const otp = generateOTP();
+        otpStore[username] = { otp, timestamp: Date.now() };
+
+        // Send SMS
+        const smsResult = await sendSMSOTP(userData.phone, otp, 'reset');
+
+        if (smsResult.success) {
+            msgDiv.innerHTML = `<div class="message success">✅ OTP sent to ${userData.phone.substring(0, 2)}******${userData.phone.substring(8)}</div>`;
+            document.getElementById('forgot-step-1').style.display = 'none';
+            document.getElementById('forgot-step-2').style.display = 'block';
+        } else {
+            msgDiv.innerHTML = `<div class="message error">❌ Failed to send OTP: ${smsResult.message}</div>`;
+            delete otpStore[username];
+        }
+    });
+}
+
+        function resetPassword() {
+            const username = document.getElementById('forgot-username').value.trim();
+            const otp = document.getElementById('forgot-otp').value.trim();
+            const newPassword = document.getElementById('forgot-new-password').value;
+            const msgDiv = document.getElementById('forgot-message');
+
+            if (!otp || !newPassword) {
+                msgDiv.innerHTML = '<div class="message error">❌ Please fill all fields</div>';
+                return;
+            }
+
+            if (!otpStore[username] || otpStore[username].otp !== otp) {
+                msgDiv.innerHTML = '<div class="message error">❌ Invalid OTP</div>';
+                return;
+            }
+
+            const otpAge = Date.now() - otpStore[username].timestamp;
+            if (otpAge > 5 * 60 * 1000) {
+                msgDiv.innerHTML = '<div class="message error">❌ OTP expired. Please request new OTP</div>';
+                delete otpStore[username];
+                return;
+            }
+
+            db.ref('users/' + username + '/password').set(newPassword).then(() => {
+                delete otpStore[username];
+                msgDiv.innerHTML = '<div class="message success">✅ Password reset successful! Redirecting to login...</div>';
+                setTimeout(() => {
+                    closeForgotPassword();
+                    switchLoginTab('login');
+                    document.getElementById('login-username').value = username;
+                }, 2000);
+            }).catch((error) => {
+                msgDiv.innerHTML = '<div class="message error">❌ Error: ' + error.message + '</div>';
+            });
+        }
+
+        function initiateDeleteAccount() {
+            if (!currentUser) {
+                alert('❌ You must be logged in');
+                return;
+            }
+            
+            document.getElementById('delete-step-1').style.display = 'block';
+            document.getElementById('delete-step-2').style.display = 'none';
+            document.getElementById('delete-message').innerHTML = '';
+            document.getElementById('delete-account-modal').classList.add('active');
+            closeGuideModal();
+        }
+
+        function closeDeleteAccount() {
+            document.getElementById('delete-account-modal').classList.remove('active');
+        }
+
+function sendDeleteOTP() {
+    const password = document.getElementById('delete-password').value;
+    const msgDiv = document.getElementById('delete-message');
+
+    if (!password) {
+        msgDiv.innerHTML = '<div class="message error">❌ Please enter password</div>';
+        return;
+    }
+
+    if (password !== currentUser.password) {
+        msgDiv.innerHTML = '<div class="message error">❌ Incorrect password</div>';
+        return;
+    }
+
+    msgDiv.innerHTML = '<div class="message" style="background: #fef3c7; color: #92400e;">⏳ Sending OTP...</div>';
+
+    const otp = generateOTP();
+    const deleteKey = currentUser.username + '_delete';
+    otpStore[deleteKey] = { otp, timestamp: Date.now() };
+
+    // Send SMS
+    sendSMSOTP(currentUser.phone, otp, 'delete').then(smsResult => {
+        if (smsResult.success) {
+            msgDiv.innerHTML = `<div class="message success">✅ OTP sent to ${currentUser.phone.substring(0, 2)}******${currentUser.phone.substring(8)}</div>`;
+            document.getElementById('delete-step-1').style.display = 'none';
+            document.getElementById('delete-step-2').style.display = 'block';
+        } else {
+            msgDiv.innerHTML = `<div class="message error">❌ Failed to send OTP: ${smsResult.message}</div>`;
+            delete otpStore[deleteKey];
+        }
+    });
+}
+
+        function confirmDeleteAccount() {
+            const otp = document.getElementById('delete-otp').value.trim();
+            const msgDiv = document.getElementById('delete-message');
+
+            if (!otp) {
+                msgDiv.innerHTML = '<div class="message error">❌ Please enter OTP</div>';
+                return;
+            }
+
+            const deleteKey = currentUser.username + '_delete';
+            if (!otpStore[deleteKey] || otpStore[deleteKey].otp !== otp) {
+                msgDiv.innerHTML = '<div class="message error">❌ Invalid OTP</div>';
+                return;
+            }
+
+            const otpAge = Date.now() - otpStore[deleteKey].timestamp;
+            if (otpAge > 5 * 60 * 1000) {
+                msgDiv.innerHTML = '<div class="message error">❌ OTP expired. Please request new OTP</div>';
+                delete otpStore[deleteKey];
+                return;
+            }
+
+            if (!confirm('⚠️ FINAL WARNING: This will permanently delete everything. Are you absolutely sure?')) {
+                return;
+            }
+
+            db.ref('users/' + currentUser.username).remove().then(() => {
+                return db.ref('attendance').orderByKey().startAt(currentUser.username).endAt(currentUser.username + '\uf8ff').once('value');
+            }).then((snapshot) => {
+                const deletePromises = [];
+                snapshot.forEach(child => {
+                    deletePromises.push(child.ref.remove());
+                });
+                return Promise.all(deletePromises);
+            }).then(() => {
+                delete otpStore[deleteKey];
+                msgDiv.innerHTML = '<div class="message success">✅ Account deleted successfully. Redirecting...</div>';
+                setTimeout(() => {
+                    logoutUser();
+                    closeDeleteAccount();
+                    alert('Account and all data have been permanently deleted.');
+                }, 2000);
+            }).catch((error) => {
+                msgDiv.innerHTML = '<div class="message error">❌ Error: ' + error.message + '</div>';
+            });
+        }
+        function openLogoPopup() {
+    document.getElementById('logo-popup').classList.add('active');
+}
+
+function closeLogoPopup() {
+    document.getElementById('logo-popup').classList.remove('active');
+}
+    </script>
+<footer style="text-align:center; margin-top:30px; padding:20px; background:rgba(255,255,255,0.1); border-radius:8px;">
+  <a href="about.html" style="color:#fff; text-decoration:underline; margin:0 10px;">About</a> |
+  <a href="contact.html" style="color:#fff; text-decoration:underline; margin:0 10px;">Contact</a> |
+  <a href="privacy-policy.html" style="color:#fff; text-decoration:underline; margin:0 10px;">Privacy Policy</a> |
+  <a href="terms.html" style="color:#fff; text-decoration:underline; margin:0 10px;">Terms & Conditions</a>
+  <br><br>
+  <span style="color:#d1d5db;">&copy; 2025 QR Attendance System. All rights reserved. Developed by Shivam Kumar Mahto.</span>
+</footer>
+
+
+</body>
+</html>

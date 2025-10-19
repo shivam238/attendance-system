@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us | QR Attendance System</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="shortcut icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #667eea;
+            font-size: 36px;
+            margin-bottom: 12px;
+            font-weight: 800;
+        }
+        .tagline {
+            color: #718096;
+            font-size: 18px;
+            margin-bottom: 32px;
+            font-style: italic;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        h2 {
+            color: #4338ca;
+            font-size: 24px;
+            margin-top: 40px;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+        h3 {
+            color: #1a202c;
+            font-size: 18px;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        p {
+            color: #4a5568;
+            line-height: 1.8;
+            margin-bottom: 16px;
+            font-size: 15px;
+        }
+        ul {
+            margin-left: 24px;
+            margin-bottom: 16px;
+        }
+        li {
+            color: #4a5568;
+            line-height: 1.8;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+        strong { color: #1a202c; font-weight: 600; }
+        a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+        .highlight-box {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-left: 4px solid #667eea;
+            padding: 20px 24px;
+            margin: 24px 0;
+            border-radius: 8px;
+        }
+        .highlight-box p {
+            margin: 0;
+            color: #1a202c;
+            font-weight: 500;
+            font-size: 16px;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
+        }
+        .feature-card {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s;
+        }
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+        .feature-title {
+            color: #1a202c;
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        .feature-desc {
+            color: #718096;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0;
+        }
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .tech-badge {
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 24px;
+            border-radius: 12px;
+            text-align: center;
+            color: white;
+        }
+        .stat-number {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .developer-section {
+            background: #f8fafc;
+            padding: 32px;
+            border-radius: 12px;
+            margin: 32px 0;
+            text-align: center;
+        }
+        .developer-section h3 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .social-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        .social-btn.instagram {
+            background: linear-gradient(135deg, #e1306c 0%, #fd1d1d 100%);
+            color: white;
+        }
+        .social-btn.linkedin {
+            background: #0077b5;
+            color: white;
+        }
+        .social-btn.email {
+            background: #667eea;
+            color: white;
+        }
+        .social-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            text-decoration: none;
+        }
+        footer {
+            text-align: center;
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 2px solid #e2e8f0;
+        }
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .footer-links a {
+            color: #667eea;
+            font-size: 14px;
+        }
+        .copyright {
+            color: #718096;
+            font-size: 14px;
+        }
+        .back-btn {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .back-btn:hover {
+            background: #4338ca;
+            transform: translateY(-2px);
+            text-decoration: none;
+        }
+        @media (max-width: 768px) {
+            .container { padding: 24px; }
+            h1 { font-size: 28px; }
+            h2 { font-size: 20px; }
+            .features-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-btn">← Back to Home</a>
+        
+        <h1>About QR Attendance System</h1>
+        <p class="tagline">Revolutionizing classroom attendance management with modern technology</p>
+
+        <div class="highlight-box">
+            <p>🎯 <strong>Our Mission:</strong> To eliminate paper-based attendance systems and provide educational institutions with a fast, reliable, and eco-friendly digital solution that saves time and improves accuracy.</p>
+        </div>
+
+        <h2>What is QR Attendance System?</h2>
+        <p>QR Attendance System is a cutting-edge web application designed specifically for educational institutions to manage student attendance digitally. By leveraging QR code technology and cloud-based storage, we've created a seamless experience that benefits both educators and students.</p>
+
+        <p>The platform enables Class Representatives (CRs) to generate unique QR codes for each class session, which students can scan using their smartphones to instantly mark their attendance. All data is synchronized in real-time through Google Firebase, ensuring accuracy and reliability.</p>
+
+        <h2>Why We Built This</h2>
+        <p>Traditional attendance methods involve several challenges:</p>
+        <ul>
+            <li><strong>Time-Consuming:</strong> Manual roll calls waste valuable class time</li>
+            <li><strong>Error-Prone:</strong> Handwritten registers are susceptible to mistakes and tampering</li>
+            <li><strong>Storage Issues:</strong> Physical registers require space and deteriorate over time</li>
+            <li><strong>Difficult Analysis:</strong> Extracting insights from paper records is tedious</li>
+            <li><strong>Environmental Impact:</strong> Significant paper consumption</li>
+        </ul>
+
+        <p>QR Attendance System addresses all these pain points with a simple, elegant solution that works on any device with an internet connection.</p>
+
+        <h2>Key Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📱</div>
+                <div class="feature-title">QR Code Generation</div>
+                <p class="feature-desc">Generate unique, time-limited QR codes for each class session with 10-minute validity</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <div class="feature-title">Real-Time Sync</div>
+                <p class="feature-desc">Instant attendance updates across all devices using Firebase Realtime Database</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <div class="feature-title">Secure Access</div>
+                <p class="feature-desc">Password-protected accounts with OTP-based verification and recovery</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <div class="feature-title">Excel Export</div>
+                <p class="feature-desc">Download attendance reports in Excel format with present/absent status</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <div class="feature-title">Student Management</div>
+                <p class="feature-desc">Easy add, edit, and delete functionality for student records</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📚</div>
+                <div class="feature-title">Subject Management</div>
+                <p class="feature-desc">Organize attendance by subject with dedicated management interface</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📈</div>
+                <div class="feature-title">History Tracking</div>
+                <p class="feature-desc">View complete attendance history organized by subject and date</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🌐</div>
+                <div class="feature-title">Cross-Platform</div>
+                <p class="feature-desc">Works seamlessly on smartphones, tablets, and computers</p>
+            </div>
+        </div>
+
+        <h2>Technology Stack</h2>
+        <p>Built with modern, reliable technologies to ensure optimal performance:</p>
+        <div class="tech-stack">
+            <span class="tech-badge">HTML5</span>
+            <span class="tech-badge">CSS3</span>
+            <span class="tech-badge">JavaScript</span>
+            <span class="tech-badge">Firebase Realtime Database</span>
+            <span class="tech-badge">QRCode.js</span>
+            <span class="tech-badge">SheetJS (XLSX)</span>
+            <span class="tech-badge">Responsive Design</span>
+            <span class="tech-badge">Progressive Web App</span>
+        </div>
+
+        <h2>System Highlights</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">⚡</div>
+                <div class="stat-label">Instant Attendance Marking</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">🔒</div>
+                <div class="stat-label">Bank-Grade Security</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">☁️</div>
+                <div class="stat-label">Cloud-Based Storage</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">📱</div>
+                <div class="stat-label">100% Mobile Friendly</div>
+            </div>
+        </div>
+
+        <h2>How It Works</h2>
+        <h3>For Class Representatives</h3>
+        <ol>
+            <li><strong>Register:</strong> Create an account with your class details, subjects, and student list</li>
+            <li><strong>Generate QR:</strong> Select a subject and generate a unique QR code for the session</li>
+            <li><strong>Display:</strong> Show the QR code in class or share the link via WhatsApp/email</li>
+            <li><strong>Monitor:</strong> Watch real-time attendance updates as students mark their presence</li>
+            <li><strong>Download:</strong> Export attendance reports in Excel format anytime</li>
+        </ol>
+
+        <h3>For Students</h3>
+        <ol>
+            <li><strong>Scan:</strong> Use your smartphone to scan the QR code displayed by your CR</li>
+            <li><strong>Enter Roll Number:</strong> Type your roll number exactly as registered</li>
+            <li><strong>Submit:</strong> Click submit and receive instant confirmation</li>
+            <li><strong>Done:</strong> Your attendance is recorded and synced in real-time</li>
+        </ol>
+
+        <h2>Benefits</h2>
+        <ul>
+            <li><strong>Time-Saving:</strong> Reduce attendance marking time from 5-10 minutes to under 1 minute</li>
+            <li><strong>Accuracy:</strong> Eliminate errors from manual data entry and illegible handwriting</li>
+            <li><strong>Eco-Friendly:</strong> Go completely paperless and reduce environmental impact</li>
+            <li><strong>Accessibility:</strong> Access attendance data from anywhere, anytime</li>
+            <li><strong>Analytics:</strong> Easily analyze attendance patterns and trends</li>
+            <li><strong>Security:</strong> Prevent proxy attendance with time-limited QR codes</li>
+            <li><strong>Cost-Effective:</strong> Free to use with no subscription fees</li>
+            <li><strong>Scalable:</strong> Works for classes of any size</li>
+        </ul>
+
+        <h2>Security Features</h2>
+        <ul>
+            <li><strong>Password Protection:</strong> All accounts secured with encrypted passwords</li>
+            <li><strong>OTP Verification:</strong> Mobile number verification for password recovery</li>
+            <li><strong>Time-Limited QR Codes:</strong> 10-minute expiry prevents misuse</li>
+            <li><strong>Duplicate Prevention:</strong> Students can only mark attendance once per session</li>
+            <li><strong>Firebase Security Rules:</strong> Database access restricted by authentication</li>
+            <li><strong>SSL Encryption:</strong> All data transmission encrypted</li>
+        </ul>
+
+        <h2>Future Enhancements</h2>
+        <p>We're constantly working to improve the system. Upcoming features include:</p>
+        <ul>
+            <li>📧 Automatic email reports to faculty</li>
+            <li>📊 Advanced analytics and visualization</li>
+            <li>🔔 Low attendance alerts for students</li>
+            <li>📲 Mobile app (Android & iOS)</li>
+            <li>🎨 Customizable themes</li>
+            <li>🌍 Multi-language support</li>
+            <li>📅 Integration with Google Calendar</li>
+        </ul>
+
+        <div class="developer-section">
+            <h3>Meet the Developer</h3>
+            <p style="color: #4a5568; margin-bottom: 12px;">This project was conceptualized, designed, and developed by <strong>Shivam Kumar Mahto</strong>, a passionate developer dedicated to creating practical solutions for real-world problems.</p>
+            
+            <p style="color: #718096; font-size: 14px; margin-bottom: 20px;">With a focus on simplicity, efficiency, and user experience, this system represents a commitment to modernizing educational processes through technology.</p>
+
+            <div class="social-links">
+                <a href="https://www.instagram.com/yesss.shivam/" target="_blank" class="social-btn instagram">
+                    📷 Instagram
+                </a>
+                <a href="https://www.linkedin.com/in/shivam-mahto-046228361" target="_blank" class="social-btn linkedin">
+                    💼 LinkedIn
+                </a>
+                <a href="mailto:sm3165599@gmail.com" class="social-btn email">
+                    ✉️ Email
+                </a>
+            </div>
+        </div>
+
+        <h2>Get Started Today</h2>
+        <p>Ready to modernize your attendance system? Get started in minutes:</p>
+        <ol>
+            <li>Visit the <a href="index.html">homepage</a></li>
+            <li>Click "Register" and create your class account</li>
+            <li>Add your students and subjects</li>
+            <li>Generate your first QR code</li>
+            <li>Start taking attendance digitally!</li>
+        </ol>
+
+        <p style="text-align: center; margin-top: 32px;">
+            <a href="index.html" class="social-btn email" style="display: inline-block; text-decoration: none;">🚀 Get Started Now</a>
+        </p>
+
+        <h2>Need Help?</h2>
+        <p>We're here to support you:</p>
+        <ul>
+            <li><strong>Contact Us:</strong> Visit our <a href="contact.html">contact page</a> for support</li>
+            <li><strong>User Manual:</strong> Check the in-app guide (click "i" button in dashboard) or <a href="QR Attendance System - Complete User Manual.pdf" download style="color: #667eea; font-weight: 600;">📥 Download Complete User Manual</a></li>
+            <li><strong>Email Support:</strong> <a href="mailto:sm3165599@gmail.com">sm3165599@gmail.com</a></li>
+            <li><strong>Response Time:</strong> We typically respond within 48 hours</li>
+        </ul>
+
+        <h2>Open Source & Collaboration</h2>
+        <p>This project is released under the <strong>MIT License</strong>, which means:</p>
+        <ul>
+            <li>✅ Free to use for educational purposes</li>
+            <li>✅ Free to modify and customize</li>
+            <li>✅ Free to distribute</li>
+            <li>⚠️ No warranty provided</li>
+            <li>📋 Attribution appreciated but not required</li>
+        </ul>
+
+        <p>Interested in contributing or collaborating? We welcome:</p>
+        <ul>
+            <li>Feature suggestions and feedback</li>
+            <li>Bug reports and issue identification</li>
+            <li>Code contributions and improvements</li>
+            <li>Documentation enhancements</li>
+            <li>Translation to other languages</li>
+        </ul>
+
+        <p>Contact us at <a href="mailto:sm3165599@gmail.com">sm3165599@gmail.com</a> to discuss collaboration opportunities.</p>
+
+        <h2>Educational Impact</h2>
+        <p>QR Attendance System is making a difference by:</p>
+        <ul>
+            <li><strong>Saving Time:</strong> Freeing up valuable teaching time previously spent on roll calls</li>
+            <li><strong>Improving Accuracy:</strong> Reducing attendance errors by up to 95%</li>
+            <li><strong>Increasing Efficiency:</strong> Allowing instant access to attendance data</li>
+            <li><strong>Supporting Environment:</strong> Eliminating thousands of paper sheets annually</li>
+            <li><strong>Enabling Analysis:</strong> Helping identify at-risk students through attendance patterns</li>
+            <li><strong>Reducing Costs:</strong> Eliminating expenses for attendance registers and storage</li>
+        </ul>
+
+        <h2>Privacy & Data Protection</h2>
+        <p>We take your privacy seriously. Our commitment includes:</p>
+        <ul>
+            <li>🔒 Secure data encryption during transmission</li>
+            <li>☁️ Protected cloud storage with Firebase</li>
+            <li>🚫 No selling or sharing of user data</li>
+            <li>✅ Full data deletion on account removal</li>
+            <li>📋 Transparent privacy policy</li>
+            <li>⚖️ Compliance with data protection regulations</li>
+        </ul>
+
+        <p>Read our complete <a href="privacy-policy.html">Privacy Policy</a> and <a href="terms.html">Terms & Conditions</a> for detailed information.</p>
+
+        <h2>System Requirements</h2>
+        <h3>For Class Representatives (CRs)</h3>
+        <ul>
+            <li><strong>Device:</strong> Computer, laptop, tablet, or smartphone</li>
+            <li><strong>Browser:</strong> Chrome, Firefox, Safari, or Edge (latest versions)</li>
+            <li><strong>Internet:</strong> Stable connection (minimum 2 Mbps recommended)</li>
+            <li><strong>Mobile Number:</strong> Valid 10-digit number for verification</li>
+        </ul>
+
+        <h3>For Students</h3>
+        <ul>
+            <li><strong>Device:</strong> Any smartphone or computer with internet</li>
+            <li><strong>Browser:</strong> Any modern web browser</li>
+            <li><strong>Camera:</strong> For scanning QR codes (or use shared link)</li>
+        </ul>
+
+        <h2>Frequently Asked Questions</h2>
+        
+        <h3>Is it really free?</h3>
+        <p>Yes! QR Attendance System is completely free to use with no hidden charges, subscription fees, or premium tiers.</p>
+
+        <h3>Do I need to install anything?</h3>
+        <p>No installation required! It's a web-based application that works directly in your browser.</p>
+
+        <h3>What if I lose my password?</h3>
+        <p>Use the "Forgot Password" feature on the login page. You'll receive an OTP on your registered mobile number to reset your password.</p>
+
+        <h3>Can students mark attendance from home?</h3>
+        <p>QR codes are time-limited (10 minutes) to prevent misuse. However, students technically can mark from anywhere if they have the link. CRs should monitor attendance timing to ensure authenticity.</p>
+
+        <h3>What happens if my internet disconnects?</h3>
+        <p>The system will show an "Offline" status. Once reconnected, data will sync automatically. We recommend stable internet for best experience.</p>
+
+        <h3>Can I delete my account?</h3>
+        <p>Yes, you can permanently delete your account and all data using the "Delete My Account" option in the guide modal (accessible via "i" button).</p>
+
+        <h3>Is my data safe?</h3>
+        <p>Yes! We use Google Firebase for secure cloud storage with encryption. Your data is protected and never shared with third parties.</p>
+
+        <h3>Can I use this for multiple classes?</h3>
+        <p>Currently, each CR account is designed for one class. You can manage multiple subjects within that class. For multiple classes, you'd need separate accounts.</p>
+
+        <div class="highlight-box" style="margin-top: 40px;">
+            <p>💡 <strong>Pro Tip:</strong> Bookmark this page for quick access to system information. Share it with new users to help them understand the platform better!</p>
+        </div>
+
+        <h2>Acknowledgments</h2>
+        <p>This project wouldn't be possible without:</p>
+        <ul>
+            <li><strong>Google Firebase:</strong> For providing reliable, scalable cloud infrastructure</li>
+            <li><strong>QRCode.js:</strong> For the excellent QR code generation library</li>
+            <li><strong>SheetJS:</strong> For powerful Excel file handling capabilities</li>
+            <li><strong>Open Source Community:</strong> For countless resources and inspiration</li>
+            <li><strong>Early Users:</strong> For valuable feedback and suggestions</li>
+        </ul>
+
+        <h2>Version History</h2>
+        <ul>
+            <li><strong>Version 2.0 (October 2025):</strong> 
+                <ul style="margin-top: 8px;">
+                    <li>Added subject management page</li>
+                    <li>Enhanced security with OTP verification</li>
+                    <li>Improved mobile responsiveness</li>
+                    <li>Added account deletion feature</li>
+                    <li>Better error handling and user feedback</li>
+                </ul>
+            </li>
+            <li><strong>Version 1.0 (Initial Release):</strong>
+                <ul style="margin-top: 8px;">
+                    <li>Core attendance marking functionality</li>
+                    <li>QR code generation</li>
+                    <li>Excel export</li>
+                    <li>Student management</li>
+                    <li>Attendance history</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h2>Testimonials</h2>
+        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+            <p style="font-style: italic; color: #4a5568; margin-bottom: 12px;">"This system has transformed how we manage attendance. What used to take 10 minutes now takes less than a minute. Highly recommended!"</p>
+            <p style="color: #718096; font-size: 14px; margin: 0;"><strong>— Sample User Feedback</strong></p>
+        </div>
+
+        <h2>Join Our Community</h2>
+        <p>Stay updated with the latest features, tips, and announcements:</p>
+        <ul>
+            <li>Follow us on <a href="https://www.instagram.com/yesss.shivam/" target="_blank">Instagram</a> for updates</li>
+            <li>Connect on <a href="https://www.linkedin.com/in/shivam-mahto-046228361" target="_blank">LinkedIn</a> for professional networking</li>
+            <li>Subscribe to our newsletter (coming soon!)</li>
+            <li>Share your feedback and suggestions via <a href="contact.html">contact form</a></li>
+        </ul>
+
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 32px; border-radius: 12px; margin: 40px 0; text-align: center; color: white;">
+            <h3 style="color: white; margin-top: 0; font-size: 24px;">Ready to Transform Your Attendance System?</h3>
+            <p style="color: rgba(255,255,255,0.9); margin-bottom: 24px; font-size: 16px;">Join hundreds of satisfied users who have already made the switch to digital attendance.</p>
+            <a href="index.html" class="social-btn" style="background: white; color: #667eea; display: inline-block;">🎯 Start Free Today</a>
+        </div>
+
+        <footer>
+            <div class="footer-links">
+                <a href="index.html">Home</a>
+                <a href="privacy-policy.html">Privacy Policy</a>
+                <a href="terms.html">Terms & Conditions</a>
+                <a href="contact.html">Contact</a>
+            </div>
+            <p class="copyright">&copy; 2025 QR Attendance System. All rights reserved.</p>
+            <p style="color: #718096; font-size: 13px; margin-top: 8px;">Developed with ❤️ by Shivam Kumar Mahto</p>
+        </footer>
+    </div>
+</body>
+</html>
