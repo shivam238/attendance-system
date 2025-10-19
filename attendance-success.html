@@ -116,11 +116,15 @@
             color: #1a202c;
             font-weight: 700;
         }
-        .close-btn {
-            width: 100%;
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            animation: fadeIn 0.5s ease-out 1s both;
+        }
+        .close-btn, .feedback-btn {
+            flex: 1;
             padding: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
             border: none;
             border-radius: 12px;
             font-size: 16px;
@@ -129,14 +133,25 @@
             transition: all 0.3s;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            animation: fadeIn 0.5s ease-out 1s both;
+        }
+        .close-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
         }
         .close-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
         }
+        .feedback-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+        .feedback-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+        }
         .note {
-            margin-top: 24px;
+            margin-top: 0;
             padding: 16px;
             background: #eff6ff;
             border-radius: 8px;
@@ -149,6 +164,9 @@
             .success-container { padding: 32px 24px; }
             h1 { font-size: 24px; }
             .success-message { font-size: 16px; }
+            .button-group {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -168,7 +186,10 @@
             <!-- Details will be populated by JavaScript -->
         </div>
         
-        <button class="close-btn" onclick="closeWindow()">Close Window</button>
+        <div class="button-group">
+            <button class="close-btn" onclick="closeWindow()">Close Window</button>
+            <button class="feedback-btn" onclick="openFeedback()">📝 Feedback</button>
+        </div>
         
         <div class="note">
             ℹ️ <strong>Note:</strong> You can safely close this window now. Your attendance has been saved in the system.
@@ -212,6 +233,11 @@
             setTimeout(() => {
                 window.location.href = 'about:blank';
             }, 100);
+        }
+
+        function openFeedback() {
+            // Open Google Form in new tab
+            window.open('https://docs.google.com/forms/d/e/1FAIpQLSfsiJg1GfE9Ta1s0Q8THFT5FuJvFPN3w28-4fW6eLpLP3biZQ/viewform?usp=header', '_blank');
         }
     </script>
 </body>
