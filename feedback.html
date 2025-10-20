@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Form | QR Attendance System</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            animation: fadeIn 0.4s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        h1 {
+            color: #667eea;
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+        p {
+            color: #718096;
+            font-size: 15px;
+            margin-bottom: 32px;
+        }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2d3748;
+            font-size: 14px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        textarea { resize: vertical; min-height: 100px; }
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .message {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #16a34a;
+            background: #dcfce7;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .star-rating {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+        .star {
+            font-size: 36px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #e2e8f0;
+        }
+        .star:hover,
+        .star.active {
+            color: #fbbf24;
+            transform: scale(1.2);
+        }
+        .rating-label {
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            margin-top: 8px;
+            min-height: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="container">
+        <h1>📝 Feedback Form</h1>
+        <p>Your feedback helps us improve the QR Attendance System!</p>
+        
+        <form id="feedback-form">
+            <div class="form-group">
+                <label for="name">Full Name *</label>
+                <input type="text" id="name" placeholder="Enter your full name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email (optional)</label>
+                <input type="email" id="email" placeholder="Enter your email">
+            </div>
+
+            <div class="form-group">
+                <label for="college">College/Institution *</label>
+                <input type="text" id="college" placeholder="e.g., DTU" required>
+            </div>
+
+            <div class="form-group">
+                <label for="branch">Branch/Department *</label>
+                <input type="text" id="branch" placeholder="e.g., Computer Science" required>
+            </div>
+
+            <div class="form-group">
+                <label for="role">You are a: *</label>
+                <select id="role" required>
+                    <option value="">Select your role</option>
+                    <option value="CR">CR (Class Representative)</option>
+                    <option value="Student">Student</option>
+                    <option value="Teacher">Teacher</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>How would you rate our system? *</label>
+                <div class="star-rating" id="star-rating">
+                    <span class="star" data-rating="1">⭐</span>
+                    <span class="star" data-rating="2">⭐</span>
+                    <span class="star" data-rating="3">⭐</span>
+                    <span class="star" data-rating="4">⭐</span>
+                    <span class="star" data-rating="5">⭐</span>
+                </div>
+                <div class="rating-label" id="rating-label"></div>
+                <input type="hidden" id="rating" required>
+            </div>
+
+            <div class="form-group">
+                <label for="feedback">Your Comments / Suggestions *</label>
+                <textarea id="feedback" placeholder="Write your feedback here..." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="improvements">What features would you like to see?</label>
+                <textarea id="improvements" placeholder="Suggest new features or improvements..."></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn">Submit Feedback</button>
+        </form>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAqe1sudjw-ATS_bv7f3pNyqAK_sw26cr4",
+            authDomain: "qr-attendance-system-a8a8a.firebaseapp.com",
+            databaseURL: "https://qr-attendance-10d7d-default-rtdb.firebaseio.com",
+            projectId: "qr-attendance-system-a8a8a",
+            storageBucket: "qr-attendance-system-a8a8a.firebasestorage.app",
+            messagingSenderId: "81759182063",
+            appId: "1:81759182063:web:37f3ec343d251c30dd191a"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const stars = document.querySelectorAll('.star');
+        const ratingInput = document.getElementById('rating');
+        const ratingLabel = document.getElementById('rating-label');
+        const ratingLabels = {
+            1: '😞 Poor',
+            2: '😐 Fair',
+            3: '🙂 Good',
+            4: '😊 Very Good',
+            5: '🤩 Excellent'
+        };
+
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = this.dataset.rating;
+                ratingInput.value = rating;
+                stars.forEach(s => s.classList.remove('active'));
+                for (let i = 0; i < rating; i++) stars[i].classList.add('active');
+                ratingLabel.textContent = ratingLabels[rating];
+            });
+            star.addEventListener('mouseenter', function() {
+                const rating = this.dataset.rating;
+                stars.forEach(s => s.classList.remove('active'));
+                for (let i = 0; i < rating; i++) stars[i].classList.add('active');
+                ratingLabel.textContent = ratingLabels[rating];
+            });
+        });
+
+        document.getElementById('star-rating').addEventListener('mouseleave', function() {
+            const currentRating = ratingInput.value;
+            stars.forEach(s => s.classList.remove('active'));
+            if (currentRating) {
+                for (let i = 0; i < currentRating; i++) stars[i].classList.add('active');
+                ratingLabel.textContent = ratingLabels[currentRating];
+            } else {
+                ratingLabel.textContent = '';
+            }
+        });
+
+        document.getElementById('feedback-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = document.querySelector('.submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
+            const feedbackData = {
+                name: document.getElementById('name').value.trim(),
+                email: document.getElementById('email').value.trim() || 'Not provided',
+                college: document.getElementById('college').value.trim(),
+                branch: document.getElementById('branch').value.trim(),
+                role: document.getElementById('role').value,
+                rating: parseInt(document.getElementById('rating').value),
+                feedback: document.getElementById('feedback').value.trim(),
+                improvements: document.getElementById('improvements').value.trim() || 'None',
+                timestamp: Date.now(),
+                date: new Date().toLocaleString('en-IN'),
+                userAgent: navigator.userAgent
+            };
+
+            if (!feedbackData.rating) {
+                alert('❌ Please select a rating.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Feedback';
+                return;
+            }
+
+            db.ref('feedbacks').push(feedbackData)
+                .then(() => {
+                    document.getElementById('container').innerHTML = `
+                        <div class="message">✅ Thank you for your feedback!</div>
+                    `;
+                })
+                .catch((error) => {
+                    alert('Error: ' + error.message);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Feedback';
+                });
+        });
+    </script>
+</body>
+</html>
