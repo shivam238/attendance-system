@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coming Soon | QR Attendance System</title>
     <link rel="icon" type="image/png" href="logo.png">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -189,6 +191,208 @@
             font-weight: 600;
         }
 
+        /* PRE-REGISTRATION BUTTON - NEW! */
+        .prereg-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            margin: 30px auto;
+            display: block;
+            animation: fadeIn 1s ease-out 1.2s both, glow 2s infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3); }
+            50% { box-shadow: 0 12px 32px rgba(16, 185, 129, 0.6); }
+        }
+
+        .prereg-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(16, 185, 129, 0.5);
+        }
+
+        /* PRE-REGISTRATION MODAL */
+        .prereg-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .prereg-modal.active {
+            display: flex;
+        }
+
+        .prereg-modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideUp 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .prereg-modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.1);
+            border: none;
+            color: #ef4444;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .prereg-modal-close:hover {
+            background: #ef4444;
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .prereg-modal-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #667eea;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .prereg-modal-subtitle {
+            color: #4a5568;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2d3748;
+            font-size: 14px;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .info-text {
+            background: #eff6ff;
+            color: #1e40af;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin: 16px 0;
+            border-left: 4px solid #3b82f6;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        .copy-prompt-btn {
+            background: #10b981;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 8px;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+
+        .copy-prompt-btn:hover {
+            background: #059669;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 16px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            display: block;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+
         .feature-modal {
             display: none;
             position: fixed;
@@ -218,17 +422,6 @@
             position: relative;
             animation: slideUp 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px) scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
         }
 
         .feature-modal-close {
@@ -428,26 +621,6 @@
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
         }
 
-        .message {
-            margin-top: 16px;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 600;
-            display: none;
-        }
-
-        .message.success {
-            background: #d1fae5;
-            color: #065f46;
-            display: block;
-        }
-
-        .message.error {
-            background: #fee2e2;
-            color: #991b1b;
-            display: block;
-        }
-
         .beta-modal {
             display: none;
             position: fixed;
@@ -479,14 +652,8 @@
         }
 
         @keyframes betaSlideUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px) scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
+            from { opacity: 0; transform: translateY(50px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .beta-modal-close {
@@ -538,10 +705,6 @@
             line-height: 1.6;
         }
 
-        .beta-input-group {
-            margin-bottom: 24px;
-        }
-
         .beta-input {
             width: 100%;
             padding: 16px 20px;
@@ -554,6 +717,7 @@
             font-weight: 700;
             letter-spacing: 2px;
             transition: all 0.3s;
+            margin-bottom: 24px;
         }
 
         .beta-input:focus {
@@ -561,11 +725,6 @@
             border-color: white;
             background: white;
             box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
-        }
-
-        .beta-input::placeholder {
-            color: #a0aec0;
-            letter-spacing: normal;
         }
 
         .beta-submit-btn {
@@ -589,34 +748,6 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
         }
 
-        .beta-message {
-            margin-top: 20px;
-            padding: 14px;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 15px;
-            display: none;
-        }
-
-        .beta-message.success {
-            background: #d1fae5;
-            color: #065f46;
-            display: block;
-        }
-
-        .beta-message.error {
-            background: #fee2e2;
-            color: #991b1b;
-            display: block;
-        }
-
-        .beta-hint {
-            margin-top: 16px;
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.7);
-            font-style: italic;
-        }
-
         @media (max-width: 768px) {
             .launch-card { padding: 40px 24px; }
             h1 { font-size: 32px; }
@@ -625,8 +756,9 @@
             .countdown-number { font-size: 36px; }
             .notify-input { flex-direction: column; }
             .social-links { flex-direction: column; }
-            .feature-modal-content { padding: 32px 24px; }
+            .feature-modal-content, .prereg-modal-content { padding: 32px 24px; }
             .features { grid-template-columns: repeat(2, 1fr); }
+            .prereg-btn { font-size: 16px; padding: 16px 32px; }
         }
     </style>
 </head>
@@ -668,6 +800,12 @@
                 </div>
             </div>
 
+            <!-- PRE-REGISTRATION BUTTON - NEW! -->
+            <button class="prereg-btn" onclick="openPreRegModal()">🎓 Pre-Register Your Class Now!</button>
+            <p style="color: #718096; font-size: 14px; margin-top: 12px;">
+                Register abhi, Login 26 Oct se! 🚀
+            </p>
+
             <div class="features">
                 <div class="feature-item" onclick="openFeatureModal('qr')">
                     <div class="feature-icon">📱</div>
@@ -690,9 +828,9 @@
                     <div class="feature-text">About System</div>
                 </div>
                 <div class="feature-item" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSfsiJg1GfE9Ta1s0Q8THFT5FuJvFPN3w28-4fW6eLpLP3biZQ/viewform?usp=header', '_blank')">
-    <div class="feature-icon">📝</div>
-    <div class="feature-text">Form</div>
-</div>
+                    <div class="feature-icon">📝</div>
+                    <div class="feature-text">Form</div>
+                </div>
             </div>
 
             <div class="notify-section">
@@ -720,6 +858,62 @@
         </div>
     </div>
 
+    <!-- PRE-REGISTRATION MODAL -->
+    <div id="prereg-modal" class="prereg-modal">
+        <div class="prereg-modal-content">
+            <button class="prereg-modal-close" onclick="closePreRegModal()">&times;</button>
+            <h2 class="prereg-modal-title">🎓 Pre-Register Your Class</h2>
+            <p class="prereg-modal-subtitle">
+                Register kar lo abhi! Launch hote hi seedha login karke use karo 🚀<br>
+                <strong>Login 26 October 11 AM se activate hoga</strong>
+            </p>
+
+            <div class="form-group">
+                <label>Passout Year (Last 2 digits)</label>
+                <input type="text" id="reg-year" placeholder="e.g., 29 (for 2029)" maxlength="2">
+            </div>
+            <div class="form-group">
+                <label>College</label>
+                <input type="text" id="reg-college" placeholder="e.g., DTU">
+            </div>
+            <div class="form-group">
+                <label>Branch</label>
+                <input type="text" id="reg-branch" placeholder="e.g., CSE">
+            </div>
+            <div class="form-group">
+                <label>Section</label>
+                <input type="text" id="reg-section" placeholder="e.g., 5">
+            </div>
+            <div class="form-group">
+                <label>CR Mobile Number (for OTP verification)</label>
+                <input type="tel" id="reg-phone" placeholder="e.g., 9876543210" maxlength="10">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="reg-password" placeholder="Create password">
+            </div>
+            <div class="form-group">
+                <label>Subjects (one per line)</label>
+                <textarea id="reg-subjects" rows="4" placeholder="MATHEMATICS-1&#10;PHYSICS&#10;BASIC CIVIL ENGINEERING"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Students (format: Name - Roll Number, one per line)</label>
+                <textarea id="reg-students" rows="6" placeholder="JOHN DOE - 25/B09/001&#10;JANE SMITH - 25/B09/002&#10;AMIT KUMAR - 25/B09/003"></textarea>
+                <button class="copy-prompt-btn" onclick="copyStudentPrompt()">📋 Copy ChatGPT Prompt</button>
+            </div>
+            <div class="info-text">
+                ℹ️ Username format: PASSOUT_YEAR+COLLEGE+BRANCH+SECTION<br>
+                Example: If passout year is 2029, enter 29 → Username: <strong>29DTUCSE5</strong><br><br>
+                📝 Student format: NAME - ROLLNO (one per line)<br><br>
+                💡 Click "Copy ChatGPT Prompt" button, paste in ChatGPT with your student list, then copy result here!<br><br>
+                🔐 <strong>Login 26 October 2025, 11:00 AM se activate hoga!</strong>
+            </div>
+            <button class="btn-submit" onclick="registerUser()">🎯 Pre-Register Class</button>
+            <div id="register-message"></div>
+        </div>
+    </div>
+
+    <!-- FEATURE MODAL -->
     <div id="feature-modal" class="feature-modal">
         <div class="feature-modal-content">
             <button class="feature-modal-close" onclick="closeFeatureModal()">&times;</button>
@@ -734,6 +928,7 @@
         </div>
     </div>
 
+    <!-- BETA MODAL -->
     <div id="beta-modal" class="beta-modal">
         <div class="beta-modal-content">
             <button class="beta-modal-close" onclick="closeBetaModal()">&times;</button>
@@ -742,84 +937,29 @@
             <p class="beta-modal-text">
                 Early access ke liye secret beta code enter karo!
             </p>
-            <div class="beta-input-group">
-                <input type="text" id="beta-code-input" class="beta-input" placeholder="Enter Beta Code" maxlength="20">
-            </div>
+            <input type="text" id="beta-code-input" class="beta-input" placeholder="Enter Beta Code" maxlength="20">
             <button class="beta-submit-btn" onclick="checkBetaCode()">🚀 Unlock Access</button>
-            <div id="beta-message" class="beta-message"></div>
-            <p class="beta-hint">✨ Hint: Only special users have this code</p>
+            <div id="beta-message" class="message"></div>
+            <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-top: 16px; font-style: italic;">
+                ✨ Hint: Only special users have this code
+            </p>
         </div>
     </div>
 
     <script>
         const BETA_CODES = ['SHIVAM2025'];
-
-        function openBetaModal() {
-            document.getElementById('beta-modal').classList.add('active');
-            document.getElementById('beta-code-input').focus();
-            document.getElementById('beta-message').style.display = 'none';
-            document.getElementById('beta-code-input').value = '';
-        }
-
-        function closeBetaModal() {
-            document.getElementById('beta-modal').classList.remove('active');
-            document.getElementById('beta-message').style.display = 'none';
-        }
-
-        function checkBetaCode() {
-            const input = document.getElementById('beta-code-input').value.trim().toUpperCase();
-            const msgDiv = document.getElementById('beta-message');
-
-            if (!input) {
-                msgDiv.className = 'beta-message error';
-                msgDiv.textContent = '⚠️ Please enter a code';
-                return;
-            }
-
-            if (BETA_CODES.includes(input)) {
-                msgDiv.className = 'beta-message success';
-                msgDiv.textContent = '✅ Code verified! Redirecting...';
-                sessionStorage.setItem('betaAccess', 'granted');
-                sessionStorage.setItem('betaTimestamp', new Date().getTime().toString());
-                setTimeout(() => {
-                    window.location.href = 'main.html';
-                }, 1500);
-            } else {
-                msgDiv.className = 'beta-message error';
-                msgDiv.textContent = '❌ Invalid code. Try again!';
-                document.getElementById('beta-code-input').value = '';
-                document.getElementById('beta-code-input').focus();
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const betaInput = document.getElementById('beta-code-input');
-            if (betaInput) {
-                betaInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') checkBetaCode();
-                });
-            }
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                if (document.getElementById('beta-modal').classList.contains('active')) {
-                    closeBetaModal();
-                }
-                if (document.getElementById('feature-modal').classList.contains('active')) {
-                    closeFeatureModal();
-                }
-            }
-        });
-
         const launchDate = new Date('2025-10-26T11:00:00+05:30').getTime();
 
+        // Countdown Timer - START IMMEDIATELY
         function updateCountdown() {
             const now = new Date().getTime();
             const distance = launchDate - now;
 
             if (distance < 0) {
-                window.location.href = 'main.html';
+                document.getElementById('days').textContent = '00';
+                document.getElementById('hours').textContent = '00';
+                document.getElementById('minutes').textContent = '00';
+                document.getElementById('seconds').textContent = '00';
                 return;
             }
 
@@ -834,9 +974,191 @@
             document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
         }
 
+        // Start countdown immediately
         updateCountdown();
         setInterval(updateCountdown, 1000);
 
+        // Initialize Firebase AFTER countdown starts
+        const firebaseConfig = {
+            apiKey: "AIzaSyAqe1sudjw-ATS_bv7f3pNyqAK_sw26cr4",
+            authDomain: "qr-attendance-system-a8a8a.firebaseapp.com",
+            databaseURL: "https://qr-attendance-10d7d-default-rtdb.firebaseio.com",
+            projectId: "qr-attendance-system-a8a8a",
+            storageBucket: "qr-attendance-system-a8a8a.firebasestorage.app",
+            messagingSenderId: "81759182063",
+            appId: "1:81759182063:web:37f3ec343d251c30dd191a"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Pre-Registration Modal
+        function openPreRegModal() {
+            document.getElementById('prereg-modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePreRegModal() {
+            document.getElementById('prereg-modal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Copy Student Prompt
+        function copyStudentPrompt() {
+            const prompt = `Please format the following student list in this exact format only, with no additional text or explanation:
+
+NAME - ROLLNO
+NAME - ROLLNO
+
+Rules:
+- Each line must have: NAME - ROLLNO (with space-dash-space between)
+- NAME should be in UPPERCASE
+- ROLLNO should be in UPPERCASE
+- One student per line
+- No numbering, bullets, or extra formatting
+- Only output the formatted list, nothing else
+
+Example output format:
+JOHN DOE - 25/B09/001
+JANE SMITH - 25/B09/002
+AMIT KUMAR - 25/B09/003
+
+Now format this student list:
+[Paste your student list here]`;
+
+            navigator.clipboard.writeText(prompt).then(() => {
+                alert('✅ Prompt copied! Now:\n1. Open ChatGPT\n2. Paste this prompt\n3. Add your student list\n4. Copy the result\n5. Paste in the Students field above');
+            }).catch(() => {
+                alert('❌ Failed to copy. Please try again.');
+            });
+        }
+
+        // Pre-Registration Function
+        function registerUser() {
+            const year = document.getElementById('reg-year').value.trim();
+            const college = document.getElementById('reg-college').value.trim().toUpperCase();
+            const branch = document.getElementById('reg-branch').value.trim().toUpperCase();
+            const section = document.getElementById('reg-section').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const subjects = document.getElementById('reg-subjects').value.trim().split('\n').filter(s => s.trim());
+            const studentsInput = document.getElementById('reg-students').value.trim().split('\n').filter(s => s.trim());
+
+            const msgDiv = document.getElementById('register-message');
+
+            if (!year || !college || !branch || !section || !phone || !password || subjects.length === 0) {
+                msgDiv.innerHTML = '<div class="message error">❌ Please fill all required fields</div>';
+                setTimeout(() => msgDiv.innerHTML = '', 3000);
+                return;
+            }
+
+            if (phone.length !== 10 || !/^\d+$/.test(phone)) {
+                msgDiv.innerHTML = '<div class="message error">❌ Invalid mobile number (must be 10 digits)</div>';
+                setTimeout(() => msgDiv.innerHTML = '', 3000);
+                return;
+            }
+
+            const students = [];
+            if (studentsInput.length > 0) {
+                for (let line of studentsInput) {
+                    const parts = line.split('-').map(p => p.trim());
+                    if (parts.length === 2) {
+                        const name = parts[0].toUpperCase();
+                        const rollNo = parts[1].toUpperCase();
+                        if (name && rollNo) {
+                            students.push({ name, rollNo });
+                        }
+                    } else {
+                        msgDiv.innerHTML = '<div class="message error">❌ Invalid student format. Use: NAME - ROLLNO</div>';
+                        setTimeout(() => msgDiv.innerHTML = '', 3000);
+                        return;
+                    }
+                }
+            }
+
+            const username = year + college + branch + section;
+
+            db.ref('users/' + username).once('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    msgDiv.innerHTML = '<div class="message error">⚠️ Class already registered</div>';
+                    setTimeout(() => msgDiv.innerHTML = '', 3000);
+                    return;
+                }
+
+                db.ref('users/' + username).set({
+                    year, college, branch, section, phone, password,
+                    subjects: subjects,
+                    students: students,
+                    createdAt: Date.now(),
+                    preRegistered: true
+                }).then(() => {
+                    msgDiv.innerHTML = `<div class="message success">✅ Pre-Registration Successful!<br><br>
+                        📱 <strong>Username:</strong> ${username}<br>
+                        👥 <strong>Students added:</strong> ${students.length}<br><br>
+                        🔐 <strong>Login will be activated on October 26, 2025 at 11:00 AM IST</strong><br><br>
+                        💡 Save your username and password!</div>`;
+                    
+                    document.getElementById('reg-year').value = '';
+                    document.getElementById('reg-college').value = '';
+                    document.getElementById('reg-branch').value = '';
+                    document.getElementById('reg-section').value = '';
+                    document.getElementById('reg-phone').value = '';
+                    document.getElementById('reg-password').value = '';
+                    document.getElementById('reg-subjects').value = '';
+                    document.getElementById('reg-students').value = '';
+                }).catch((error) => {
+                    msgDiv.innerHTML = '<div class="message error">❌ Error: ' + error.message + '</div>';
+                    setTimeout(() => msgDiv.innerHTML = '', 3000);
+                });
+            });
+        }
+
+        // Beta Access
+        function openBetaModal() {
+            document.getElementById('beta-modal').classList.add('active');
+            document.getElementById('beta-code-input').focus();
+            document.getElementById('beta-message').style.display = 'none';
+            document.getElementById('beta-code-input').value = '';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeBetaModal() {
+            document.getElementById('beta-modal').classList.remove('active');
+            document.getElementById('beta-message').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function checkBetaCode() {
+            const input = document.getElementById('beta-code-input').value.trim().toUpperCase();
+            const msgDiv = document.getElementById('beta-message');
+
+            if (!input) {
+                msgDiv.className = 'message error';
+                msgDiv.textContent = '⚠️ Please enter a code';
+                return;
+            }
+
+            if (BETA_CODES.includes(input)) {
+                msgDiv.className = 'message success';
+                msgDiv.textContent = '✅ Code verified! Redirecting...';
+                sessionStorage.setItem('betaAccess', 'granted');
+                sessionStorage.setItem('betaTimestamp', new Date().getTime().toString());
+                setTimeout(() => {
+                    window.location.href = 'main.html';
+                }, 1500);
+            } else {
+                msgDiv.className = 'message error';
+                msgDiv.textContent = '❌ Invalid code. Try again!';
+                document.getElementById('beta-code-input').value = '';
+                document.getElementById('beta-code-input').focus();
+            }
+        }
+
+        document.getElementById('beta-code-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkBetaCode();
+        });
+
+        // Notify Me
         const notifyEmails = [];
         
         function notifyMe() {
@@ -879,6 +1201,7 @@
             }
         });
 
+        // Feature Modal
         const featureData = {
             qr: {
                 icon: '📱',
@@ -959,10 +1282,27 @@
             document.body.style.overflow = 'auto';
         }
 
-        document.getElementById('feature-modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeFeatureModal();
+        // Close modals on ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (document.getElementById('beta-modal').classList.contains('active')) {
+                    closeBetaModal();
+                }
+                if (document.getElementById('feature-modal').classList.contains('active')) {
+                    closeFeatureModal();
+                }
+                if (document.getElementById('prereg-modal').classList.contains('active')) {
+                    closePreRegModal();
+                }
             }
+        });
+
+        // Close modals on outside click
+        document.getElementById('feature-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeFeatureModal();
+        });
+        document.getElementById('prereg-modal').addEventListener('click', function(e) {
+            if (e.target === this) closePreRegModal();
         });
     </script>
 </body>

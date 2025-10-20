@@ -238,7 +238,44 @@
     </style>
 </head>
 <body>
-        <script>
+    
+    <!-- LOGIN LAUNCH DATE CHECK - ADD THIS NEW CODE -->
+    <script>
+    (function() {
+        const launchDate = new Date('2025-10-26T11:00:00+05:30').getTime();
+        const now = new Date().getTime();
+        
+        // Check if this is student attendance link (QR scan)
+        const urlParams = new URLSearchParams(window.location.search);
+        const hasAttendanceCode = urlParams.has('code');
+        
+        // Allow students to mark attendance anytime
+        if (hasAttendanceCode) {
+            return; // Exit - allow student attendance
+        }
+        
+        // Check beta access
+        const betaAccess = sessionStorage.getItem('betaAccess');
+        const betaTimestamp = sessionStorage.getItem('betaTimestamp');
+        const BETA_VALIDITY = 7 * 24 * 60 * 60 * 1000; // 7 days
+        
+        // If beta access is valid, allow login
+        if (betaAccess === 'granted' && betaTimestamp && 
+            (now - parseInt(betaTimestamp)) <= BETA_VALIDITY) {
+            return; // Exit - allow beta access
+        }
+        
+        // Check if launch date has NOT passed yet
+        if (now < launchDate) {
+            // Block login - redirect to coming soon
+            alert('⏰ Login will be activated on October 26, 2025 at 11:00 AM IST.\n\n✅ Pre-registration is live! Go back to register your class.');
+            window.location.href = 'coming-soon.html';
+        }
+    })();
+    </script>
+
+    <!-- YOUR EXISTING BETA CHECK CODE BELOW - KEEP AS IS -->
+    <script>
         (function() {
             // Check if this is student attendance link
             const urlParams = new URLSearchParams(window.location.search);
