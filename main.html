@@ -161,6 +161,75 @@
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(255, 255, 255, 0.4);
 }
+.request-card {
+    background: #fff3cd;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    border-left: 4px solid #f59e0b;
+}
+.request-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.request-subject {
+    font-weight: 600;
+    color: #1a202c;
+    font-size: 16px;
+}
+.request-late {
+    color: #dc3545;
+    font-size: 12px;
+    font-weight: 600;
+}
+.request-student {
+    color: #4a5568;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+.request-time {
+    color: #718096;
+    font-size: 12px;
+    margin-bottom: 12px;
+}
+.request-actions {
+    display: flex;
+    gap: 8px;
+}
+.approve-btn, .reject-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+}
+.approve-btn {
+    background: #10b981;
+    color: white;
+}
+.approve-btn:hover {
+    background: #059669;
+}
+.reject-btn {
+    background: #ef4444;
+    color: white;
+}
+.reject-btn:hover {
+    background: #dc2626;
+}
+.badge {
+    background: #ef4444;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: bold;
+    margin-left: 6px;
+}
 
         .header-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; }
         .info-btn { background: #667eea; color: white; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3); transition: all 0.3s; flex-shrink: 0; }
@@ -235,6 +304,7 @@
         .danger-zone { background: #fee2e2; padding: 16px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #ef4444; }
         .danger-title { color: #991b1b; font-weight: 700; margin-bottom: 8px; }
         .danger-text { color: #7f1d1d; font-size: 13px; margin-bottom: 12px; line-height: 1.6; }
+        
     </style>
 </head>
 <body>
@@ -406,6 +476,8 @@
                     <button class="tab-btn active" onclick="switchAppTab('cr')">CR</button>
                     <button class="tab-btn" onclick="switchAppTab('students')">Students</button>
                     <button class="tab-btn" onclick="switchAppTab('history')">History</button>
+                    <button class="tab-btn" onclick="switchAppTab('requests')">Requests</button>
+
                 </div>
 
                 <!-- CR TAB -->
@@ -459,10 +531,19 @@
                     <div id="students-list" class="student-list"></div>
                 </div>
 
-                <!-- HISTORY TAB -->
+<!-- HISTORY TAB -->
                 <div id="history-tab" class="tab">
                     <h3 style="margin-bottom: 16px; font-weight: 600;">Attendance History</h3>
                     <div id="history-container"></div>
+                </div>
+
+                <!-- REQUESTS TAB -->
+                <div id="requests-tab" class="tab">
+                    <h3 style="margin-bottom: 16px; font-weight: 600;">Late Attendance Requests</h3>
+                    <div class="info-text">
+                        ⏰ Students who scanned after 5 minutes of QR generation
+                    </div>
+                    <div id="requests-container"></div>
                 </div>
             </div>
         </div>
@@ -929,18 +1010,191 @@ Now format this student list:
             loadStudents();
             renderHistory();
         }
+        function renderHistory() {
+            const container = document.getElementById('history-container');
 
-        function switchAppTab(tab) {
-            document.querySelectorAll('#app-screen .tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('#app-screen .tab-btn').forEach(b => b.classList.remove('active'));
-            
-            const index = tab === 'cr' ? 0 : (tab === 'students' ? 1 : 2);
-            document.querySelectorAll('#app-screen .tab')[index].classList.add('active');
-            document.querySelectorAll('#app-screen .tab-btn')[index].classList.add('active');
+            db.ref('attendance').orderByKey().startAt(currentUser.username).endAt(currentUser.username + '\uf8ff').once('value', (snapshot) => {
+                const data = snapshot.val();
+                
+                if (!data) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div>No history yet</div></div>';
+                    return;
+                }
 
-            if (tab === 'students') loadStudents();
-            if (tab === 'history') renderHistory();
+                const grouped = {};
+                
+                Object.entries(data).forEach(([key, records]) => {
+                    const parts = key.split('_');
+                    if (parts[0] !== currentUser.username) return;
+                    
+                    const date = parts[1];
+                    const subject = parts.slice(2).join('_');
+
+                    if (!grouped[subject]) {
+                        grouped[subject] = [];
+                    }
+
+                    const recordsArray = Object.values(records);
+                    grouped[subject].push({ date, count: recordsArray.length });
+                });
+
+                let html = '';
+                Object.entries(grouped).forEach(([subject, entries]) => {
+                    html += `<h3 style="margin-top: 20px; margin-bottom: 12px; color: #667eea; font-weight: 600; font-size: 14px;">${subject}</h3>`;
+                    
+                    entries.sort((a, b) => b.date.localeCompare(a.date));
+                    
+                    entries.forEach(entry => {
+                        html += `
+                            <div class="history-card">
+                                <div class="history-date">📅 ${entry.date}</div>
+                                <div class="history-count">👥 ${entry.count} students present</div>
+                            </div>
+                        `;
+                    });
+                });
+
+                if (html === '') {
+                    html = '<div class="empty-state"><div class="empty-icon">📊</div><div>No history yet</div></div>';
+                }
+
+                container.innerHTML = html;
+            });
         }
+
+        // 👇👇👇 YAHAN SE ADD KARO 👇👇👇
+
+        function renderRequests() {
+            const container = document.getElementById('requests-container');
+            const today = new Date().toISOString().split('T')[0];
+
+            db.ref('requests').orderByKey().startAt(currentUser.username).endAt(currentUser.username + '\uf8ff').once('value', (snapshot) => {
+                const data = snapshot.val();
+                
+                if (!data) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>No requests today</div></div>';
+                    return;
+                }
+
+                const grouped = {};
+                let totalPending = 0;
+
+                Object.entries(data).forEach(([key, requests]) => {
+                    const parts = key.split('_');
+                    if (parts[0] !== currentUser.username || parts[1] !== today) return;
+                    
+                    const subject = parts.slice(2).join('_');
+
+                    if (!grouped[subject]) {
+                        grouped[subject] = [];
+                    }
+
+                    Object.entries(requests).forEach(([reqId, request]) => {
+                        if (request.status === 'pending') {
+                            totalPending++;
+                            grouped[subject].push({ reqId, key, ...request });
+                        }
+                    });
+                });
+
+                let html = '';
+                
+                if (totalPending === 0) {
+                    html = '<div class="empty-state"><div class="empty-icon">✅</div><div>No pending requests</div></div>';
+                } else {
+                    Object.entries(grouped).forEach(([subject, requests]) => {
+                        html += `<h3 style="margin-top: 20px; margin-bottom: 12px; color: #667eea; font-weight: 600; font-size: 14px;">${subject} <span class="badge">${requests.length}</span></h3>`;
+                        
+                        requests.forEach(request => {
+                            html += `
+                                <div class="request-card">
+                                    <div class="request-header">
+                                        <span class="request-subject">${request.name}</span>
+                                        <span class="request-late">${request.lateBy} min late</span>
+                                    </div>
+                                    <div class="request-student">Roll: ${request.rollNo}</div>
+                                    <div class="request-time">Requested at: ${request.requestTime}</div>
+                                    <div class="request-actions">
+                                        <button class="approve-btn" onclick="approveRequest('${request.key}', '${request.reqId}', '${request.rollNo}', '${request.name}', '${subject}')">
+                                            ✅ Approve
+                                        </button>
+                                        <button class="reject-btn" onclick="rejectRequest('${request.key}', '${request.reqId}')">
+                                            ❌ Reject
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    });
+                }
+
+                container.innerHTML = html;
+            });
+        }
+
+        function approveRequest(key, reqId, rollNo, name, subject) {
+            if (!confirm(`Approve attendance for ${name} (${rollNo})?`)) return;
+
+            const attendanceData = {
+                rollNo: rollNo,
+                name: name,
+                time: new Date().toLocaleTimeString('en-IN'),
+                timestamp: Date.now(),
+                lateApproval: true
+            };
+
+            db.ref('attendance/' + key).push(attendanceData).then(() => {
+                return db.ref('requests/' + key + '/' + reqId).update({
+                    status: 'approved',
+                    approvedAt: Date.now()
+                });
+            }).then(() => {
+                alert('✅ Request approved!');
+                renderRequests();
+            });
+        }
+
+        function rejectRequest(key, reqId) {
+            if (!confirm('Reject this request?')) return;
+
+            db.ref('requests/' + key + '/' + reqId).update({
+                status: 'rejected',
+                rejectedAt: Date.now()
+            }).then(() => {
+                alert('❌ Request rejected');
+                renderRequests();
+            });
+        }
+
+        // 👆👆👆 YAHAN TAK ADD KARO 👆👆👆
+
+        function openGuideModal() {
+            document.getElementById('guide-modal').classList.add('active');
+        }
+
+function switchAppTab(tab) {
+    // Remove active class from all tabs and buttons
+    document.querySelectorAll('#app-screen .tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('#app-screen .tab-btn').forEach(b => b.classList.remove('active'));
+    
+    // Determine button index
+    let btnIndex;
+    if (tab === 'cr') btnIndex = 0;
+    else if (tab === 'students') btnIndex = 1;
+    else if (tab === 'history') btnIndex = 2;
+    else if (tab === 'requests') btnIndex = 3;
+    
+    // Activate correct button
+    document.querySelectorAll('#app-screen .tab-btn')[btnIndex].classList.add('active');
+    
+    // Activate correct tab content
+    document.getElementById(tab + '-tab').classList.add('active');
+
+    // Load content
+    if (tab === 'students') loadStudents();
+    if (tab === 'history') renderHistory();
+    if (tab === 'requests') renderRequests();
+}
 
         function onSubjectChange() {
             currentSubject = document.getElementById('subject-select').value;
@@ -948,31 +1202,40 @@ Now format this student list:
             updateAttendanceDisplay();
         }
 
-        function generateQRCode() {
-            if (!currentSubject) {
-                alert('⚠️ Please select a subject first');
-                return;
-            }
+function generateQRCode() {
+    if (!currentSubject) {
+        alert('⚠️ Please select a subject first');
+        return;
+    }
 
-            const today = new Date().toISOString().split('T')[0];
-            const code = `${currentUser.username}_${today}_${currentSubject}`;
-            
-            const baseURL = window.location.origin + window.location.pathname;
-            const url = `${baseURL}?code=${code}`;
+    const today = new Date().toISOString().split('T')[0];
+    const code = `${currentUser.username}_${today}_${currentSubject}`;
+    const expiryTime = Date.now() + (5 * 60 * 1000); // 5 minutes
+    
+    const baseURL = window.location.origin + window.location.pathname;
+    const url = `${baseURL}?code=${code}`;
 
-            currentQRCode = { code, url };
-            qrExpireTime = Date.now() + (10 * 60 * 1000);
+    currentQRCode = { code, url, expiryTime }; // expiryTime add kiya
+    qrExpireTime = expiryTime; // Ye bhi add karo
 
-            document.getElementById('qrcode').innerHTML = '';
-            new QRCode(document.getElementById('qrcode'), {
-                text: url,
-                width: 200,
-                height: 200
-            });
+    // Save expiry to Firebase
+    db.ref('qr_sessions/' + code).set({
+        generatedAt: Date.now(),
+        expiryTime: expiryTime,
+        subject: currentSubject,
+        username: currentUser.username
+    });
 
-            document.getElementById('qr-section').style.display = 'block';
-            startQRTimer();
-        }
+    document.getElementById('qrcode').innerHTML = '';
+    new QRCode(document.getElementById('qrcode'), {
+        text: url,
+        width: 200,
+        height: 200
+    });
+
+    document.getElementById('qr-section').style.display = 'block';
+    startQRTimer();
+}
 
         function startQRTimer() {
             const timer = setInterval(() => {
@@ -1051,7 +1314,7 @@ Now format this student list:
             }
         }
 
-      function submitAttendance() {
+function submitAttendance() {
     const roll = document.getElementById('student-roll').value.trim().toUpperCase();
     const msgDiv = document.getElementById('modal-message');
 
@@ -1078,27 +1341,64 @@ Now format this student list:
 
         const key = code;
 
+        // Check if already marked
         db.ref('attendance/' + key).orderByChild('rollNo').equalTo(student.rollNo).once('value', (snapshot) => {
             if (snapshot.exists()) {
-                msgDiv.innerHTML = '<div class="message error">⚠️ Attendance already marked! You cannot mark twice.</div>';
+                msgDiv.innerHTML = '<div class="message error">⚠️ Attendance already marked!</div>';
                 return;
             }
 
-            const currentTime = new Date().toLocaleTimeString('en-IN');
+            const currentTime = Date.now();
 
-            db.ref('attendance/' + key).push({
-                rollNo: student.rollNo,
-                name: student.name,
-                time: currentTime,
-                timestamp: Date.now()
-            }).then(() => {
-                // Redirect to success page with details
-                const successURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(currentTime)}`;
-                window.location.href = successURL;
+            // Check QR session expiry
+            db.ref('qr_sessions/' + code).once('value', (sessionSnapshot) => {
+                const session = sessionSnapshot.val();
+                
+                if (!session) {
+                    msgDiv.innerHTML = '<div class="message error">❌ Invalid or expired session</div>';
+                    return;
+                }
+
+                const isWithin5Minutes = currentTime <= session.expiryTime;
+
+                if (isWithin5Minutes) {
+                    // Direct attendance - within 5 minutes
+                    const attendanceData = {
+                        rollNo: student.rollNo,
+                        name: student.name,
+                        time: new Date().toLocaleTimeString('en-IN'),
+                        timestamp: currentTime
+                    };
+
+                    db.ref('attendance/' + key).push(attendanceData).then(() => {
+                        const successURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(attendanceData.time)}`;
+                        window.location.href = successURL;
+                    });
+                } else {
+                    // Late request - after 5 minutes
+                    const lateMinutes = Math.floor((currentTime - session.expiryTime) / (1000 * 60));
+                    const requestData = {
+                        rollNo: student.rollNo,
+                        name: student.name,
+                        subject: subject,
+                        requestTime: new Date().toLocaleTimeString('en-IN'),
+                        timestamp: currentTime,
+                        lateBy: lateMinutes,
+                        status: 'pending'
+                    };
+
+                    db.ref('requests/' + key).push(requestData).then(() => {
+db.ref('requests/' + key).push(requestData).then(() => {
+    const lateURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(requestData.requestTime)}&late=true&lateBy=${lateMinutes}`;
+    window.location.href = lateURL;
+});                    });
+                }
             });
         });
     });
 }
+
+
 
         function closeStudentModal() {
             document.getElementById('student-modal').classList.remove('active');

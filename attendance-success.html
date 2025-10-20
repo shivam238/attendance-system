@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Marked | QR Attendance System</title>
+    <title>Attendance Status | QR Attendance System</title>
     <link rel="icon" type="image/png" href="logo.png">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -47,6 +47,9 @@
             margin: 0 auto 24px;
             animation: scaleIn 0.5s ease-out 0.2s both;
         }
+        .warning-icon {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
         @keyframes scaleIn {
             from {
                 transform: scale(0);
@@ -73,12 +76,19 @@
             border-width: 0 4px 4px 0;
             transform: rotate(45deg);
         }
+        .clock-icon {
+            font-size: 50px;
+            color: white;
+        }
         h1 {
             font-size: 32px;
             font-weight: 800;
             color: #10b981;
             margin-bottom: 16px;
             animation: fadeIn 0.5s ease-out 0.4s both;
+        }
+        h1.warning-title {
+            color: #f59e0b;
         }
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -99,6 +109,10 @@
             border-left: 4px solid #10b981;
             animation: fadeIn 0.5s ease-out 0.8s both;
         }
+        .student-info.warning-info {
+            border-left-color: #f59e0b;
+            background: #fef3c7;
+        }
         .info-row {
             display: flex;
             justify-content: space-between;
@@ -115,6 +129,9 @@
         .info-value {
             color: #1a202c;
             font-weight: 700;
+        }
+        .info-value.late {
+            color: #dc2626;
         }
         .button-group {
             display: flex;
@@ -160,6 +177,21 @@
             line-height: 1.6;
             animation: fadeIn 0.5s ease-out 1.2s both;
         }
+        .note.warning-note {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .late-badge {
+            display: inline-block;
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            animation: fadeIn 0.5s ease-out 0.5s both;
+        }
         @media (max-width: 768px) {
             .success-container { padding: 32px 24px; }
             h1 { font-size: 24px; }
@@ -172,13 +204,15 @@
 </head>
 <body>
     <div class="success-container">
-        <div class="success-icon">
+        <div class="success-icon" id="status-icon">
             <div class="checkmark"></div>
         </div>
         
-        <h1>✅ Attendance Marked!</h1>
+        <div id="late-badge-container"></div>
         
-        <p class="success-message">
+        <h1 id="status-title">✅ Attendance Marked!</h1>
+        
+        <p class="success-message" id="status-message">
             Your attendance has been successfully recorded. Thank you!
         </p>
         
@@ -191,7 +225,7 @@
             <button class="feedback-btn" onclick="openFeedback()">📝 Feedback</button>
         </div>
         
-        <div class="note">
+        <div class="note" id="status-note">
             ℹ️ <strong>Note:</strong> You can safely close this window now. Your attendance has been saved in the system.
         </div>
     </div>
@@ -203,10 +237,34 @@
         const rollNo = urlParams.get('roll') || 'N/A';
         const subject = urlParams.get('subject') || 'N/A';
         const time = urlParams.get('time') || new Date().toLocaleTimeString('en-IN');
+        const isLate = urlParams.get('late') === 'true';
+        const lateMinutes = urlParams.get('lateBy') || '0';
+
+        // Update UI based on status (on-time or late)
+        if (isLate) {
+            // Late attendance - request sent to CR
+            document.getElementById('status-icon').className = 'success-icon warning-icon';
+            document.getElementById('status-icon').innerHTML = '<div class="clock-icon">⏰</div>';
+            
+            document.getElementById('late-badge-container').innerHTML = 
+                `<div class="late-badge">⚠️ ${lateMinutes} Minutes Late</div>`;
+            
+            document.getElementById('status-title').textContent = '⏰ Request Sent to CR';
+            document.getElementById('status-title').className = 'warning-title';
+            
+            document.getElementById('status-message').innerHTML = 
+                `The QR code expired ${lateMinutes} minutes ago.<br>Your attendance request has been sent to the CR for approval.`;
+            
+            document.getElementById('student-details').className = 'student-info warning-info';
+            
+            document.getElementById('status-note').className = 'note warning-note';
+            document.getElementById('status-note').innerHTML = 
+                `⚠️ <strong>Pending Approval:</strong> Your attendance is pending CR approval. You will be marked present only if the CR approves your request. Check with your CR for status.`;
+        }
 
         // Display student details
         const detailsContainer = document.getElementById('student-details');
-        detailsContainer.innerHTML = `
+        let detailsHTML = `
             <div class="info-row">
                 <span class="info-label">Name:</span>
                 <span class="info-value">${studentName}</span>
@@ -220,23 +278,37 @@
                 <span class="info-value">${subject}</span>
             </div>
             <div class="info-row">
-                <span class="info-label">Time:</span>
+                <span class="info-label">Request Time:</span>
                 <span class="info-value">${time}</span>
             </div>
         `;
 
+        if (isLate) {
+            detailsHTML += `
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value late">⏳ Pending CR Approval</span>
+                </div>
+            `;
+        } else {
+            detailsHTML += `
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" style="color: #10b981;">✅ Marked Present</span>
+                </div>
+            `;
+        }
+
+        detailsContainer.innerHTML = detailsHTML;
+
         function closeWindow() {
-            // Try to close the window
             window.close();
-            
-            // If window doesn't close (browser security), redirect to a blank page
             setTimeout(() => {
                 window.location.href = 'about:blank';
             }, 100);
         }
 
         function openFeedback() {
-            // Open Google Form in new tab
             window.open('https://docs.google.com/forms/d/e/1FAIpQLSfsiJg1GfE9Ta1s0Q8THFT5FuJvFPN3w28-4fW6eLpLP3biZQ/viewform?usp=header', '_blank');
         }
     </script>
