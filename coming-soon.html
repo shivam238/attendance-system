@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coming Soon | QR Attendance System</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .floating-shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 15s infinite ease-in-out;
+        }
+        .shape1 { width: 80px; height: 80px; top: 10%; left: 10%; animation-delay: 0s; }
+        .shape2 { width: 60px; height: 60px; top: 70%; left: 80%; animation-delay: 2s; }
+        .shape3 { width: 100px; height: 100px; top: 50%; left: 50%; animation-delay: 4s; }
+        .shape4 { width: 70px; height: 70px; top: 20%; left: 70%; animation-delay: 6s; }
+        .shape5 { width: 90px; height: 90px; top: 80%; left: 20%; animation-delay: 8s; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
+            25% { transform: translateY(-30px) translateX(20px) rotate(90deg); }
+            50% { transform: translateY(-60px) translateX(-20px) rotate(180deg); }
+            75% { transform: translateY(-30px) translateX(20px) rotate(270deg); }
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .launch-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 24px;
+            padding: 60px 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            backdrop-filter: blur(10px);
+            animation: slideIn 0.8s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo {
+            width: 110px;
+            height: 110px;
+            margin: 0 auto 24px;
+            border-radius: 50%;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+            animation: pulse 2s infinite;
+            cursor: pointer;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 12px 32px rgba(102, 126, 234, 0.6); }
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 16px;
+            animation: fadeIn 1s ease-out 0.3s both;
+        }
+
+        .subtitle {
+            font-size: 24px;
+            color: #4a5568;
+            margin-bottom: 40px;
+            font-weight: 600;
+            animation: fadeIn 1s ease-out 0.5s both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .countdown {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin: 40px 0;
+            animation: fadeIn 1s ease-out 0.7s both;
+        }
+
+        .countdown-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s;
+        }
+
+        .countdown-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.5);
+        }
+
+        .countdown-number {
+            font-size: 48px;
+            font-weight: 800;
+            color: white;
+            display: block;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .countdown-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .launch-date {
+            background: #eff6ff;
+            color: #1e40af;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 30px 0;
+            font-size: 18px;
+            font-weight: 600;
+            border-left: 4px solid #3b82f6;
+            animation: fadeIn 1s ease-out 0.9s both;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+            animation: fadeIn 1s ease-out 1.1s both;
+        }
+
+        .feature-item {
+            background: #f8fafc;
+            padding: 24px;
+            border-radius: 12px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .feature-item:hover {
+            background: #eff6ff;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+
+        .feature-text {
+            color: #4a5568;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* PRE-REGISTRATION BUTTON - NEW! */
+        .prereg-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            margin: 30px auto;
+            display: block;
+            animation: fadeIn 1s ease-out 1.2s both, glow 2s infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3); }
+            50% { box-shadow: 0 12px 32px rgba(16, 185, 129, 0.6); }
+        }
+
+        .prereg-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(16, 185, 129, 0.5);
+        }
+
+        /* PRE-REGISTRATION MODAL */
+        .prereg-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .prereg-modal.active {
+            display: flex;
+        }
+
+        .prereg-modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideUp 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .prereg-modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.1);
+            border: none;
+            color: #ef4444;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .prereg-modal-close:hover {
+            background: #ef4444;
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .prereg-modal-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #667eea;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .prereg-modal-subtitle {
+            color: #4a5568;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2d3748;
+            font-size: 14px;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .info-text {
+            background: #eff6ff;
+            color: #1e40af;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin: 16px 0;
+            border-left: 4px solid #3b82f6;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        .copy-prompt-btn {
+            background: #10b981;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 8px;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+
+        .copy-prompt-btn:hover {
+            background: #059669;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 16px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            display: block;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+
+        .feature-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .feature-modal.active {
+            display: flex;
+        }
+
+        .feature-modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 32px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideUp 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.1);
+            border: none;
+            color: #ef4444;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .feature-modal-close:hover {
+            background: #ef4444;
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .feature-modal-icon {
+            font-size: 64px;
+            text-align: center;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .feature-modal-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .feature-modal-description {
+            font-size: 16px;
+            color: #4a5568;
+            line-height: 1.7;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .feature-modal-benefits {
+            background: #f8fafc;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .feature-modal-benefits h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature-modal-benefits ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .feature-modal-benefits li {
+            color: #4a5568;
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .feature-modal-benefits li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-modal-benefits li:before {
+            content: "✓";
+            color: #10b981;
+            font-weight: bold;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .feature-modal-cta {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 16px;
+        }
+
+        .feature-modal-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .notify-section {
+            margin-top: 40px;
+            animation: fadeIn 1s ease-out 1.3s both;
+        }
+
+        .notify-input {
+            display: flex;
+            gap: 12px;
+            max-width: 500px;
+            margin: 20px auto 0;
+        }
+
+        .notify-input input {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .notify-input input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .notify-btn {
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .notify-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 40px;
+            animation: fadeIn 1s ease-out 1.5s both;
+        }
+
+        .social-btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .social-btn.instagram {
+            background: linear-gradient(135deg, #e1306c 0%, #fd1d1d 100%);
+        }
+
+        .social-btn.linkedin {
+            background: #0077b5;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .beta-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .beta-modal.active {
+            display: flex;
+        }
+
+        .beta-modal-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 24px;
+            padding: 48px 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            animation: betaSlideUp 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes betaSlideUp {
+            from { opacity: 0; transform: translateY(50px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .beta-modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .beta-modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .beta-modal-icon {
+            font-size: 72px;
+            margin-bottom: 24px;
+            animation: betaBounce 2s infinite;
+        }
+
+        @keyframes betaBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .beta-modal-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 16px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .beta-modal-text {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.95);
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .beta-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            font-size: 18px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            color: #667eea;
+            font-weight: 700;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            margin-bottom: 24px;
+        }
+
+        .beta-input:focus {
+            outline: none;
+            border-color: white;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+        }
+
+        .beta-submit-btn {
+            width: 100%;
+            padding: 16px 32px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .beta-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .launch-card { padding: 40px 24px; }
+            h1 { font-size: 32px; }
+            .subtitle { font-size: 18px; }
+            .countdown { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .countdown-number { font-size: 36px; }
+            .notify-input { flex-direction: column; }
+            .social-links { flex-direction: column; }
+            .feature-modal-content, .prereg-modal-content { padding: 32px 24px; }
+            .features { grid-template-columns: repeat(2, 1fr); }
+            .prereg-btn { font-size: 16px; padding: 16px 32px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation">
+        <div class="floating-shape shape1"></div>
+        <div class="floating-shape shape2"></div>
+        <div class="floating-shape shape3"></div>
+        <div class="floating-shape shape4"></div>
+        <div class="floating-shape shape5"></div>
+    </div>
+
+    <div class="container">
+        <div class="launch-card">
+            <img src="logo.png" alt="QR Attendance Logo" class="logo" onclick="openBetaModal()">            
+            <h1>🚀 Coming Soon!</h1>
+            <div class="subtitle">QR Attendance System Launch Countdown</div>
+
+            <div class="launch-date">
+                📅 Official Launch Date: <strong>October 26, 2025 at 11:00 AM IST</strong>
+            </div>
+
+            <div class="countdown">
+                <div class="countdown-item">
+                    <span class="countdown-number" id="days">00</span>
+                    <span class="countdown-label">Days</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="hours">00</span>
+                    <span class="countdown-label">Hours</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="minutes">00</span>
+                    <span class="countdown-label">Minutes</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="seconds">00</span>
+                    <span class="countdown-label">Seconds</span>
+                </div>
+            </div>
+
+            <!-- PRE-REGISTRATION BUTTON - NEW! -->
+            <button class="prereg-btn" onclick="openPreRegModal()">🎓 Pre-Register Your Class Now!</button>
+            <p style="color: #718096; font-size: 14px; margin-top: 12px;">
+                Register abhi, Login 26 Oct se! 🚀
+            </p>
+
+            <div class="features">
+                <div class="feature-item" onclick="openFeatureModal('qr')">
+                    <div class="feature-icon">📱</div>
+                    <div class="feature-text">QR Code Attendance</div>
+                </div>
+                <div class="feature-item" onclick="openFeatureModal('sync')">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-text">Real-Time Sync</div>
+                </div>
+                <div class="feature-item" onclick="openFeatureModal('excel')">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-text">Excel Reports</div>
+                </div>
+                <div class="feature-item" onclick="openFeatureModal('secure')">
+                    <div class="feature-icon">🔒</div>
+                    <div class="feature-text">Secure & Reliable</div>
+                </div>
+                <div class="feature-item" onclick="window.location.href='about.html'">
+                    <div class="feature-icon">ℹ️</div>
+                    <div class="feature-text">About System</div>
+                </div>
+                <div class="feature-item" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSfsiJg1GfE9Ta1s0Q8THFT5FuJvFPN3w28-4fW6eLpLP3biZQ/viewform?usp=header', '_blank')">
+                    <div class="feature-icon">📝</div>
+                    <div class="feature-text">Form</div>
+                </div>
+            </div>
+
+            <div class="notify-section">
+                <h3 style="color: #4a5568; margin-bottom: 8px;">Get Notified at Launch!</h3>
+                <p style="color: #718096; font-size: 14px; margin-bottom: 20px;">Enter your email to receive a notification when we go live</p>
+                <div class="notify-input">
+                    <input type="email" id="email" placeholder="your.email@example.com">
+                    <button class="notify-btn" onclick="notifyMe()">Notify Me 🔔</button>
+                </div>
+                <div id="notify-message" class="message"></div>
+            </div>
+
+            <div class="social-links">
+                <a href="https://www.instagram.com/yesss.shivam/" target="_blank" class="social-btn instagram">
+                    📷 Follow on Instagram
+                </a>
+                <a href="https://www.linkedin.com/in/shivam-mahto-046228361" target="_blank" class="social-btn linkedin">
+                    💼 Connect on LinkedIn
+                </a>
+            </div>
+
+            <p style="color: #718096; font-size: 13px; margin-top: 40px;">
+                Developed with ❤️ by <strong>Shivam Kumar Mahto</strong>
+            </p>
+        </div>
+    </div>
+
+    <!-- PRE-REGISTRATION MODAL -->
+    <div id="prereg-modal" class="prereg-modal">
+        <div class="prereg-modal-content">
+            <button class="prereg-modal-close" onclick="closePreRegModal()">&times;</button>
+            <h2 class="prereg-modal-title">🎓 Pre-Register Your Class</h2>
+            <p class="prereg-modal-subtitle">
+                Register kar lo abhi! Launch hote hi seedha login karke use karo 🚀<br>
+                <strong>Login 26 October 11 AM se activate hoga</strong>
+            </p>
+
+            <div class="form-group">
+                <label>Passout Year (Last 2 digits)</label>
+                <input type="text" id="reg-year" placeholder="e.g., 29 (for 2029)" maxlength="2">
+            </div>
+            <div class="form-group">
+                <label>College</label>
+                <input type="text" id="reg-college" placeholder="e.g., DTU">
+            </div>
+            <div class="form-group">
+                <label>Branch</label>
+                <input type="text" id="reg-branch" placeholder="e.g., CSE">
+            </div>
+            <div class="form-group">
+                <label>Section</label>
+                <input type="text" id="reg-section" placeholder="e.g., 5">
+            </div>
+            <div class="form-group">
+                <label>CR Mobile Number (for OTP verification)</label>
+                <input type="tel" id="reg-phone" placeholder="e.g., 9876543210" maxlength="10">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="reg-password" placeholder="Create password">
+            </div>
+            <div class="form-group">
+                <label>Subjects (one per line)</label>
+                <textarea id="reg-subjects" rows="4" placeholder="MATHEMATICS-1&#10;PHYSICS&#10;BASIC CIVIL ENGINEERING"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Students (format: Name - Roll Number, one per line)</label>
+                <textarea id="reg-students" rows="6" placeholder="JOHN DOE - 25/B09/001&#10;JANE SMITH - 25/B09/002&#10;AMIT KUMAR - 25/B09/003"></textarea>
+                <button class="copy-prompt-btn" onclick="copyStudentPrompt()">📋 Copy ChatGPT Prompt</button>
+            </div>
+            <div class="info-text">
+                ℹ️ Username format: PASSOUT_YEAR+COLLEGE+BRANCH+SECTION<br>
+                Example: If passout year is 2029, enter 29 → Username: <strong>29DTUCSE5</strong><br><br>
+                📝 Student format: NAME - ROLLNO (one per line)<br><br>
+                💡 Click "Copy ChatGPT Prompt" button, paste in ChatGPT with your student list, then copy result here!<br><br>
+                🔐 <strong>Login 26 October 2025, 11:00 AM se activate hoga!</strong>
+            </div>
+            <button class="btn-submit" onclick="registerUser()">🎯 Pre-Register Class</button>
+            <div id="register-message"></div>
+        </div>
+    </div>
+
+    <!-- FEATURE MODAL -->
+    <div id="feature-modal" class="feature-modal">
+        <div class="feature-modal-content">
+            <button class="feature-modal-close" onclick="closeFeatureModal()">&times;</button>
+            <div class="feature-modal-icon" id="modal-icon"></div>
+            <h2 class="feature-modal-title" id="modal-title"></h2>
+            <p class="feature-modal-description" id="modal-description"></p>
+            <div class="feature-modal-benefits">
+                <h3>✨ Key Benefits</h3>
+                <ul id="modal-benefits"></ul>
+            </div>
+            <button class="feature-modal-cta" onclick="closeFeatureModal()">Awesome! Can't Wait 🚀</button>
+        </div>
+    </div>
+
+    <!-- BETA MODAL -->
+    <div id="beta-modal" class="beta-modal">
+        <div class="beta-modal-content">
+            <button class="beta-modal-close" onclick="closeBetaModal()">&times;</button>
+            <div class="beta-modal-icon">🔐</div>
+            <h2 class="beta-modal-title">Beta Access</h2>
+            <p class="beta-modal-text">
+                Early access ke liye secret beta code enter karo!
+            </p>
+            <input type="text" id="beta-code-input" class="beta-input" placeholder="Enter Beta Code" maxlength="20">
+            <button class="beta-submit-btn" onclick="checkBetaCode()">🚀 Unlock Access</button>
+            <div id="beta-message" class="message"></div>
+            <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-top: 16px; font-style: italic;">
+                ✨ Hint: Only special users have this code
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const BETA_CODES = ['SHIVAM2025'];
+        const launchDate = new Date('2025-10-26T11:00:00+05:30').getTime();
+
+        // Countdown Timer - START IMMEDIATELY
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = launchDate - now;
+
+            if (distance < 0) {
+                document.getElementById('days').textContent = '00';
+                document.getElementById('hours').textContent = '00';
+                document.getElementById('minutes').textContent = '00';
+                document.getElementById('seconds').textContent = '00';
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById('days').textContent = String(days).padStart(2, '0');
+            document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+            document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+        }
+
+        // Start countdown immediately
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+
+        // Initialize Firebase AFTER countdown starts
+        const firebaseConfig = {
+            apiKey: "AIzaSyAqe1sudjw-ATS_bv7f3pNyqAK_sw26cr4",
+            authDomain: "qr-attendance-system-a8a8a.firebaseapp.com",
+            databaseURL: "https://qr-attendance-10d7d-default-rtdb.firebaseio.com",
+            projectId: "qr-attendance-system-a8a8a",
+            storageBucket: "qr-attendance-system-a8a8a.firebasestorage.app",
+            messagingSenderId: "81759182063",
+            appId: "1:81759182063:web:37f3ec343d251c30dd191a"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Pre-Registration Modal
+        function openPreRegModal() {
+            document.getElementById('prereg-modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePreRegModal() {
+            document.getElementById('prereg-modal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Copy Student Prompt
+        function copyStudentPrompt() {
+            const prompt = `Please format the following student list in this exact format only, with no additional text or explanation:
+
+NAME - ROLLNO
+NAME - ROLLNO
+
+Rules:
+- Each line must have: NAME - ROLLNO (with space-dash-space between)
+- NAME should be in UPPERCASE
+- ROLLNO should be in UPPERCASE
+- One student per line
+- No numbering, bullets, or extra formatting
+- Only output the formatted list, nothing else
+
+Example output format:
+JOHN DOE - 25/B09/001
+JANE SMITH - 25/B09/002
+AMIT KUMAR - 25/B09/003
+
+Now format this student list:
+[Paste your student list here]`;
+
+            navigator.clipboard.writeText(prompt).then(() => {
+                alert('✅ Prompt copied! Now:\n1. Open ChatGPT\n2. Paste this prompt\n3. Add your student list\n4. Copy the result\n5. Paste in the Students field above');
+            }).catch(() => {
+                alert('❌ Failed to copy. Please try again.');
+            });
+        }
+
+        // Pre-Registration Function
+        function registerUser() {
+            const year = document.getElementById('reg-year').value.trim();
+            const college = document.getElementById('reg-college').value.trim().toUpperCase();
+            const branch = document.getElementById('reg-branch').value.trim().toUpperCase();
+            const section = document.getElementById('reg-section').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const subjects = document.getElementById('reg-subjects').value.trim().split('\n').filter(s => s.trim());
+            const studentsInput = document.getElementById('reg-students').value.trim().split('\n').filter(s => s.trim());
+
+            const msgDiv = document.getElementById('register-message');
+
+            if (!year || !college || !branch || !section || !phone || !password || subjects.length === 0) {
+                msgDiv.innerHTML = '<div class="message error">❌ Please fill all required fields</div>';
+                setTimeout(() => msgDiv.innerHTML = '', 3000);
+                return;
+            }
+
+            if (phone.length !== 10 || !/^\d+$/.test(phone)) {
+                msgDiv.innerHTML = '<div class="message error">❌ Invalid mobile number (must be 10 digits)</div>';
+                setTimeout(() => msgDiv.innerHTML = '', 3000);
+                return;
+            }
+
+            const students = [];
+            if (studentsInput.length > 0) {
+                for (let line of studentsInput) {
+                    const parts = line.split('-').map(p => p.trim());
+                    if (parts.length === 2) {
+                        const name = parts[0].toUpperCase();
+                        const rollNo = parts[1].toUpperCase();
+                        if (name && rollNo) {
+                            students.push({ name, rollNo });
+                        }
+                    } else {
+                        msgDiv.innerHTML = '<div class="message error">❌ Invalid student format. Use: NAME - ROLLNO</div>';
+                        setTimeout(() => msgDiv.innerHTML = '', 3000);
+                        return;
+                    }
+                }
+            }
+
+            const username = year + college + branch + section;
+
+            db.ref('users/' + username).once('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    msgDiv.innerHTML = '<div class="message error">⚠️ Class already registered</div>';
+                    setTimeout(() => msgDiv.innerHTML = '', 3000);
+                    return;
+                }
+
+                db.ref('users/' + username).set({
+                    year, college, branch, section, phone, password,
+                    subjects: subjects,
+                    students: students,
+                    createdAt: Date.now(),
+                    preRegistered: true
+                }).then(() => {
+                    msgDiv.innerHTML = `<div class="message success">✅ Pre-Registration Successful!<br><br>
+                        📱 <strong>Username:</strong> ${username}<br>
+                        👥 <strong>Students added:</strong> ${students.length}<br><br>
+                        🔐 <strong>Login will be activated on October 26, 2025 at 11:00 AM IST</strong><br><br>
+                        💡 Save your username and password!</div>`;
+                    
+                    document.getElementById('reg-year').value = '';
+                    document.getElementById('reg-college').value = '';
+                    document.getElementById('reg-branch').value = '';
+                    document.getElementById('reg-section').value = '';
+                    document.getElementById('reg-phone').value = '';
+                    document.getElementById('reg-password').value = '';
+                    document.getElementById('reg-subjects').value = '';
+                    document.getElementById('reg-students').value = '';
+                }).catch((error) => {
+                    msgDiv.innerHTML = '<div class="message error">❌ Error: ' + error.message + '</div>';
+                    setTimeout(() => msgDiv.innerHTML = '', 3000);
+                });
+            });
+        }
+
+        // Beta Access
+        function openBetaModal() {
+            document.getElementById('beta-modal').classList.add('active');
+            document.getElementById('beta-code-input').focus();
+            document.getElementById('beta-message').style.display = 'none';
+            document.getElementById('beta-code-input').value = '';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeBetaModal() {
+            document.getElementById('beta-modal').classList.remove('active');
+            document.getElementById('beta-message').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function checkBetaCode() {
+            const input = document.getElementById('beta-code-input').value.trim().toUpperCase();
+            const msgDiv = document.getElementById('beta-message');
+
+            if (!input) {
+                msgDiv.className = 'message error';
+                msgDiv.textContent = '⚠️ Please enter a code';
+                return;
+            }
+
+            if (BETA_CODES.includes(input)) {
+                msgDiv.className = 'message success';
+                msgDiv.textContent = '✅ Code verified! Redirecting...';
+                sessionStorage.setItem('betaAccess', 'granted');
+                sessionStorage.setItem('betaTimestamp', new Date().getTime().toString());
+                setTimeout(() => {
+                    window.location.href = 'main.html';
+                }, 1500);
+            } else {
+                msgDiv.className = 'message error';
+                msgDiv.textContent = '❌ Invalid code. Try again!';
+                document.getElementById('beta-code-input').value = '';
+                document.getElementById('beta-code-input').focus();
+            }
+        }
+
+        document.getElementById('beta-code-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkBetaCode();
+        });
+
+        // Notify Me
+        const notifyEmails = [];
+        
+        function notifyMe() {
+            const emailInput = document.getElementById('email');
+            const email = emailInput.value.trim();
+            const msgDiv = document.getElementById('notify-message');
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (!email) {
+                msgDiv.className = 'message error';
+                msgDiv.textContent = '❌ Please enter your email address';
+                return;
+            }
+
+            if (!emailRegex.test(email)) {
+                msgDiv.className = 'message error';
+                msgDiv.textContent = '❌ Please enter a valid email address';
+                return;
+            }
+
+            if (!notifyEmails.includes(email)) {
+                notifyEmails.push(email);
+                msgDiv.className = 'message success';
+                msgDiv.textContent = '✅ Great! We\'ll notify you on Oct 26, 2025 at 11 AM!';
+                emailInput.value = '';
+
+                setTimeout(() => {
+                    msgDiv.style.display = 'none';
+                }, 5000);
+            } else {
+                msgDiv.className = 'message error';
+                msgDiv.textContent = '⚠️ This email is already registered!';
+            }
+        }
+
+        document.getElementById('email').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                notifyMe();
+            }
+        });
+
+        // Feature Modal
+        const featureData = {
+            qr: {
+                icon: '📱',
+                title: 'QR Code Attendance',
+                description: 'Say goodbye to paper registers! Mark attendance in seconds by simply scanning a QR code with your smartphone.',
+                benefits: [
+                    'Instant attendance marking - no waiting in queues',
+                    'No manual roll call needed - saves 5-10 minutes per class',
+                    'Prevents proxy attendance with time-limited codes',
+                    'Works on any smartphone with a camera',
+                    'Students can also use shared links instead of scanning',
+                    '100% paperless and eco-friendly solution'
+                ]
+            },
+            sync: {
+                icon: '⚡',
+                title: 'Real-Time Synchronization',
+                description: 'See attendance updates instantly as students mark their presence. Everything syncs in real-time using Firebase cloud technology.',
+                benefits: [
+                    'Attendance appears immediately after students submit',
+                    'No page refresh needed - live updates automatically',
+                    'Access data from any device at any time',
+                    'Works across smartphones, tablets, and computers',
+                    'Cloud backup ensures data is never lost',
+                    'Multiple users can view data simultaneously'
+                ]
+            },
+            excel: {
+                icon: '📊',
+                title: 'Excel Reports',
+                description: 'Download comprehensive attendance reports in Excel format with just one click. Perfect for record-keeping and analysis.',
+                benefits: [
+                    'One-click download for today\'s attendance',
+                    'Download complete attendance history for all subjects',
+                    'Pre-formatted Excel files with Present/Absent status',
+                    'Includes student names, roll numbers, and timestamps',
+                    'Easy to share with faculty and administration',
+                    'Perfect for generating monthly/semester reports'
+                ]
+            },
+            secure: {
+                icon: '🔒',
+                title: 'Secure & Reliable',
+                description: 'Your data is protected with bank-level security using Google Firebase. We take privacy and security seriously.',
+                benefits: [
+                    'Password-protected accounts with encryption',
+                    'OTP verification for password recovery',
+                    'QR codes expire after 10 minutes for security',
+                    'Students can only mark attendance once per session',
+                    'Secure cloud storage with Firebase',
+                    'Data is backed up automatically 24/7'
+                ]
+            }
+        };
+
+        function openFeatureModal(featureType) {
+            const feature = featureData[featureType];
+            if (!feature) return;
+
+            document.getElementById('modal-icon').textContent = feature.icon;
+            document.getElementById('modal-title').textContent = feature.title;
+            document.getElementById('modal-description').textContent = feature.description;
+
+            const benefitsList = document.getElementById('modal-benefits');
+            benefitsList.innerHTML = '';
+            feature.benefits.forEach(benefit => {
+                const li = document.createElement('li');
+                li.textContent = benefit;
+                benefitsList.appendChild(li);
+            });
+
+            document.getElementById('feature-modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeFeatureModal() {
+            document.getElementById('feature-modal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modals on ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (document.getElementById('beta-modal').classList.contains('active')) {
+                    closeBetaModal();
+                }
+                if (document.getElementById('feature-modal').classList.contains('active')) {
+                    closeFeatureModal();
+                }
+                if (document.getElementById('prereg-modal').classList.contains('active')) {
+                    closePreRegModal();
+                }
+            }
+        });
+
+        // Close modals on outside click
+        document.getElementById('feature-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeFeatureModal();
+        });
+        document.getElementById('prereg-modal').addEventListener('click', function(e) {
+            if (e.target === this) closePreRegModal();
+        });
+    </script>
+</body>
+</html>
