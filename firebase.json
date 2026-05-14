@@ -8,20 +8,15 @@
     ],
     "redirects": [
       {
-        "source": "/",
-        "destination": "/main.html",
-        "type": 301
-      },
-      {
         "source": "/coming-soon.html",
-        "destination": "/main.html",
+        "destination": "/index.html",
         "type": 301
       }
     ],
     "rewrites": [
       {
         "source": "**",
-        "destination": "/main.html"
+        "destination": "/index.html"
       }
     ]
   }
