@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Manage Subjects | QR Attendance System</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="shortcut icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; min-height: 100vh; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .card { background: rgba(255, 255, 255, 0.95); border-radius: 16px; padding: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); color: #1a202c; margin-bottom: 20px; }
+        .header { text-align: center; margin-bottom: 24px; }
+        .header h1 { font-size: 26px; font-weight: 800; color: #667eea; margin-bottom: 8px; }
+        .header p { color: #718096; font-size: 13px; }
+        .back-btn { background: #64748b; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; margin-bottom: 20px; transition: all 0.3s; text-decoration: none; display: inline-block; }
+        .back-btn:hover { background: #475569; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #2d3748; font-size: 14px; }
+        .form-group input { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px; transition: all 0.3s; }
+        .form-group input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.3s; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 8px; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
+        .btn-success { background: #10b981; color: #fff; }
+        .btn-danger { background: #ef4444; color: #fff; }
+        .btn-small { width: auto; padding: 8px 16px; font-size: 13px; margin: 4px; }
+        .subject-list { margin-top: 20px; }
+        .subject-item { background: #f8fafc; padding: 14px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 12px; border-left: 4px solid #667eea; }
+        .subject-name { font-weight: 600; color: #1a202c; flex: 1; min-width: 0; word-break: break-word; }
+        .subject-actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .message { padding: 12px; border-radius: 8px; margin: 12px 0; font-weight: 600; font-size: 14px; }
+        .message.success { background: #d1fae5; color: #065f46; }
+        .message.error { background: #fee2e2; color: #991b1b; }
+        .empty-state { text-align: center; padding: 40px 20px; color: #718096; }
+        .empty-icon { font-size: 48px; margin-bottom: 16px; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; padding: 28px; border-radius: 16px; width: 100%; max-width: 500px; color: #1a202c; }
+        .modal-header { font-size: 22px; font-weight: 700; margin-bottom: 20px; color: #667eea; }
+        .modal-close { float: right; font-size: 28px; cursor: pointer; color: #718096; line-height: 1; }
+        .info-text { background: #eff6ff; color: #1e40af; padding: 12px; border-radius: 8px; font-size: 13px; margin: 12px 0; border-left: 4px solid #3b82f6; line-height: 1.6; }
+        .loading { text-align: center; padding: 20px; color: #667eea; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <a href="index.html" class="back-btn">← Back to Dashboard</a>
+            
+            <div class="header">
+                <h1>📚 Manage Subjects</h1>
+                <p id="class-info"></p>
+            </div>
+
+            <div id="loading" class="loading" style="display: none;">
+                Loading...
+            </div>
+
+            <div id="content" style="display: none;">
+                <div class="info-text">
+                    ℹ️ Add new subjects or edit/delete existing ones. Changes will be reflected immediately in your attendance system.
+                </div>
+
+                <h3 style="margin: 20px 0 12px 0; font-weight: 600;">Add New Subject</h3>
+                <div class="form-group">
+                    <input type="text" id="new-subject" placeholder="e.g., MATHEMATICS-1" maxlength="100">
+                </div>
+                <button class="btn btn-primary" onclick="addSubject()">+ Add Subject</button>
+                <div id="add-message"></div>
+
+                <h3 style="margin: 30px 0 12px 0; font-weight: 600;">Your Subjects</h3>
+                <div id="subject-list" class="subject-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT SUBJECT MODAL -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeEditModal()">&times;</span>
+            <h2 class="modal-header">Edit Subject</h2>
+            <div class="form-group">
+                <label>Subject Name</label>
+                <input type="text" id="edit-subject-name" placeholder="Enter new subject name" maxlength="100">
+            </div>
+            <button class="btn btn-success" onclick="saveEditedSubject()">💾 Save Changes</button>
+            <button class="btn btn-danger" onclick="closeEditModal()">Cancel</button>
+            <div id="edit-message"></div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAqe1sudjw-ATS_bv7f3pNyqAK_sw26cr4",
+            authDomain: "qr-attendance-system-a8a8a.firebaseapp.com",
+            databaseURL: "https://qr-attendance-10d7d-default-rtdb.firebaseio.com",
+            projectId: "qr-attendance-system-a8a8a",
+            storageBucket: "qr-attendance-system-a8a8a.firebasestorage.app",
+            messagingSenderId: "81759182063",
+            appId: "1:81759182063:web:37f3ec343d251c30dd191a"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let currentUser = null;
+        let editingSubjectIndex = null;
+        let originalSubjectName = null;
+
+        window.onload = function() {
+            // Check if user is logged in via sessionStorage
+            const storedUser = sessionStorage.getItem('currentUser');
+            if (!storedUser) {
+                alert('⚠️ Please login first');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = JSON.parse(storedUser);
+            initializePage();
+        };
+
+        function initializePage() {
+            document.getElementById('loading').style.display = 'block';
+
+            // Fetch fresh data from Firebase
+            db.ref('users/' + currentUser.username).once('value', (snapshot) => {
+                if (!snapshot.exists()) {
+                    alert('❌ User data not found');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                currentUser = { username: currentUser.username, ...snapshot.val() };
+                
+                document.getElementById('class-info').textContent = 
+                    `Passout ${20}${currentUser.year} - ${currentUser.college} ${currentUser.branch} Section ${currentUser.section}`;
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+
+                renderSubjects();
+            });
+        }
+
+        function renderSubjects() {
+            const list = document.getElementById('subject-list');
+            
+            if (!currentUser.subjects || currentUser.subjects.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="empty-icon">📚</div><div>No subjects added yet</div></div>';
+                return;
+            }
+
+            let html = currentUser.subjects.map((subject, index) => `
+                <div class="subject-item">
+                    <div class="subject-name">${subject}</div>
+                    <div class="subject-actions">
+                        <button class="btn-small btn-primary" onclick="editSubject(${index})">Edit</button>
+                        <button class="btn-small btn-danger" onclick="deleteSubject(${index})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+
+            list.innerHTML = html;
+        }
+
+        function addSubject() {
+            const input = document.getElementById('new-subject');
+            const subjectName = input.value.trim().toUpperCase();
+            const msgDiv = document.getElementById('add-message');
+
+            if (!subjectName) {
+                msgDiv.innerHTML = '<div class="message error">❌ Please enter a subject name</div>';
+                return;
+            }
+
+            // Check if subject already exists
+            if (currentUser.subjects.some(s => s.toUpperCase() === subjectName)) {
+                msgDiv.innerHTML = '<div class="message error">⚠️ Subject already exists</div>';
+                return;
+            }
+
+            currentUser.subjects.push(subjectName);
+
+            db.ref('users/' + currentUser.username + '/subjects').set(currentUser.subjects).then(() => {
+                msgDiv.innerHTML = '<div class="message success">✅ Subject added successfully!</div>';
+                input.value = '';
+                renderSubjects();
+                setTimeout(() => { msgDiv.innerHTML = ''; }, 3000);
+            }).catch((error) => {
+                msgDiv.innerHTML = '<div class="message error">❌ Error: ' + error.message + '</div>';
+            });
+        }
+
+        function editSubject(index) {
+            editingSubjectIndex = index;
+            originalSubjectName = currentUser.subjects[index];
+            
+            document.getElementById('edit-subject-name').value = originalSubjectName;
+            document.getElementById('edit-message').innerHTML = '';
+            document.getElementById('edit-modal').classList.add('active');
+            document.getElementById('edit-subject-name').focus();
+        }
+
+        function saveEditedSubject() {
+            const newName = document.getElementById('edit-subject-name').value.trim().toUpperCase();
+            const msgDiv = document.getElementById('edit-message');
+
+            if (!newName) {
+                msgDiv.innerHTML = '<div class="message error">❌ Please enter a subject name</div>';
+                return;
+            }
+
+            // Check if new name already exists (excluding current subject)
+            if (currentUser.subjects.some((s, i) => s.toUpperCase() === newName && i !== editingSubjectIndex)) {
+                msgDiv.innerHTML = '<div class="message error">⚠️ Subject already exists</div>';
+                return;
+            }
+
+            const oldName = currentUser.subjects[editingSubjectIndex];
+            currentUser.subjects[editingSubjectIndex] = newName;
+
+            db.ref('users/' + currentUser.username + '/subjects').set(currentUser.subjects).then(() => {
+                msgDiv.innerHTML = '<div class="message success">✅ Subject updated successfully!</div>';
+                
+                // Update all attendance records with old subject name
+                updateAttendanceRecords(oldName, newName);
+                
+                setTimeout(() => {
+                    closeEditModal();
+                    renderSubjects();
+                }, 1500);
+            }).catch((error) => {
+                msgDiv.innerHTML = '<div class="message error">❌ Error: ' + error.message + '</div>';
+            });
+        }
+
+        function updateAttendanceRecords(oldName, newName) {
+            // Search for attendance records with old subject name
+            db.ref('attendance').orderByKey().startAt(currentUser.username).endAt(currentUser.username + '\uf8ff').once('value', (snapshot) => {
+                const updates = {};
+                
+                snapshot.forEach(child => {
+                    const key = child.key;
+                    const parts = key.split('_');
+                    
+                    if (parts.length >= 3) {
+                        const subject = parts.slice(2).join('_');
+                        
+                        if (subject === oldName) {
+                            const newKey = `${parts[0]}_${parts[1]}_${newName}`;
+                            updates[newKey] = child.val();
+                            updates[key] = null; // Delete old key
+                        }
+                    }
+                });
+
+                if (Object.keys(updates).length > 0) {
+                    db.ref('attendance').update(updates);
+                }
+            });
+        }
+
+        function deleteSubject(index) {
+            const subjectName = currentUser.subjects[index];
+            
+            if (!confirm(`⚠️ Delete "${subjectName}"?\n\nThis will also delete all attendance records for this subject. This action cannot be undone!`)) {
+                return;
+            }
+
+            currentUser.subjects.splice(index, 1);
+
+            db.ref('users/' + currentUser.username + '/subjects').set(currentUser.subjects).then(() => {
+                // Delete all attendance records for this subject
+                deleteAttendanceRecords(subjectName);
+                renderSubjects();
+                
+                const msgDiv = document.getElementById('add-message');
+                msgDiv.innerHTML = '<div class="message success">✅ Subject deleted successfully!</div>';
+                setTimeout(() => { msgDiv.innerHTML = ''; }, 3000);
+            }).catch((error) => {
+                alert('❌ Error: ' + error.message);
+            });
+        }
+
+        function deleteAttendanceRecords(subjectName) {
+            db.ref('attendance').orderByKey().startAt(currentUser.username).endAt(currentUser.username + '\uf8ff').once('value', (snapshot) => {
+                const deletePromises = [];
+                
+                snapshot.forEach(child => {
+                    const key = child.key;
+                    const parts = key.split('_');
+                    
+                    if (parts.length >= 3) {
+                        const subject = parts.slice(2).join('_');
+                        
+                        if (subject === subjectName) {
+                            deletePromises.push(child.ref.remove());
+                        }
+                    }
+                });
+
+                Promise.all(deletePromises);
+            });
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.remove('active');
+            document.getElementById('edit-message').innerHTML = '';
+            editingSubjectIndex = null;
+            originalSubjectName = null;
+        }
+    </script>
+</body>
+</html>

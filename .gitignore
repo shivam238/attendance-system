@@ -1,0 +1,18 @@
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Scratch and temp files
+*.txt
+!README.md
+!License.txt
+firebase-debug.log*
+
+# Firebase cache
+.firebase/
