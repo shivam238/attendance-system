@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -11,53 +12,124 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    
+
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; min-height: 100vh; padding: 20px; }
-        .container { max-width: 500px; margin: 0 auto; }
-        .card { background: rgba(255, 255, 255, 0.95); border-radius: 16px; padding: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); color: #1a202c; margin-bottom: 20px; }
-        .header { text-align: center; margin-bottom: 24px; padding-top: 8px; }
-        .header h1 { font-size: 26px; font-weight: 800; color: #667eea; margin-bottom: 8px; }
-        .header p { color: #718096; font-size: 13px; }
-        /* Logo Animations - Premium Effects */
-         @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-        }
-        @keyframes glow {
-        0%, 100% { box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3), 0 0 0 rgba(102, 126, 234, 0); }
-        50% { box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5), 0 0 30px rgba(102, 126, 234, 0.4); }
-        }
-        @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-        }
-        @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.05); }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .logo { 
-        width: 110px; 
-        height: 110px; 
-        margin-bottom: 20px; 
-        border-radius: 50%; 
-        object-fit: cover; 
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); 
-        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); 
-        border: 3px solid #667eea;
-        animation: float 3s ease-in-out infinite, glow 2s ease-in-out infinite;
-        cursor: pointer;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
         }
-        .logo:hover { 
-        transform: scale(1.15) rotate(360deg);
-        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6), 0 0 40px rgba(118, 75, 162, 0.5);
-        border-color: #764ba2;
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
         }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            color: #1a202c;
+            margin-bottom: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-top: 8px;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            font-weight: 800;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 13px;
+        }
+
+        /* Logo Animations - Premium Effects */
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes glow {
+
+            0%,
+            100% {
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3), 0 0 0 rgba(102, 126, 234, 0);
+            }
+
+            50% {
+                box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5), 0 0 30px rgba(102, 126, 234, 0.4);
+            }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .logo {
+            width: 110px;
+            height: 110px;
+            margin-bottom: 20px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border: 3px solid #667eea;
+            animation: float 3s ease-in-out infinite, glow 2s ease-in-out infinite;
+            cursor: pointer;
+        }
+
+        .logo:hover {
+            transform: scale(1.15) rotate(360deg);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6), 0 0 40px rgba(118, 75, 162, 0.5);
+            border-color: #764ba2;
+        }
+
         .logo:active {
-        transform: scale(0.95);
-        } 
+            transform: scale(0.95);
+        }
+
         /* Logo Click Popup Styles */
         .logo-popup-overlay {
             position: fixed;
@@ -72,253 +144,738 @@
             z-index: 9999;
             animation: fadeIn 0.3s;
         }
+
         .logo-popup-overlay.active {
             display: flex;
-}
-.logo-popup-content {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 48px 40px;
-    border-radius: 24px;
-    max-width: 500px;
-    width: 90%;
-    text-align: center;
-    color: white;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-    animation: popupScale 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    position: relative;
-}
-@keyframes popupScale {
-    0% { transform: scale(0.5); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-}
-.logo-popup-close {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s;
-}
-.logo-popup-close:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: rotate(90deg);
-}
-.logo-popup-emoji {
-    font-size: 64px;
-    margin-bottom: 20px;
-    animation: bounce 1s infinite;
-}
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-.logo-popup-title {
-    font-size: 32px;
-    font-weight: 800;
-    margin-bottom: 16px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-.logo-popup-text {
-    font-size: 18px;
-    line-height: 1.6;
-    margin-bottom: 24px;
-    opacity: 0.95;
-}
-.logo-popup-gift {
-    background: white;
-    color: #667eea;
-    padding: 20px;
-    border-radius: 16px;
-    margin: 24px 0;
-    font-weight: 600;
-    font-size: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-.logo-popup-button {
-    background: white;
-    color: #667eea;
-    border: none;
-    padding: 14px 32px;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.3s;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
-}
-.logo-popup-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.4);
-}
-.request-card {
-    background: #fff3cd;
-    padding: 16px;
-    border-radius: 8px;
-    margin-bottom: 12px;
-    border-left: 4px solid #f59e0b;
-}
-.request-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-.request-subject {
-    font-weight: 600;
-    color: #1a202c;
-    font-size: 16px;
-}
-.request-late {
-    color: #dc3545;
-    font-size: 12px;
-    font-weight: 600;
-}
-.request-student {
-    color: #4a5568;
-    font-size: 14px;
-    margin-bottom: 8px;
-}
-.request-time {
-    color: #718096;
-    font-size: 12px;
-    margin-bottom: 12px;
-}
-.request-actions {
-    display: flex;
-    gap: 8px;
-}
-.approve-btn, .reject-btn {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 14px;
-}
-.approve-btn {
-    background: #10b981;
-    color: white;
-}
-.approve-btn:hover {
-    background: #059669;
-}
-.reject-btn {
-    background: #ef4444;
-    color: white;
-}
-.reject-btn:hover {
-    background: #dc2626;
-}
-.badge {
-    background: #ef4444;
-    color: white;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 11px;
-    font-weight: bold;
-    margin-left: 6px;
-}
+        }
 
-        .header-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; }
-        .info-btn { background: #667eea; color: white; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3); transition: all 0.3s; flex-shrink: 0; }
-        .info-btn:hover { transform: scale(1.1); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5); }
-        .status-badge { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; flex-shrink: 0; }
-        .status-badge.online { background: #d1fae5; color: #065f46; }
-        .status-badge.offline { background: #fee2e2; color: #991b1b; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
-        .status-badge.online .status-dot { background: #10b981; animation: pulse 2s infinite; }
-        .status-badge.offline .status-dot { background: #ef4444; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .logout-btn { background: rgba(239, 68, 68, 0.9); color: white; border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px; flex-shrink: 0; transition: all 0.3s; }
-        .logout-btn:hover { background: rgba(220, 38, 38, 0.9); }
-        .form-group { margin-bottom: 18px; }
-        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #2d3748; font-size: 14px; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px; transition: all 0.3s; }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.3s; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 8px; }
-        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
-        .btn-success { background: #10b981; color: #fff; }
-        .btn-danger { background: #ef4444; color: #fff; }
-        .btn-secondary { background: #64748b; color: #fff; }
-        .btn-small { width: auto; padding: 8px 16px; font-size: 13px; margin: 4px; }
-        .tabs { display: flex; gap: 8px; margin-bottom: 20px; background: #f1f5f9; padding: 6px; border-radius: 12px; }
-        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #64748b; font-weight: 600; cursor: pointer; border-radius: 8px; transition: all 0.3s; font-size: 13px; }
-        .tab-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; }
-        .tab { display: none; }
-        .tab.active { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .qr-container { background: #f8fafc; padding: 24px; border-radius: 12px; text-align: center; margin: 16px 0; border: 2px dashed #667eea; }
-        #qrcode { display: inline-block; padding: 16px; background: white; border-radius: 8px; }
-        .qr-timer { color: #ef4444; font-weight: 600; margin-top: 12px; font-size: 14px; }
-        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
-        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; text-align: center; color: white; }
-        .stat-value { font-size: 32px; font-weight: 800; }
-        .stat-label { font-size: 12px; opacity: 0.9; margin-top: 4px; text-transform: uppercase; }
-        .list-item { background: #f8fafc; padding: 14px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-        .list-item-info { flex: 1; min-width: 0; }
-        .list-item-name { font-weight: 600; color: #1a202c; }
-        .list-item-roll { font-size: 13px; color: #718096; margin-top: 4px; }
-        .list-item-time { font-size: 12px; color: #667eea; margin-top: 4px; }
-        .list-item-actions { display: flex; gap: 6px; flex-shrink: 0; }
-        .message { padding: 12px; border-radius: 8px; margin: 12px 0; font-weight: 600; font-size: 14px; }
-        .message.success { background: #d1fae5; color: #065f46; }
-        .message.error { background: #fee2e2; color: #991b1b; }
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        .modal.active { display: flex; }
-        .modal-content { background: white; padding: 28px; border-radius: 16px; width: 100%; max-width: 500px; max-height: 80vh; overflow-y: auto; color: #1a202c; }
-        .modal-header { font-size: 22px; font-weight: 700; margin-bottom: 20px; color: #667eea; }
-        .modal-close { float: right; font-size: 28px; cursor: pointer; color: #718096; line-height: 1; }
-        .empty-state { text-align: center; padding: 40px 20px; color: #718096; }
-        .empty-icon { font-size: 48px; margin-bottom: 16px; }
-        .screen { display: none; }
-        .screen.active { display: block; }
-        .info-text { background: #eff6ff; color: #1e40af; padding: 12px; border-radius: 8px; font-size: 13px; margin: 12px 0; border-left: 4px solid #3b82f6; line-height: 1.6; }
-        .student-list { max-height: 300px; overflow-y: auto; }
-        .history-card { background: #f8fafc; padding: 16px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid #667eea; }
-        .history-date { font-weight: 600; color: #1a202c; margin-bottom: 4px; }
-        .history-subject { font-size: 13px; color: #667eea; font-weight: 600; }
-        .history-count { font-size: 13px; color: #718096; margin-top: 4px; }
-        .download-all-btn { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-        .guide-section { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 2px solid #e2e8f0; }
-        .guide-section:last-child { border-bottom: none; }
-        .guide-title { font-size: 18px; font-weight: 700; color: #667eea; margin-bottom: 12px; }
-        .guide-text { color: #4a5568; line-height: 1.6; margin-bottom: 8px; }
-        .copy-prompt-btn { background: #10b981; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 12px; transition: all 0.3s; }
-        .copy-prompt-btn:hover { background: #059669; }
-        .contact-dev-btn { background: linear-gradient(135deg, #e1306c 0%, #fd1d1d 100%); color: white; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; margin-top: 20px; font-size: 15px; transition: all 0.3s; }
-        .contact-dev-btn:hover { transform: translateY(-2px); }
-        .forgot-password { text-align: center; margin-top: 12px; color: #667eea; cursor: pointer; font-size: 13px; text-decoration: underline; }
-        .danger-zone { background: #fee2e2; padding: 16px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #ef4444; }
-        .danger-title { color: #991b1b; font-weight: 700; margin-bottom: 8px; }
-        .danger-text { color: #7f1d1d; font-size: 13px; margin-bottom: 12px; line-height: 1.6; }
-        
+        .logo-popup-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 48px 40px;
+            border-radius: 24px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            color: white;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            animation: popupScale 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            position: relative;
+        }
+
+        @keyframes popupScale {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .logo-popup-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .logo-popup-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .logo-popup-emoji {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .logo-popup-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo-popup-text {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            opacity: 0.95;
+        }
+
+        .logo-popup-gift {
+            background: white;
+            color: #667eea;
+            padding: 20px;
+            border-radius: 16px;
+            margin: 24px 0;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .logo-popup-button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+        }
+
+        .logo-popup-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 255, 255, 0.4);
+        }
+
+        .request-card {
+            background: #fff3cd;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .request-subject {
+            font-weight: 600;
+            color: #1a202c;
+            font-size: 16px;
+        }
+
+        .request-late {
+            color: #dc3545;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .request-student {
+            color: #4a5568;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .request-time {
+            color: #718096;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        .request-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .approve-btn,
+        .reject-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .approve-btn {
+            background: #10b981;
+            color: white;
+        }
+
+        .approve-btn:hover {
+            background: #059669;
+        }
+
+        .reject-btn {
+            background: #ef4444;
+            color: white;
+        }
+
+        .reject-btn:hover {
+            background: #dc2626;
+        }
+
+        .badge {
+            background: #ef4444;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 6px;
+        }
+
+        .header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            gap: 12px;
+        }
+
+        .info-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .info-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .status-badge.online {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.offline {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-badge.online .status-dot {
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        .status-badge.offline .status-dot {
+            background: #ef4444;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            flex-shrink: 0;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(220, 38, 38, 0.9);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2d3748;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: #fff;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: #fff;
+        }
+
+        .btn-small {
+            width: auto;
+            padding: 8px 16px;
+            font-size: 13px;
+            margin: 4px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            background: #f1f5f9;
+            padding: 6px;
+            border-radius: 12px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+
+        .tab {
+            display: none;
+        }
+
+        .tab.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .qr-container {
+            background: #f8fafc;
+            padding: 24px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 16px 0;
+            border: 2px dashed #667eea;
+        }
+
+        #qrcode {
+            display: inline-block;
+            padding: 16px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .qr-timer {
+            color: #ef4444;
+            font-weight: 600;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            color: white;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 4px;
+            text-transform: uppercase;
+        }
+
+        .list-item {
+            background: #f8fafc;
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .list-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .list-item-name {
+            font-weight: 600;
+            color: #1a202c;
+        }
+
+        .list-item-roll {
+            font-size: 13px;
+            color: #718096;
+            margin-top: 4px;
+        }
+
+        .list-item-time {
+            font-size: 12px;
+            color: #667eea;
+            margin-top: 4px;
+        }
+
+        .list-item-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 12px 0;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 28px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            color: #1a202c;
+        }
+
+        .modal-header {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .modal-close {
+            float: right;
+            font-size: 28px;
+            cursor: pointer;
+            color: #718096;
+            line-height: 1;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #718096;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .info-text {
+            background: #eff6ff;
+            color: #1e40af;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin: 12px 0;
+            border-left: 4px solid #3b82f6;
+            line-height: 1.6;
+        }
+
+        .student-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .history-card {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .history-date {
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 4px;
+        }
+
+        .history-subject {
+            font-size: 13px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .history-count {
+            font-size: 13px;
+            color: #718096;
+            margin-top: 4px;
+        }
+
+        .download-all-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .guide-section {
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .guide-section:last-child {
+            border-bottom: none;
+        }
+
+        .guide-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 12px;
+        }
+
+        .guide-text {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .copy-prompt-btn {
+            background: #10b981;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 12px;
+            transition: all 0.3s;
+        }
+
+        .copy-prompt-btn:hover {
+            background: #059669;
+        }
+
+        .contact-dev-btn {
+            background: linear-gradient(135deg, #e1306c 0%, #fd1d1d 100%);
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 20px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .contact-dev-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .forgot-password {
+            text-align: center;
+            margin-top: 12px;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 13px;
+            text-decoration: underline;
+        }
+
+        .danger-zone {
+            background: #fee2e2;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #ef4444;
+        }
+
+        .danger-title {
+            color: #991b1b;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .danger-text {
+            color: #7f1d1d;
+            font-size: 13px;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
     </style>
 </head>
+
 <body>
-    
+
 
     <div class="container">
         <!-- LOGIN SCREEN -->
-      
+
 
 
         <div id="login-screen" class="screen active">
             <div class="card">
                 <div class="header">
-<img src="logo.png" alt="Attendance System Logo" class="logo" onclick="openLogoPopup()">
+                    <img src="logo.png" alt="Attendance System Logo" class="logo" onclick="openLogoPopup()">
                     <h1>🎓 Attendance System</h1>
                     <p>Login or Register your class</p>
                 </div>
@@ -371,14 +928,19 @@
                     </div>
                     <div class="form-group">
                         <label>Subjects (one per line)</label>
-                        <textarea id="reg-subjects" rows="4" placeholder="MATHEMATICS-1&#10;PHYSICS&#10;BASIC CIVIL ENGINEERING"></textarea>
+                        <textarea id="reg-subjects" rows="4"
+                            placeholder="MATHEMATICS-1&#10;PHYSICS&#10;BASIC CIVIL ENGINEERING"></textarea>
                     </div>
                     <div class="form-group">
                         <label>Students (format: Name - Roll Number, one per line)</label>
-                        <textarea id="reg-students" rows="6" placeholder="JOHN DOE - 25/B09/001&#10;JANE SMITH - 25/B09/002&#10;AMIT KUMAR - 25/B09/003"></textarea>
+                        <textarea id="reg-students" rows="6"
+                            placeholder="JOHN DOE - 25/B09/001&#10;JANE SMITH - 25/B09/002&#10;AMIT KUMAR - 25/B09/003"></textarea>
                         <button class="copy-prompt-btn" onclick="copyStudentPrompt()">📋 Copy ChatGPT Prompt</button>
                     </div>
-                    <div class="info-text">ℹ️ Username format: PASSOUT_YEAR+COLLEGE+BRANCH+SECTION<br>Example: If passout year is 2029, enter 29 → Username: 29DTUCSE5<br><br>📝 Student format: NAME - ROLLNO (one per line)<br><br>💡 Click "Copy ChatGPT Prompt" button, paste in ChatGPT with your student list, then copy result here!</div>
+                    <div class="info-text">ℹ️ Username format: PASSOUT_YEAR+COLLEGE+BRANCH+SECTION<br>Example: If
+                        passout year is 2029, enter 29 → Username: 29DTUCSE5<br><br>📝 Student format: NAME - ROLLNO
+                        (one per line)<br><br>💡 Click "Copy ChatGPT Prompt" button, paste in ChatGPT with your student
+                        list, then copy result here!</div>
                     <button class="btn btn-primary" onclick="registerUser()">Register Class</button>
                     <div id="register-message"></div>
                 </div>
@@ -396,9 +958,9 @@
                     </div>
                     <button class="logout-btn" onclick="logoutUser()">Logout</button>
                 </div>
-                
+
                 <div class="header">
-<img src="logo.png" alt="Attendance System Logo" class="logo" onclick="openLogoPopup()">
+                    <img src="logo.png" alt="Attendance System Logo" class="logo" onclick="openLogoPopup()">
                     <h1>📱 Attendance System</h1>
                     <p id="class-info"></p>
                 </div>
@@ -449,20 +1011,23 @@
                     <h3 style="margin: 20px 0 12px 0; font-weight: 600;">Today's Attendance</h3>
                     <div id="attendance-list"></div>
 
-                    <button class="btn btn-success" onclick="downloadTodayAttendance()">📊 Download Today's Excel</button>
-                    <button class="btn btn-primary download-all-btn" onclick="downloadFullAttendance()">📦 Download Full Attendance</button>
+                    <button class="btn btn-success" onclick="downloadTodayAttendance()">📊 Download Today's
+                        Excel</button>
+                    <button class="btn btn-primary download-all-btn" onclick="downloadFullAttendance()">📦 Download Full
+                        Attendance</button>
                 </div>
 
                 <!-- STUDENTS TAB -->
                 <div id="students-tab" class="tab">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px;">
                         <h3 style="font-weight: 600; flex: 1;">Student List</h3>
                         <button class="btn-small btn-success" onclick="openAddStudentModal()">+ Add Student</button>
                     </div>
                     <div id="students-list" class="student-list"></div>
                 </div>
 
-<!-- HISTORY TAB -->
+                <!-- HISTORY TAB -->
                 <div id="history-tab" class="tab">
                     <h3 style="margin-bottom: 16px; font-weight: 600;">Attendance History</h3>
                     <div id="history-container"></div>
@@ -480,24 +1045,25 @@
         </div>
     </div>
     <!-- LOGO CLICK POPUP -->
-<div id="logo-popup" class="logo-popup-overlay">
-    <div class="logo-popup-content">
-        <button class="logo-popup-close" onclick="closeLogoPopup()">&times;</button>
-        <div class="logo-popup-emoji">🎁</div>
-        <h2 class="logo-popup-title">Hey! Welcome! 👋</h2>
-        <p class="logo-popup-text">
-            Welcome to <strong>QR Attendance System</strong>!<br>
-            With a thinking to help you, we designed a small gift for you...
-        </p>
-        <div class="logo-popup-gift">
-            🌟 Aapka gift: Ek complete, easy-to-use attendance system jo time bachaye, paperwork khatam kare, aur aapki life ko aasaan banaye!
+    <div id="logo-popup" class="logo-popup-overlay">
+        <div class="logo-popup-content">
+            <button class="logo-popup-close" onclick="closeLogoPopup()">&times;</button>
+            <div class="logo-popup-emoji">🎁</div>
+            <h2 class="logo-popup-title">Hey! Welcome! 👋</h2>
+            <p class="logo-popup-text">
+                Welcome to <strong>QR Attendance System</strong>!<br>
+                With a thinking to help you, we designed a small gift for you...
+            </p>
+            <div class="logo-popup-gift">
+                🌟 Aapka gift: Ek complete, easy-to-use attendance system jo time bachaye, paperwork khatam kare, aur
+                aapki life ko aasaan banaye!
+            </div>
+            <p class="logo-popup-text" style="font-size: 15px; opacity: 0.9;">
+                💡 Pro tip: Dashboard mein "i" button pe click karke complete guide dekho!
+            </p>
+            <button class="logo-popup-button" onclick="closeLogoPopup()">Awesome! Let's Go 🚀</button>
         </div>
-        <p class="logo-popup-text" style="font-size: 15px; opacity: 0.9;">
-            💡 Pro tip: Dashboard mein "i" button pe click karke complete guide dekho!
-        </p>
-        <button class="logo-popup-button" onclick="closeLogoPopup()">Awesome! Let's Go 🚀</button>
     </div>
-</div>
     <!-- STUDENT ATTENDANCE MODAL -->
     <div id="student-modal" class="modal">
         <div class="modal-content">
@@ -540,7 +1106,7 @@
         <div class="modal-content">
             <span class="modal-close" onclick="closeGuideModal()">&times;</span>
             <h2 class="modal-header">📚 How to Use This System</h2>
-            
+
             <div class="guide-section">
                 <div class="guide-title">🎯 For CR (Class Representative)</div>
                 <div class="guide-text"><strong>Registration:</strong></div>
@@ -549,7 +1115,8 @@
                 <div class="guide-text">3. Enter your mobile number (for OTP verification)</div>
                 <div class="guide-text">4. Create a password</div>
                 <div class="guide-text">5. Add subjects (one per line)</div>
-                <div class="guide-text">6. Add students: Click "Copy ChatGPT Prompt" → Paste in ChatGPT with your student list → Copy formatted result → Paste in student field</div>
+                <div class="guide-text">6. Add students: Click "Copy ChatGPT Prompt" → Paste in ChatGPT with your
+                    student list → Copy formatted result → Paste in student field</div>
                 <div class="guide-text">7. Click "Register Class"</div>
                 <div class="guide-text" style="margin-top: 12px;"><strong>Taking Attendance:</strong></div>
                 <div class="guide-text">1. Login with your username (e.g., 29DTUCSE5)</div>
@@ -594,7 +1161,8 @@
 
             <div class="guide-section danger-zone">
                 <div class="danger-title">⚠️ DELETE ACCOUNT</div>
-                <div class="danger-text">Warning: This will permanently delete your account, all students, and attendance records. This action cannot be undone!</div>
+                <div class="danger-text">Warning: This will permanently delete your account, all students, and
+                    attendance records. This action cannot be undone!</div>
                 <button class="btn btn-danger" onclick="initiateDeleteAccount()">🗑️ Delete My Account</button>
             </div>
 
@@ -607,7 +1175,7 @@
         <div class="modal-content">
             <span class="modal-close" onclick="closeForgotPassword()">&times;</span>
             <h2 class="modal-header">🔑 Reset Password</h2>
-            
+
             <div id="forgot-step-1">
                 <div class="form-group">
                     <label>Enter Username</label>
@@ -637,7 +1205,7 @@
         <div class="modal-content">
             <span class="modal-close" onclick="closeDeleteAccount()">&times;</span>
             <h2 class="modal-header" style="color: #ef4444;">⚠️ Delete Account</h2>
-            
+
             <div class="danger-zone" style="margin-top: 0;">
                 <div class="danger-text" style="font-size: 15px; margin-bottom: 16px;">
                     <strong>This will permanently delete:</strong><br>
@@ -679,45 +1247,45 @@
             messagingSenderId: "81759182063",
             appId: "1:81759182063:web:37f3ec343d251c30dd191a"
         };
-                // ========== SMS OTP INTEGRATION ==========
-const FAST2SMS_API_KEY = "htSm7MDdv5lATweo9q48BLiHx6fnuFI0rUb3RjazZsYWJ1NcEPw2soKcZAOEVRYQN3LpCexhIfbzrTvD"; // Replace with your actual key
+        // ========== SMS OTP INTEGRATION ==========
+        const FAST2SMS_API_KEY = "htSm7MDdv5lATweo9q48BLiHx6fnuFI0rUb3RjazZsYWJ1NcEPw2soKcZAOEVRYQN3LpCexhIfbzrTvD"; // Replace with your actual key
 
-// Function to send OTP via SMS
-async function sendSMSOTP(phoneNumber, otp, purpose = 'verification') {
-    try {
-        const message = purpose === 'delete' 
-            ? `Your OTP for Account Deletion is: ${otp}. Valid for 5 minutes. DO NOT share this OTP.`
-            : `Your OTP for Password Reset is: ${otp}. Valid for 5 minutes. QR Attendance System`;
+        // Function to send OTP via SMS
+        async function sendSMSOTP(phoneNumber, otp, purpose = 'verification') {
+            try {
+                const message = purpose === 'delete'
+                    ? `Your OTP for Account Deletion is: ${otp}. Valid for 5 minutes. DO NOT share this OTP.`
+                    : `Your OTP for Password Reset is: ${otp}. Valid for 5 minutes. QR Attendance System`;
 
-        const response = await fetch('https://www.fast2sms.com/dev/bulkV2', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'authorization': FAST2SMS_API_KEY
-            },
-            body: JSON.stringify({
-                route: 'v3',
-                sender_id: 'FSTSMS',
-                message: message,
-                language: 'english',
-                flash: 0,
-                numbers: phoneNumber
-            })
-        });
+                const response = await fetch('https://www.fast2sms.com/dev/bulkV2', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'authorization': FAST2SMS_API_KEY
+                    },
+                    body: JSON.stringify({
+                        route: 'v3',
+                        sender_id: 'FSTSMS',
+                        message: message,
+                        language: 'english',
+                        flash: 0,
+                        numbers: phoneNumber
+                    })
+                });
 
-        const data = await response.json();
-        
-        if (data.return === true) {
-            return { success: true, message: 'OTP sent successfully' };
-        } else {
-            throw new Error(data.message || 'Failed to send OTP');
+                const data = await response.json();
+
+                if (data.return === true) {
+                    return { success: true, message: 'OTP sent successfully' };
+                } else {
+                    throw new Error(data.message || 'Failed to send OTP');
+                }
+            } catch (error) {
+                console.error('SMS Error:', error);
+                return { success: false, message: error.message };
+            }
         }
-    } catch (error) {
-        console.error('SMS Error:', error);
-        return { success: false, message: error.message };
-    }
-}
-// ========== END SMS INTEGRATION ==========
+        // ========== END SMS INTEGRATION ==========
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
@@ -726,16 +1294,16 @@ async function sendSMSOTP(phoneNumber, otp, purpose = 'verification') {
         let currentQRCode = null;
         let qrExpireTime = null;
         let editingStudent = null;
-        
+
 
         // Store current user in sessionStorage for subject management page
-       function storeUserSession() {
-         if (currentUser) {
-        sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
-         }
-}
+        function storeUserSession() {
+            if (currentUser) {
+                sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+            }
+        }
 
-// Update storeUserSession when user logs in
+        // Update storeUserSession when user logs in
 
 
         let otpStore = {};
@@ -755,7 +1323,7 @@ async function sendSMSOTP(phoneNumber, otp, purpose = 'verification') {
             }
         });
 
-        window.onload = function() {
+        window.onload = function () {
             const urlParams = new URLSearchParams(window.location.search);
             const code = urlParams.get('code');
 
@@ -808,7 +1376,7 @@ Now format this student list:
         function switchLoginTab(tab) {
             document.querySelectorAll('#login-screen .tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('#login-screen .tab-btn').forEach(b => b.classList.remove('active'));
-            
+
             if (tab === 'login') {
                 document.getElementById('login-tab').classList.add('active');
                 document.querySelectorAll('#login-screen .tab-btn')[0].classList.add('active');
@@ -926,9 +1494,9 @@ Now format this student list:
         }
 
         function initializeApp() {
-            document.getElementById('class-info').textContent = 
+            document.getElementById('class-info').textContent =
                 `Passout ${20}${currentUser.year} - ${currentUser.college} ${currentUser.branch} Section ${currentUser.section}`;
-            
+
             const select = document.getElementById('subject-select');
             select.innerHTML = '<option value="">-- Choose Subject --</option>';
             currentUser.subjects.forEach(subj => {
@@ -946,18 +1514,18 @@ Now format this student list:
 
             db.ref('attendance').orderByKey().startAt(currentUser.username).endAt(currentUser.username + '\uf8ff').once('value', (snapshot) => {
                 const data = snapshot.val();
-                
+
                 if (!data) {
                     container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div>No history yet</div></div>';
                     return;
                 }
 
                 const grouped = {};
-                
+
                 Object.entries(data).forEach(([key, records]) => {
                     const parts = key.split('_');
                     if (parts[0] !== currentUser.username) return;
-                    
+
                     const date = parts[1];
                     const subject = parts.slice(2).join('_');
 
@@ -972,9 +1540,9 @@ Now format this student list:
                 let html = '';
                 Object.entries(grouped).forEach(([subject, entries]) => {
                     html += `<h3 style="margin-top: 20px; margin-bottom: 12px; color: #667eea; font-weight: 600; font-size: 14px;">${subject}</h3>`;
-                    
+
                     entries.sort((a, b) => b.date.localeCompare(a.date));
-                    
+
                     entries.forEach(entry => {
                         html += `
                             <div class="history-card">
@@ -1001,7 +1569,7 @@ Now format this student list:
 
             db.ref('requests').orderByKey().startAt(currentUser.username).endAt(currentUser.username + '\uf8ff').once('value', (snapshot) => {
                 const data = snapshot.val();
-                
+
                 if (!data) {
                     container.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>No requests today</div></div>';
                     return;
@@ -1013,7 +1581,7 @@ Now format this student list:
                 Object.entries(data).forEach(([key, requests]) => {
                     const parts = key.split('_');
                     if (parts[0] !== currentUser.username || parts[1] !== today) return;
-                    
+
                     const subject = parts.slice(2).join('_');
 
                     if (!grouped[subject]) {
@@ -1029,13 +1597,13 @@ Now format this student list:
                 });
 
                 let html = '';
-                
+
                 if (totalPending === 0) {
                     html = '<div class="empty-state"><div class="empty-icon">✅</div><div>No pending requests</div></div>';
                 } else {
                     Object.entries(grouped).forEach(([subject, requests]) => {
                         html += `<h3 style="margin-top: 20px; margin-bottom: 12px; color: #667eea; font-weight: 600; font-size: 14px;">${subject} <span class="badge">${requests.length}</span></h3>`;
-                        
+
                         requests.forEach(request => {
                             html += `
                                 <div class="request-card">
@@ -1103,29 +1671,29 @@ Now format this student list:
             document.getElementById('guide-modal').classList.add('active');
         }
 
-function switchAppTab(tab) {
-    // Remove active class from all tabs and buttons
-    document.querySelectorAll('#app-screen .tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('#app-screen .tab-btn').forEach(b => b.classList.remove('active'));
-    
-    // Determine button index
-    let btnIndex;
-    if (tab === 'cr') btnIndex = 0;
-    else if (tab === 'students') btnIndex = 1;
-    else if (tab === 'history') btnIndex = 2;
-    else if (tab === 'requests') btnIndex = 3;
-    
-    // Activate correct button
-    document.querySelectorAll('#app-screen .tab-btn')[btnIndex].classList.add('active');
-    
-    // Activate correct tab content
-    document.getElementById(tab + '-tab').classList.add('active');
+        function switchAppTab(tab) {
+            // Remove active class from all tabs and buttons
+            document.querySelectorAll('#app-screen .tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('#app-screen .tab-btn').forEach(b => b.classList.remove('active'));
 
-    // Load content
-    if (tab === 'students') loadStudents();
-    if (tab === 'history') renderHistory();
-    if (tab === 'requests') renderRequests();
-}
+            // Determine button index
+            let btnIndex;
+            if (tab === 'cr') btnIndex = 0;
+            else if (tab === 'students') btnIndex = 1;
+            else if (tab === 'history') btnIndex = 2;
+            else if (tab === 'requests') btnIndex = 3;
+
+            // Activate correct button
+            document.querySelectorAll('#app-screen .tab-btn')[btnIndex].classList.add('active');
+
+            // Activate correct tab content
+            document.getElementById(tab + '-tab').classList.add('active');
+
+            // Load content
+            if (tab === 'students') loadStudents();
+            if (tab === 'history') renderHistory();
+            if (tab === 'requests') renderRequests();
+        }
 
         function onSubjectChange() {
             currentSubject = document.getElementById('subject-select').value;
@@ -1133,47 +1701,47 @@ function switchAppTab(tab) {
             updateAttendanceDisplay();
         }
 
-function generateQRCode() {
-    if (!currentSubject) {
-        alert('⚠️ Please select a subject first');
-        return;
-    }
+        function generateQRCode() {
+            if (!currentSubject) {
+                alert('⚠️ Please select a subject first');
+                return;
+            }
 
-    const today = new Date().toISOString().split('T')[0];
-    const code = `${currentUser.username}_${today}_${currentSubject}`;
-    const expiryTime = Date.now() + (5 * 60 * 1000); // 5 minutes
-    
-    const baseURL = window.location.origin + window.location.pathname;
-    const url = `${baseURL}?code=${code}`;
+            const today = new Date().toISOString().split('T')[0];
+            const code = `${currentUser.username}_${today}_${currentSubject}`;
+            const expiryTime = Date.now() + (5 * 60 * 1000); // 5 minutes
 
-    currentQRCode = { code, url, expiryTime }; // expiryTime add kiya
-    qrExpireTime = expiryTime; // Ye bhi add karo
+            const baseURL = window.location.origin + window.location.pathname;
+            const url = `${baseURL}?code=${code}`;
 
-    // Save expiry to Firebase
-    db.ref('qr_sessions/' + code).set({
-        generatedAt: Date.now(),
-        expiryTime: expiryTime,
-        subject: currentSubject,
-        username: currentUser.username
-    });
+            currentQRCode = { code, url, expiryTime }; // expiryTime add kiya
+            qrExpireTime = expiryTime; // Ye bhi add karo
 
-    document.getElementById('qrcode').innerHTML = '';
-    new QRCode(document.getElementById('qrcode'), {
-        text: url,
-        width: 200,
-        height: 200
-    });
+            // Save expiry to Firebase
+            db.ref('qr_sessions/' + code).set({
+                generatedAt: Date.now(),
+                expiryTime: expiryTime,
+                subject: currentSubject,
+                username: currentUser.username
+            });
 
-    document.getElementById('qr-section').style.display = 'block';
-    startQRTimer();
-}
+            document.getElementById('qrcode').innerHTML = '';
+            new QRCode(document.getElementById('qrcode'), {
+                text: url,
+                width: 200,
+                height: 200
+            });
+
+            document.getElementById('qr-section').style.display = 'block';
+            startQRTimer();
+        }
 
         function startQRTimer() {
             const timer = setInterval(() => {
                 const remaining = Math.max(0, Math.floor((qrExpireTime - Date.now()) / 1000));
                 const mins = Math.floor(remaining / 60);
                 const secs = remaining % 60;
-                document.getElementById('qr-timer').textContent = 
+                document.getElementById('qr-timer').textContent =
                     `Expires in ${mins}:${String(secs).padStart(2, '0')}`;
 
                 if (remaining <= 0) {
@@ -1199,7 +1767,7 @@ function generateQRCode() {
 
         function updateAttendanceDisplay() {
             if (!currentSubject) {
-                document.getElementById('attendance-list').innerHTML = 
+                document.getElementById('attendance-list').innerHTML =
                     '<div class="empty-state"><div class="empty-icon">📋</div><div>Select a subject</div></div>';
                 document.getElementById('present-count').textContent = '0';
                 document.getElementById('total-count').textContent = currentUser.students.length;
@@ -1245,89 +1813,90 @@ function generateQRCode() {
             }
         }
 
-function submitAttendance() {
-    const roll = document.getElementById('student-roll').value.trim().toUpperCase();
-    const msgDiv = document.getElementById('modal-message');
+        function submitAttendance() {
+            const roll = document.getElementById('student-roll').value.trim().toUpperCase();
+            const msgDiv = document.getElementById('modal-message');
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    const parts = code.split('_');
-    const username = parts[0];
-    const subject = parts.slice(2).join('_');
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const parts = code.split('_');
+            const username = parts[0];
+            const subject = parts.slice(2).join('_');
 
-    db.ref('users/' + username).once('value', (userSnapshot) => {
-        if (!userSnapshot.exists()) {
-            msgDiv.innerHTML = '<div class="message error">❌ Invalid link</div>';
-            return;
-        }
-
-        const userData = userSnapshot.val();
-        const student = userData.students.find(s => s.rollNo.toUpperCase() === roll);
-
-        if (!student) {
-            msgDiv.innerHTML = '<div class="message error">❌ Invalid roll number</div>';
-            document.getElementById('student-roll').value = '';
-            return;
-        }
-
-        const key = code;
-
-        // Check if already marked
-        db.ref('attendance/' + key).orderByChild('rollNo').equalTo(student.rollNo).once('value', (snapshot) => {
-            if (snapshot.exists()) {
-                msgDiv.innerHTML = '<div class="message error">⚠️ Attendance already marked!</div>';
-                return;
-            }
-
-            const currentTime = Date.now();
-
-            // Check QR session expiry
-            db.ref('qr_sessions/' + code).once('value', (sessionSnapshot) => {
-                const session = sessionSnapshot.val();
-                
-                if (!session) {
-                    msgDiv.innerHTML = '<div class="message error">❌ Invalid or expired session</div>';
+            db.ref('users/' + username).once('value', (userSnapshot) => {
+                if (!userSnapshot.exists()) {
+                    msgDiv.innerHTML = '<div class="message error">❌ Invalid link</div>';
                     return;
                 }
 
-                const isWithin5Minutes = currentTime <= session.expiryTime;
+                const userData = userSnapshot.val();
+                const student = userData.students.find(s => s.rollNo.toUpperCase() === roll);
 
-                if (isWithin5Minutes) {
-                    // Direct attendance - within 5 minutes
-                    const attendanceData = {
-                        rollNo: student.rollNo,
-                        name: student.name,
-                        time: new Date().toLocaleTimeString('en-IN'),
-                        timestamp: currentTime
-                    };
-
-                    db.ref('attendance/' + key).push(attendanceData).then(() => {
-                        const successURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(attendanceData.time)}`;
-                        window.location.href = successURL;
-                    });
-                } else {
-                    // Late request - after 5 minutes
-                    const lateMinutes = Math.floor((currentTime - session.expiryTime) / (1000 * 60));
-                    const requestData = {
-                        rollNo: student.rollNo,
-                        name: student.name,
-                        subject: subject,
-                        requestTime: new Date().toLocaleTimeString('en-IN'),
-                        timestamp: currentTime,
-                        lateBy: lateMinutes,
-                        status: 'pending'
-                    };
-
-                    db.ref('requests/' + key).push(requestData).then(() => {
-db.ref('requests/' + key).push(requestData).then(() => {
-    const lateURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(requestData.requestTime)}&late=true&lateBy=${lateMinutes}`;
-    window.location.href = lateURL;
-});                    });
+                if (!student) {
+                    msgDiv.innerHTML = '<div class="message error">❌ Invalid roll number</div>';
+                    document.getElementById('student-roll').value = '';
+                    return;
                 }
+
+                const key = code;
+
+                // Check if already marked
+                db.ref('attendance/' + key).orderByChild('rollNo').equalTo(student.rollNo).once('value', (snapshot) => {
+                    if (snapshot.exists()) {
+                        msgDiv.innerHTML = '<div class="message error">⚠️ Attendance already marked!</div>';
+                        return;
+                    }
+
+                    const currentTime = Date.now();
+
+                    // Check QR session expiry
+                    db.ref('qr_sessions/' + code).once('value', (sessionSnapshot) => {
+                        const session = sessionSnapshot.val();
+
+                        if (!session) {
+                            msgDiv.innerHTML = '<div class="message error">❌ Invalid or expired session</div>';
+                            return;
+                        }
+
+                        const isWithin5Minutes = currentTime <= session.expiryTime;
+
+                        if (isWithin5Minutes) {
+                            // Direct attendance - within 5 minutes
+                            const attendanceData = {
+                                rollNo: student.rollNo,
+                                name: student.name,
+                                time: new Date().toLocaleTimeString('en-IN'),
+                                timestamp: currentTime
+                            };
+
+                            db.ref('attendance/' + key).push(attendanceData).then(() => {
+                                const successURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(attendanceData.time)}`;
+                                window.location.href = successURL;
+                            });
+                        } else {
+                            // Late request - after 5 minutes
+                            const lateMinutes = Math.floor((currentTime - session.expiryTime) / (1000 * 60));
+                            const requestData = {
+                                rollNo: student.rollNo,
+                                name: student.name,
+                                subject: subject,
+                                requestTime: new Date().toLocaleTimeString('en-IN'),
+                                timestamp: currentTime,
+                                lateBy: lateMinutes,
+                                status: 'pending'
+                            };
+
+                            db.ref('requests/' + key).push(requestData).then(() => {
+                                db.ref('requests/' + key).push(requestData).then(() => {
+                                    const lateURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(requestData.requestTime)}&late=true&lateBy=${lateMinutes}`;
+                                    window.location.href = lateURL;
+                                });
+                            });
+                        }
+                    });
+                });
             });
-        });
-    });
-}
+        }
 
 
 
@@ -1396,7 +1965,7 @@ db.ref('requests/' + key).push(requestData).then(() => {
                 const index = currentUser.students.findIndex(s => s.rollNo === editingStudent);
                 if (index !== -1) {
                     currentUser.students[index].name = name;
-                    
+
                     db.ref('users/' + currentUser.username + '/students').set(currentUser.students).then(() => {
                         msgDiv.innerHTML = '<div class="message success">✅ Student updated!</div>';
                         setTimeout(() => {
@@ -1413,7 +1982,7 @@ db.ref('requests/' + key).push(requestData).then(() => {
                 }
 
                 currentUser.students.push({ rollNo: roll, name: name });
-                
+
                 db.ref('users/' + currentUser.username + '/students').set(currentUser.students).then(() => {
                     msgDiv.innerHTML = '<div class="message success">✅ Student added!</div>';
                     setTimeout(() => {
@@ -1428,7 +1997,7 @@ db.ref('requests/' + key).push(requestData).then(() => {
             if (!confirm('Delete this student?')) return;
 
             currentUser.students = currentUser.students.filter(s => s.rollNo !== rollNo);
-            
+
             db.ref('users/' + currentUser.username + '/students').set(currentUser.students).then(() => {
                 loadStudents();
             });
@@ -1493,7 +2062,7 @@ db.ref('requests/' + key).push(requestData).then(() => {
 
             db.ref('attendance').orderByKey().startAt(currentUser.username).endAt(currentUser.username + '\uf8ff').once('value', (snapshot) => {
                 const allData = snapshot.val();
-                
+
                 if (!allData) {
                     alert('⚠️ No attendance records found');
                     return;
@@ -1505,7 +2074,7 @@ db.ref('requests/' + key).push(requestData).then(() => {
                 Object.entries(allData).forEach(([key, records]) => {
                     const parts = key.split('_');
                     if (parts[0] !== currentUser.username) return;
-                    
+
                     const date = parts[1];
                     const subject = parts.slice(2).join('_');
 
@@ -1514,7 +2083,7 @@ db.ref('requests/' + key).push(requestData).then(() => {
                     }
 
                     const recordsArray = Object.values(records);
-                    
+
                     currentUser.students.forEach(student => {
                         const record = recordsArray.find(r => r.rollNo === student.rollNo);
                         subjectData[subject].push({
@@ -1530,7 +2099,7 @@ db.ref('requests/' + key).push(requestData).then(() => {
                 Object.entries(subjectData).forEach(([subject, data]) => {
                     const ws = XLSX.utils.json_to_sheet(data);
                     ws['!cols'] = [{ wch: 12 }, { wch: 15 }, { wch: 30 }, { wch: 10 }, { wch: 12 }];
-                    
+
                     let sheetName = subject.substring(0, 31).replace(/[:\\/?*\[\]]/g, '');
                     XLSX.utils.book_append_sheet(wb, ws, sheetName);
                 });
@@ -1552,18 +2121,18 @@ db.ref('requests/' + key).push(requestData).then(() => {
 
             db.ref('attendance').orderByKey().startAt(currentUser.username).endAt(currentUser.username + '\uf8ff').once('value', (snapshot) => {
                 const data = snapshot.val();
-                
+
                 if (!data) {
                     container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div>No history yet</div></div>';
                     return;
                 }
 
                 const grouped = {};
-                
+
                 Object.entries(data).forEach(([key, records]) => {
                     const parts = key.split('_');
                     if (parts[0] !== currentUser.username) return;
-                    
+
                     const date = parts[1];
                     const subject = parts.slice(2).join('_');
 
@@ -1578,9 +2147,9 @@ db.ref('requests/' + key).push(requestData).then(() => {
                 let html = '';
                 Object.entries(grouped).forEach(([subject, entries]) => {
                     html += `<h3 style="margin-top: 20px; margin-bottom: 12px; color: #667eea; font-weight: 600; font-size: 14px;">${subject}</h3>`;
-                    
+
                     entries.sort((a, b) => b.date.localeCompare(a.date));
-                    
+
                     entries.forEach(entry => {
                         html += `
                             <div class="history-card">
@@ -1627,39 +2196,39 @@ db.ref('requests/' + key).push(requestData).then(() => {
         }
 
         function sendOTP() {
-    const username = document.getElementById('forgot-username').value.trim();
-    const msgDiv = document.getElementById('forgot-message');
+            const username = document.getElementById('forgot-username').value.trim();
+            const msgDiv = document.getElementById('forgot-message');
 
-    if (!username) {
-        msgDiv.innerHTML = '<div class="message error">❌ Please enter username</div>';
-        return;
-    }
+            if (!username) {
+                msgDiv.innerHTML = '<div class="message error">❌ Please enter username</div>';
+                return;
+            }
 
-    msgDiv.innerHTML = '<div class="message" style="background: #fef3c7; color: #92400e;">⏳ Sending OTP...</div>';
+            msgDiv.innerHTML = '<div class="message" style="background: #fef3c7; color: #92400e;">⏳ Sending OTP...</div>';
 
-    db.ref('users/' + username).once('value', async (snapshot) => {
-        if (!snapshot.exists()) {
-            msgDiv.innerHTML = '<div class="message error">❌ Username not found</div>';
-            return;
+            db.ref('users/' + username).once('value', async (snapshot) => {
+                if (!snapshot.exists()) {
+                    msgDiv.innerHTML = '<div class="message error">❌ Username not found</div>';
+                    return;
+                }
+
+                const userData = snapshot.val();
+                const otp = generateOTP();
+                otpStore[username] = { otp, timestamp: Date.now() };
+
+                // Send SMS
+                const smsResult = await sendSMSOTP(userData.phone, otp, 'reset');
+
+                if (smsResult.success) {
+                    msgDiv.innerHTML = `<div class="message success">✅ OTP sent to ${userData.phone.substring(0, 2)}******${userData.phone.substring(8)}</div>`;
+                    document.getElementById('forgot-step-1').style.display = 'none';
+                    document.getElementById('forgot-step-2').style.display = 'block';
+                } else {
+                    msgDiv.innerHTML = `<div class="message error">❌ Failed to send OTP: ${smsResult.message}</div>`;
+                    delete otpStore[username];
+                }
+            });
         }
-
-        const userData = snapshot.val();
-        const otp = generateOTP();
-        otpStore[username] = { otp, timestamp: Date.now() };
-
-        // Send SMS
-        const smsResult = await sendSMSOTP(userData.phone, otp, 'reset');
-
-        if (smsResult.success) {
-            msgDiv.innerHTML = `<div class="message success">✅ OTP sent to ${userData.phone.substring(0, 2)}******${userData.phone.substring(8)}</div>`;
-            document.getElementById('forgot-step-1').style.display = 'none';
-            document.getElementById('forgot-step-2').style.display = 'block';
-        } else {
-            msgDiv.innerHTML = `<div class="message error">❌ Failed to send OTP: ${smsResult.message}</div>`;
-            delete otpStore[username];
-        }
-    });
-}
 
         function resetPassword() {
             const username = document.getElementById('forgot-username').value.trim();
@@ -1702,7 +2271,7 @@ db.ref('requests/' + key).push(requestData).then(() => {
                 alert('❌ You must be logged in');
                 return;
             }
-            
+
             document.getElementById('delete-step-1').style.display = 'block';
             document.getElementById('delete-step-2').style.display = 'none';
             document.getElementById('delete-message').innerHTML = '';
@@ -1714,38 +2283,38 @@ db.ref('requests/' + key).push(requestData).then(() => {
             document.getElementById('delete-account-modal').classList.remove('active');
         }
 
-function sendDeleteOTP() {
-    const password = document.getElementById('delete-password').value;
-    const msgDiv = document.getElementById('delete-message');
+        function sendDeleteOTP() {
+            const password = document.getElementById('delete-password').value;
+            const msgDiv = document.getElementById('delete-message');
 
-    if (!password) {
-        msgDiv.innerHTML = '<div class="message error">❌ Please enter password</div>';
-        return;
-    }
+            if (!password) {
+                msgDiv.innerHTML = '<div class="message error">❌ Please enter password</div>';
+                return;
+            }
 
-    if (password !== currentUser.password) {
-        msgDiv.innerHTML = '<div class="message error">❌ Incorrect password</div>';
-        return;
-    }
+            if (password !== currentUser.password) {
+                msgDiv.innerHTML = '<div class="message error">❌ Incorrect password</div>';
+                return;
+            }
 
-    msgDiv.innerHTML = '<div class="message" style="background: #fef3c7; color: #92400e;">⏳ Sending OTP...</div>';
+            msgDiv.innerHTML = '<div class="message" style="background: #fef3c7; color: #92400e;">⏳ Sending OTP...</div>';
 
-    const otp = generateOTP();
-    const deleteKey = currentUser.username + '_delete';
-    otpStore[deleteKey] = { otp, timestamp: Date.now() };
+            const otp = generateOTP();
+            const deleteKey = currentUser.username + '_delete';
+            otpStore[deleteKey] = { otp, timestamp: Date.now() };
 
-    // Send SMS
-    sendSMSOTP(currentUser.phone, otp, 'delete').then(smsResult => {
-        if (smsResult.success) {
-            msgDiv.innerHTML = `<div class="message success">✅ OTP sent to ${currentUser.phone.substring(0, 2)}******${currentUser.phone.substring(8)}</div>`;
-            document.getElementById('delete-step-1').style.display = 'none';
-            document.getElementById('delete-step-2').style.display = 'block';
-        } else {
-            msgDiv.innerHTML = `<div class="message error">❌ Failed to send OTP: ${smsResult.message}</div>`;
-            delete otpStore[deleteKey];
+            // Send SMS
+            sendSMSOTP(currentUser.phone, otp, 'delete').then(smsResult => {
+                if (smsResult.success) {
+                    msgDiv.innerHTML = `<div class="message success">✅ OTP sent to ${currentUser.phone.substring(0, 2)}******${currentUser.phone.substring(8)}</div>`;
+                    document.getElementById('delete-step-1').style.display = 'none';
+                    document.getElementById('delete-step-2').style.display = 'block';
+                } else {
+                    msgDiv.innerHTML = `<div class="message error">❌ Failed to send OTP: ${smsResult.message}</div>`;
+                    delete otpStore[deleteKey];
+                }
+            });
         }
-    });
-}
 
         function confirmDeleteAccount() {
             const otp = document.getElementById('delete-otp').value.trim();
@@ -1794,22 +2363,25 @@ function sendDeleteOTP() {
             });
         }
         function openLogoPopup() {
-    document.getElementById('logo-popup').classList.add('active');
-}
+            document.getElementById('logo-popup').classList.add('active');
+        }
 
-function closeLogoPopup() {
-    document.getElementById('logo-popup').classList.remove('active');
-}
+        function closeLogoPopup() {
+            document.getElementById('logo-popup').classList.remove('active');
+        }
     </script>
-<footer style="text-align:center; margin-top:30px; padding:20px; background:rgba(255,255,255,0.1); border-radius:8px;">
-  <a href="about.html" style="color:#fff; text-decoration:underline; margin:0 10px;">About</a> |
-  <a href="contact.html" style="color:#fff; text-decoration:underline; margin:0 10px;">Contact</a> |
-  <a href="privacy-policy.html" style="color:#fff; text-decoration:underline; margin:0 10px;">Privacy Policy</a> |
-  <a href="terms.html" style="color:#fff; text-decoration:underline; margin:0 10px;">Terms & Conditions</a>
-  <br><br>
-  <span style="color:#d1d5db;">&copy; 2025 QR Attendance System. All rights reserved. Developed by Shivam Kumar Mahto.</span>
-</footer>
+    <footer
+        style="text-align:center; margin-top:30px; padding:20px; background:rgba(255,255,255,0.1); border-radius:8px;">
+        <a href="about.html" style="color:#fff; text-decoration:underline; margin:0 10px;">About</a> |
+        <a href="contact.html" style="color:#fff; text-decoration:underline; margin:0 10px;">Contact</a> |
+        <a href="privacy-policy.html" style="color:#fff; text-decoration:underline; margin:0 10px;">Privacy Policy</a> |
+        <a href="terms.html" style="color:#fff; text-decoration:underline; margin:0 10px;">Terms & Conditions</a>
+        <br><br>
+        <span style="color:#d1d5db;">&copy; 2025 QR Attendance System. All rights reserved. Developed by Shivam Kumar
+            Mahto.</span>
+    </footer>
 
 
 </body>
+
 </html>
