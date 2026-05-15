@@ -1,12 +1,26 @@
 {
   "rules": {
-    ".read": "auth != null",
-    ".write": "auth != null",
     "users": {
-      "$user_id": {
-        ".read": "$user_id === auth.uid",
-        ".write": "$user_id === auth.uid"
+      ".read": true,
+      ".indexOn": ["username"],
+      "$uid": {
+        ".write": "$uid === auth.uid"
       }
+    },
+    "attendance": {
+      ".read": true,
+      ".write": true,
+      "$session_id": {
+         ".indexOn": ["rollNo"]
+      }
+    },
+    "requests": {
+      ".read": true,
+      ".write": true
+    },
+    "qr_sessions": {
+      ".read": true,
+      ".write": true
     }
   }
 }

@@ -201,6 +201,39 @@
             transition: all 0.3s;
         }
 
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            color: #333;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            font-weight: 600;
+            font-size: 14px;
+            transform: translateX(120%);
+            opacity: 0;
+            transition: all 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
         .logo-popup-close:hover {
             background: rgba(255, 255, 255, 0.3);
             transform: rotate(90deg);
@@ -1213,7 +1246,8 @@
         </div>
     </div>
 
-
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-container"></div>
 
     <script>
         const firebaseConfig = {
@@ -1688,6 +1722,21 @@ Now format this student list:
 
             currentQRCode = { code, url, expiryTime }; // expiryTime add kiya
             qrExpireTime = expiryTime; // Ye bhi add karo
+            const generationTime = Date.now();
+
+            // Set up real-time listener for this session
+            if (window.currentQRListenerRef) {
+                window.currentQRListenerRef.off();
+            }
+            window.currentQRListenerRef = db.ref('attendance/' + code);
+            
+            // Limit to new records only by querying timestamp
+            window.currentQRListenerRef.orderByChild('timestamp').startAt(generationTime).on('child_added', (snapshot) => {
+                const record = snapshot.val();
+                if (record && record.name) {
+                    showToast(`✅ ${record.name} (${record.rollNo}) marked attendance!`);
+                }
+            });
 
             // Save expiry to Firebase
             db.ref('qr_sessions/' + code).set({
@@ -1727,6 +1776,32 @@ Now format this student list:
             document.getElementById('qr-section').style.display = 'none';
             document.getElementById('qrcode').innerHTML = '';
             currentQRCode = null;
+            if (window.currentQRListenerRef) {
+                window.currentQRListenerRef.off();
+                window.currentQRListenerRef = null;
+            }
+        }
+
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = message;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
         }
 
         function copyQRLink() {
@@ -1795,13 +1870,17 @@ Now format this student list:
             const username = parts[0];
             const subject = parts.slice(2).join('_');
 
-            db.ref('users/' + username).once('value', (userSnapshot) => {
-                if (!userSnapshot.exists()) {
+            db.ref('users').orderByChild('username').equalTo(username).once('value', (userQuerySnapshot) => {
+                if (!userQuerySnapshot.exists()) {
                     msgDiv.innerHTML = '<div class="message error">❌ Invalid link</div>';
                     return;
                 }
 
-                const userData = userSnapshot.val();
+                let userData = null;
+                userQuerySnapshot.forEach(child => {
+                    userData = child.val();
+                });
+
                 const student = userData.students.find(s => s.rollNo.toUpperCase() === roll);
 
                 if (!student) {
