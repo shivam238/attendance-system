@@ -771,15 +771,12 @@
             color: var(--text-muted);
             font-weight: 600;
             font-size: 14px;
-            cursor: grab;
+            cursor: pointer;
             border-radius: 12px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             user-select: none;
-        }
-
-        .tab-btn:active {
-            cursor: grabbing;
+            white-space: nowrap;
         }
 
         .tab-btn:hover {
@@ -1274,19 +1271,34 @@
                 font-size: 22px;
             }
 
-            .tabs {
-                gap: 4px;
-                padding: 4px;
+            /* Tabs scroll wrapper: handles overflow so CR is never cut off */
+            .tabs-scroll-wrapper {
+                width: 100%;
                 overflow-x: auto;
-                /* Allow scrolling if tabs too wide */
                 -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                margin-bottom: 24px;
+                /* Align items left so scroll starts from first tab */
+                display: flex;
+                justify-content: flex-start;
+            }
+
+            .tabs-scroll-wrapper::-webkit-scrollbar {
+                display: none;
+            }
+
+            .tabs {
+                /* Reset centering on mobile — let wrapper handle alignment */
+                margin: 0;
+                flex-shrink: 0;
+                gap: 4px;
+                padding: 6px;
             }
 
             .tab-btn {
-                padding: 8px 4px;
-                font-size: 12px;
-                min-width: 80px;
-                /* Ensure buttons don't get too small */
+                padding: 8px 12px;
+                font-size: 13px;
+                flex-shrink: 0;
             }
 
             .stat-value {
