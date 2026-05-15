@@ -1,62 +1,55 @@
 # 📱 QR Code Attendance System
 
-A modern, **Firebase-powered web application** for managing student attendance using **QR codes** — built by **Shivam Kumar Mahto (yesss.shivam)**.
+A high-performance, **Firebase-powered web application** designed for seamless student attendance management using **dynamic QR codes**.
 
 ---
 
-## 🚀 Features
+## 🚀 Key Features
 
-- ✅ Real-time attendance tracking using Firebase Realtime Database  
-- 🔐 Secure, unique, and auto-expiring QR codes (10 minutes per session)  
-- 👨‍🏫 Teacher dashboard for managing and viewing attendance  
-- 👩‍🎓 Student self-attendance via scanned QR links  
-- 📊 Excel export with present/absent status  
-- 🗓️ Subject-wise attendance history  
-- 📱 Fully responsive and mobile-friendly dark UI  
-
----
-
-## 🧭 How to Use
-
-### 👨‍🏫 For Teachers
-
-1. Open `index.html` in your web browser.  
-2. Select a subject from the dropdown menu.  
-3. Click **“Generate QR Code”** to start a new session.  
-4. Share the displayed QR code with your students.  
-5. Monitor attendance in real-time:
-   - View who’s marked present  
-   - Delete incorrect entries  
-   - Download the attendance as an Excel file  
-   - View all previous attendance sessions in the **History** tab  
+- **⚡ Real-time Tracking**: Live attendance updates powered by Firebase Realtime Database.
+- **🔐 Secure Sessions**: Unique, auto-expiring QR codes to prevent unauthorized entries.
+- **👨‍🏫 Teacher Dashboard**: Comprehensive control panel for subject management, live monitoring, and history.
+- **👩‍🎓 Student Portal**: Instant, zero-install attendance submission via mobile scanning.
+- **📊 Smart Export**: Generate professional Excel reports with one click.
+- **🌙 Premium UI**: Responsive, modern dark-themed interface optimized for all devices.
 
 ---
+
+## 🧭 Quick Start Guide
+
+### 👨‍🏫 For Educators
+
+1. **Initialize**: Open the dashboard and sign in.
+2. **Setup**: Add your subjects and student list in the settings.
+3. **Generate**: Select a subject and click **“Generate QR Code”**.
+4. **Monitor**: Watch the attendance list populate in real-time.
+5. **Report**: Download the final list as an Excel file from the **History** tab.
 
 ### 👩‍🎓 For Students
 
-1. Scan the QR code shown by your teacher.  
-2. The attendance form opens automatically.  
-3. Enter your **Roll Number** exactly as listed.  
-4. Click **Submit Attendance**.  
-5. You’ll see a confirmation message once your attendance is recorded.  
+1. **Scan**: Use your phone camera to scan the teacher's QR code.
+2. **Verify**: Ensure the subject and teacher details are correct.
+3. **Submit**: Enter your Roll Number and tap **Submit**.
+4. **Confirm**: Receive instant confirmation of your attendance status.
 
 ---
 
-## ⚙️ Tech Stack
+## ⚙️ Built With
 
-- **Frontend:** HTML, CSS, JavaScript  
-- **Backend:** Firebase Realtime Database  
-- **Libraries Used:**  
-  - [`qrcode.js`](https://github.com/davidshimjs/qrcodejs) — for generating QR codes  
-  - [`xlsx.js`](https://github.com/SheetJS/sheetjs) — for exporting attendance data  
-
----
-
-## 🧑‍💻 Developer Info
-
-**Crafted with ❤️ by Shivam Kumar Mahto**  
-📧 Instagram / GitHub: [@yesss.shivam](https://github.com/yesss-shivam)  
-© 2025 • Made with Passion & Code  
+- **Logic**: Vanilla JavaScript (ES6+)
+- **Styling**: Modern CSS3 with Custom Properties & Dark Mode
+- **Backend**: Google Firebase (Auth & Realtime DB)
+- **Engines**: 
+  - `qrcode.js` for dynamic vector QR generation
+  - `SheetJS` for enterprise-grade Excel processing
 
 ---
 
+## 📄 License & Attribution
+
+This project is licensed under the **MIT License**.
+
+**Developed by Shivam Kumar Mahto**  
+🔗 [GitHub](https://github.com/shivam238) | 📷 [Instagram](https://www.instagram.com/heheshivam/)
+
+© 2025 QR Attendance System. All rights reserved.

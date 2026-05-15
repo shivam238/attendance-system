@@ -8,11 +8,28 @@
 .DS_Store
 Thumbs.db
 
-# Scratch and temp files
+# Dependencies
+node_modules/
+
+# Build and Temp files
+dist/
+build/
 *.txt
 !README.md
 !License.txt
-firebase-debug.log*
 
-# Firebase cache
+# Firebase
 .firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+.runtimeconfig.json
+
+# Environment Secrets
+.env
+.env.local
+.env.*.local
+
+# Project specific backups
+*_backup.html
+*_b*.html
