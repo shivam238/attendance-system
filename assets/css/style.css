@@ -1271,17 +1271,14 @@
                 font-size: 22px;
             }
 
-            /* Bleed technique: escape card's 16px horizontal padding so tabs scroll from true left */
+            /* Flex-start is CRITICAL: justify-content center hides the left side on overflow */
             .tabs-scroll-wrapper {
-                margin-left: -16px;
-                margin-right: -16px;
-                padding-left: 16px;
-                padding-right: 16px;
+                width: 100%;
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
                 scrollbar-width: none;
                 margin-bottom: 24px;
-                width: calc(100% + 32px);
+                padding-bottom: 4px; /* Space for scroll feeling */
             }
 
             .tabs-scroll-wrapper::-webkit-scrollbar {
@@ -1289,12 +1286,13 @@
             }
 
             .tabs {
-                /* Reset auto-centering — wrapper now handles scrolling from left */
+                justify-content: flex-start !important;
                 margin: 0;
                 flex-shrink: 0;
                 gap: 4px;
                 padding: 6px;
-                width: max-content; /* Ensure tabs take their natural full width */
+                width: max-content;
+                min-width: 100%; /* Ensure background spans full width */
             }
 
             .tab-btn {
