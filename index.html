@@ -946,7 +946,7 @@ Now format this student list:
 
             todayFeedRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                let totalPresent = 0;
+                let uniqueRollNumbers = new Set();
                 let html = '';
                 todayGroupedData = {}; // Reset global store
 
@@ -965,7 +965,7 @@ Now format this student list:
                             </div>`;
 
                         Object.values(records).forEach(r => {
-                            totalPresent++;
+                            if (r.rollNo) uniqueRollNumbers.add(r.rollNo);
                             html += `
                                 <div class="list-item" style="border-left: 4px solid var(--primary-color);">
                                     <div class="list-item-info">
@@ -978,9 +978,10 @@ Now format this student list:
                     });
                 }
 
-                document.getElementById('today-present').textContent = totalPresent;
+                const totalPresentUnique = uniqueRollNumbers.size;
+                document.getElementById('today-present').textContent = totalPresentUnique;
 
-                if (totalPresent > 0) {
+                if (totalPresentUnique > 0) {
                     document.getElementById('today-empty').style.display = 'none';
                     document.getElementById('today-content').style.display = 'block';
                     document.getElementById('today-list').innerHTML = html;
