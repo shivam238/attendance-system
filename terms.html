@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terms & Conditions | QR Attendance System</title>
+    <title>Terms of Service | QR Attendance System</title>
     <link rel="icon" type="image/png" href="logo.png">
     <style>
         :root {
             --primary: #6366f1;
             --primary-light: #818cf8;
-            --primary-dark: #4f46e5;
             --bg: #f8fafc;
             --card-bg: #ffffff;
             --text: #1e293b;
             --text-muted: #64748b;
             --border: #e2e8f0;
-            --glass: rgba(255, 255, 255, 0.8);
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
         }
 
         body.dark-mode {
@@ -24,7 +23,7 @@
             --text: #f8fafc;
             --text-muted: #94a3b8;
             --border: #334155;
-            --glass: rgba(30, 41, 59, 0.8);
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -34,19 +33,19 @@
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 60px 20px;
             transition: all 0.3s ease;
+            line-height: 1.7;
         }
 
         .container { 
             max-width: 900px; 
             margin: 0 auto; 
             background: var(--card-bg);
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            border-radius: 30px;
+            padding: 50px;
+            box-shadow: var(--shadow);
             border: 1px solid var(--border);
-            backdrop-filter: blur(10px);
         }
 
         h1 {
@@ -55,112 +54,74 @@
             background-clip: text;
             -webkit-text-fill-color: transparent;
             font-size: 42px;
-            margin-bottom: 12px;
-            font-weight: 800;
-        }
-
-        .last-updated {
-            color: var(--text-muted);
-            font-size: 14px;
-            margin-bottom: 32px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid var(--border);
-        }
-
-        h2 {
-            color: var(--primary-light);
-            font-size: 24px;
-            margin-top: 40px;
-            margin-bottom: 20px;
-            font-weight: 700;
-        }
-
-        h3 {
-            color: var(--text);
-            font-size: 18px;
-            margin-top: 24px;
-            margin-bottom: 12px;
-            font-weight: 600;
-        }
-
-        p, li {
-            color: var(--text-muted);
-            line-height: 1.8;
-            margin-bottom: 16px;
-            font-size: 15px;
-        }
-
-        ul, ol {
-            margin-left: 24px;
-            margin-bottom: 20px;
-        }
-
-        strong { color: var(--text); font-weight: 600; }
-
-        a {
-            color: var(--primary-light);
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        a:hover {
-            color: var(--primary);
-            text-decoration: underline;
-        }
-
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            background: var(--primary);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 12px;
             margin-bottom: 30px;
-            font-weight: 600;
-            transition: all 0.3s;
-            text-decoration: none;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-        }
-
-        .back-btn:hover {
-            transform: translateX(-5px);
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-        }
-
-        .highlight-box {
-            background: rgba(99, 102, 241, 0.05);
-            border-left: 4px solid var(--primary);
-            padding: 20px;
-            margin: 24px 0;
-            border-radius: 12px;
-        }
-
-        .warning-box {
-            background: rgba(239, 68, 68, 0.05);
-            border-left: 4px solid #ef4444;
-            padding: 20px;
-            margin: 24px 0;
-            border-radius: 12px;
-        }
-
-        footer {
-            border-top: 1px solid var(--border);
-            margin-top: 50px;
-            padding-top: 30px;
+            font-weight: 800;
             text-align: center;
         }
 
+        .update-date {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        section {
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: var(--primary-light);
+            font-weight: 700;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        p, li {
+            margin-bottom: 15px;
+            color: var(--text-muted);
+            font-size: 15px;
+        }
+
+        ul {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        footer {
+            margin-top: 60px;
+            padding-top: 40px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
         .footer-links a {
-            margin: 0 15px;
             color: var(--primary-light);
             text-decoration: none;
-            font-size: 14px;
             font-weight: 600;
         }
 
+        .back-home {
+            display: inline-block;
+            margin-bottom: 30px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
         @media (max-width: 768px) {
-            .container { padding: 25px; }
+            .container { padding: 30px; }
             h1 { font-size: 32px; }
         }
     </style>
@@ -176,49 +137,44 @@
 
 <body>
     <div class="container">
-        <a href="index.html" class="back-btn">← Back to Home</a>
+        <a href="index.html" class="back-home">← Back to Dashboard</a>
+        
+        <h1>Terms of Service</h1>
+        <p class="update-date">Last Updated: May 2025</p>
 
-        <h1>Terms & Conditions</h1>
-        <p class="last-updated">Last Updated: <strong>October 18, 2025</strong></p>
+        <section>
+            <h2>1. Acceptance of Terms</h2>
+            <p>By accessing and using the QR Attendance System, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the application.</p>
+        </section>
 
-        <div class="highlight-box">
-            <p><strong>Agreement to Terms:</strong> By accessing or using the QR Attendance System, you agree to be
-                bound by these Terms and Conditions. Please read them carefully before using our services.</p>
-        </div>
+        <section>
+            <h2>2. Use of Service</h2>
+            <p>You agree to use the service only for lawful purposes related to attendance tracking in educational or professional settings. You are responsible for:</p>
+            <ul>
+                <li>Maintaining the confidentiality of your account.</li>
+                <li>Ensuring the accuracy of the data you provide.</li>
+                <li>Not attempting to circumvent any security measures or proxy the attendance system.</li>
+            </ul>
+        </section>
 
-        <h2>1. Acceptance of Terms</h2>
-        <p>By registering for, accessing, or using the QR Attendance System ("Service"), you acknowledge that you have
-            read, understood, and agree to be bound by these Terms and Conditions and our <a
-                href="privacy-policy.html">Privacy Policy</a>.</p>
+        <section>
+            <h2>3. Privacy & Data</h2>
+            <p>Your use of the service is also governed by our Privacy Policy. We collect and store data necessary for the functionality of the system, including names, roll numbers, and attendance timestamps.</p>
+        </section>
 
-        <p>If you do not agree with any part of these terms, you must not use the Service.</p>
-
-        <h2>2. Service Description</h2>
-        <p>The QR Attendance System is a web-based platform designed to facilitate digital attendance management in
-            educational institutions through QR code technology and real-time synchronization.</p>
-
-        <h2>3. Eligibility</h2>
-        <p>To use this Service, you must be at least 18 years of age or have parental/guardian consent, and be a student, class representative, or educational administrator.</p>
-
-        <h2>4. User Accounts</h2>
-        <p>Users are responsible for maintaining the confidentiality of their login credentials and all activities that occur under their account.</p>
-
-        <div class="warning-box">
-            <p><strong>Warning:</strong> You are solely responsible for any consequences resulting from unauthorized use
-                of your account due to your failure to maintain security.</p>
-        </div>
-
-        <h2>5. Acceptable Use Policy</h2>
-        <p>You may use the Service only for legitimate educational attendance management purposes. Fraudulent attendance marking or system manipulation is strictly prohibited.</p>
+        <section>
+            <h2>4. Limitation of Liability</h2>
+            <p>The system is provided "as is" without any warranties. We shall not be liable for any data loss, system downtime, or inaccuracies in attendance records resulting from technical failures or user error.</p>
+        </section>
 
         <footer>
             <div class="footer-links">
                 <a href="index.html">Home</a>
                 <a href="about.html">About</a>
                 <a href="privacy-policy.html">Privacy Policy</a>
-                <a href="contact.html">Contact</a>
+                <a href="terms.html">Terms & Conditions</a>
             </div>
-            <p class="copyright">&copy; 2025 QR Attendance System. All rights reserved.</p>
+            <p style="color: var(--text-muted); font-size: 14px;">&copy; 2025 QR Attendance System. All rights reserved.</p>
         </footer>
     </div>
 </body>

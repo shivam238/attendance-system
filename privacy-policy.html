@@ -9,13 +9,12 @@
         :root {
             --primary: #6366f1;
             --primary-light: #818cf8;
-            --primary-dark: #4f46e5;
             --bg: #f8fafc;
             --card-bg: #ffffff;
             --text: #1e293b;
             --text-muted: #64748b;
             --border: #e2e8f0;
-            --glass: rgba(255, 255, 255, 0.8);
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
         }
 
         body.dark-mode {
@@ -24,7 +23,7 @@
             --text: #f8fafc;
             --text-muted: #94a3b8;
             --border: #334155;
-            --glass: rgba(30, 41, 59, 0.8);
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -34,19 +33,19 @@
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 60px 20px;
             transition: all 0.3s ease;
+            line-height: 1.7;
         }
 
         .container { 
             max-width: 900px; 
             margin: 0 auto; 
             background: var(--card-bg);
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            border-radius: 30px;
+            padding: 50px;
+            box-shadow: var(--shadow);
             border: 1px solid var(--border);
-            backdrop-filter: blur(10px);
         }
 
         h1 {
@@ -55,112 +54,69 @@
             background-clip: text;
             -webkit-text-fill-color: transparent;
             font-size: 42px;
-            margin-bottom: 12px;
-            font-weight: 800;
-        }
-
-        .last-updated {
-            color: var(--text-muted);
-            font-size: 14px;
-            margin-bottom: 32px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid var(--border);
-        }
-
-        h2 {
-            color: var(--primary-light);
-            font-size: 24px;
-            margin-top: 40px;
-            margin-bottom: 20px;
-            font-weight: 700;
-        }
-
-        h3 {
-            color: var(--text);
-            font-size: 18px;
-            margin-top: 24px;
-            margin-bottom: 12px;
-            font-weight: 600;
-        }
-
-        p, li {
-            color: var(--text-muted);
-            line-height: 1.8;
-            margin-bottom: 16px;
-            font-size: 15px;
-        }
-
-        ul, ol {
-            margin-left: 24px;
-            margin-bottom: 20px;
-        }
-
-        strong { color: var(--text); font-weight: 600; }
-
-        a {
-            color: var(--primary-light);
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        a:hover {
-            color: var(--primary);
-            text-decoration: underline;
-        }
-
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            background: var(--primary);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 12px;
             margin-bottom: 30px;
-            font-weight: 600;
-            transition: all 0.3s;
-            text-decoration: none;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-        }
-
-        .back-btn:hover {
-            transform: translateX(-5px);
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-        }
-
-        .highlight-box {
-            background: rgba(99, 102, 241, 0.05);
-            border-left: 4px solid var(--primary);
-            padding: 20px;
-            margin: 24px 0;
-            border-radius: 12px;
-        }
-
-        .warning-box {
-            background: rgba(245, 158, 11, 0.05);
-            border-left: 4px solid #f59e0b;
-            padding: 20px;
-            margin: 24px 0;
-            border-radius: 12px;
-        }
-
-        footer {
-            border-top: 1px solid var(--border);
-            margin-top: 50px;
-            padding-top: 30px;
+            font-weight: 800;
             text-align: center;
         }
 
+        .update-date {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        section {
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: var(--primary-light);
+            font-weight: 700;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        p, li {
+            margin-bottom: 15px;
+            color: var(--text-muted);
+            font-size: 15px;
+        }
+
+        footer {
+            margin-top: 60px;
+            padding-top: 40px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
         .footer-links a {
-            margin: 0 15px;
             color: var(--primary-light);
             text-decoration: none;
-            font-size: 14px;
             font-weight: 600;
         }
 
+        .back-home {
+            display: inline-block;
+            margin-bottom: 30px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
         @media (max-width: 768px) {
-            .container { padding: 25px; }
+            .container { padding: 30px; }
             h1 { font-size: 32px; }
         }
     </style>
@@ -176,37 +132,39 @@
 
 <body>
     <div class="container">
-        <a href="index.html" class="back-btn">← Back to Home</a>
-
+        <a href="index.html" class="back-home">← Back to Dashboard</a>
+        
         <h1>Privacy Policy</h1>
-        <p class="last-updated">Last Updated: <strong>October 18, 2025</strong></p>
+        <p class="update-date">Last Updated: May 2025</p>
 
-        <div class="highlight-box">
-            <p><strong>Your Privacy Matters:</strong> We are committed to protecting your personal information and being
-                transparent about how we collect, use, and safeguard your data.</p>
-        </div>
+        <section>
+            <h2>Data Collection</h2>
+            <p>We collect only the information necessary to provide the attendance service. This includes student names, roll numbers, and attendance timestamps provided by users.</p>
+        </section>
 
-        <p>Welcome to <strong>QR Attendance System</strong>. This Privacy Policy explains how we collect, use, and protect your information when you use our attendance management platform.</p>
+        <section>
+            <h2>Data Usage</h2>
+            <p>The collected data is used exclusively for generating attendance reports and managing class records within the application. We do not sell or share this data with third parties.</p>
+        </section>
 
-        <h2>1. Information We Collect</h2>
-        <p>We collect information you provide (registration data, student lists, subject data) and technical data (IP address, browser type) to provide and improve our service.</p>
+        <section>
+            <h2>Security</h2>
+            <p>We use industry-standard security measures, including Google Firebase authentication and database rules, to ensure that your data is accessed only by authorized users.</p>
+        </section>
 
-        <h2>2. Data Storage and Security</h2>
-        <p>All data is securely stored in Google Firebase Realtime Database. We use encryption and access controls to protect your information.</p>
-
-        <div class="warning-box">
-            <p><strong>Important:</strong> While we implement robust security measures, no system is completely secure.
-                We encourage users to maintain strong passwords and report any suspicious activity immediately.</p>
-        </div>
+        <section>
+            <h2>User Control</h2>
+            <p>Users have the right to delete their accounts and all associated data at any time through the in-app settings. Deletion is permanent and removes all records from our database.</p>
+        </section>
 
         <footer>
             <div class="footer-links">
                 <a href="index.html">Home</a>
                 <a href="about.html">About</a>
+                <a href="privacy-policy.html">Privacy Policy</a>
                 <a href="terms.html">Terms & Conditions</a>
-                <a href="contact.html">Contact</a>
             </div>
-            <p class="copyright">&copy; 2025 QR Attendance System. All rights reserved.</p>
+            <p style="color: var(--text-muted); font-size: 14px;">&copy; 2025 QR Attendance System. All rights reserved.</p>
         </footer>
     </div>
 </body>
