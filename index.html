@@ -922,13 +922,13 @@
         }
 
         .info-text {
-            background: #eff6ff;
-            color: #1e40af;
+            background: var(--tab-bg);
+            color: var(--text-color);
             padding: 12px;
             border-radius: 8px;
             font-size: 13px;
             margin: 12px 0;
-            border-left: 4px solid #3b82f6;
+            border-left: 4px solid var(--primary-color);
             line-height: 1.6;
         }
 
@@ -1899,25 +1899,25 @@ Now format this student list:
 
                 let html = '';
                 Object.entries(grouped).forEach(([subject, entries]) => {
-                    html += `<h3 style="margin-top: 20px; margin-bottom: 12px; color: #667eea; font-weight: 600; font-size: 14px;">${subject}</h3>`;
+                    html += `<h3 style="margin-top: 20px; margin-bottom: 12px; color: var(--primary-color); font-weight: 600; font-size: 14px;">${subject}</h3>`;
 
                     entries.sort((a, b) => b.date.localeCompare(a.date));
 
                     entries.forEach(entry => {
                         let studentsHtml = entry.students.map(s => `
-                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 13px;">
-                                <div><strong>${s.name}</strong> <br> <span style="color: #666; font-size: 12px;">Roll: ${s.rollNo}</span></div>
-                                <div style="color: #4CAF50; font-weight: 500;">${s.time}</div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color); font-size: 13px;">
+                                <div><strong style="color: var(--text-color);">${s.name}</strong> <br> <span style="color: var(--text-muted); font-size: 12px;">Roll: ${s.rollNo}</span></div>
+                                <div style="color: #10b981; font-weight: 500;">${s.time}</div>
                             </div>
                         `).join('');
 
                         html += `
-                            <details style="cursor: pointer; background: white; padding: 12px; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s;">
-                                <summary style="display: flex; justify-content: space-between; font-weight: 600; outline: none; list-style: none;">
+                            <details style="cursor: pointer; background: var(--card-bg); border: 1px solid var(--border-color); padding: 12px; border-radius: 12px; margin-bottom: 8px; box-shadow: var(--shadow); transition: all 0.2s;">
+                                <summary style="display: flex; justify-content: space-between; font-weight: 600; outline: none; list-style: none; color: var(--text-color);">
                                     <span>📅 ${entry.date}</span>
-                                    <span style="color: #667eea; font-size: 13px;">👥 ${entry.count} Present ▾</span>
+                                    <span style="color: var(--primary-color); font-size: 13px;">👥 ${entry.count} Present ▾</span>
                                 </summary>
-                                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee;">
+                                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color);">
                                     ${studentsHtml}
                                 </div>
                             </details>
@@ -1974,22 +1974,22 @@ Now format this student list:
                     html = '<div class="empty-state"><div class="empty-icon">✅</div><div>No pending requests</div></div>';
                 } else {
                     Object.entries(grouped).forEach(([subject, requests]) => {
-                        html += `<h3 style="margin-top: 20px; margin-bottom: 12px; color: #667eea; font-weight: 600; font-size: 14px;">${subject} <span class="badge">${requests.length}</span></h3>`;
+                        html += `<h3 style="margin-top: 20px; margin-bottom: 12px; color: var(--primary-color); font-weight: 600; font-size: 14px;">${subject} <span class="badge">${requests.length}</span></h3>`;
 
                         requests.forEach(request => {
                             html += `
-                                <div style="background: white; padding: 16px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 4px solid #ff9800;">
+                                <div style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 16px; margin-bottom: 12px; box-shadow: var(--shadow); border-left: 4px solid #f59e0b;">
                                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                        <div style="font-weight: 700; font-size: 15px; color: #333;">${request.name}</div>
-                                        <div style="background: #fff3e0; color: #e65100; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">🕒 ${request.lateBy} min late</div>
+                                        <div style="font-weight: 700; font-size: 15px; color: var(--text-color);">${request.name}</div>
+                                        <div style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">🕒 ${request.lateBy} min late</div>
                                     </div>
-                                    <div style="color: #666; font-size: 13px; margin-bottom: 4px;"><strong>Roll No:</strong> ${request.rollNo}</div>
-                                    <div style="color: #666; font-size: 13px; margin-bottom: 12px;"><strong>Requested at:</strong> ${request.requestTime}</div>
+                                    <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 4px;"><strong>Roll No:</strong> ${request.rollNo}</div>
+                                    <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px;"><strong>Requested at:</strong> ${request.requestTime}</div>
                                     <div style="display: flex; gap: 8px;">
-                                        <button style="flex: 1; padding: 8px; border: none; border-radius: 6px; background: #4CAF50; color: white; font-weight: 600; cursor: pointer; transition: 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'" onclick="approveRequest('${request.key}', '${request.reqId}', '${request.rollNo}', '${request.name}', '${subject}')">
+                                        <button style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: #10b981; color: white; font-weight: 600; cursor: pointer; transition: 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'" onclick="approveRequest('${request.key}', '${request.reqId}', '${request.rollNo}', '${request.name}', '${subject}')">
                                             ✅ Approve
                                         </button>
-                                        <button style="flex: 1; padding: 8px; border: none; border-radius: 6px; background: #f44336; color: white; font-weight: 600; cursor: pointer; transition: 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'" onclick="rejectRequest('${request.key}', '${request.reqId}')">
+                                        <button style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: #ef4444; color: white; font-weight: 600; cursor: pointer; transition: 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'" onclick="rejectRequest('${request.key}', '${request.reqId}')">
                                             ❌ Reject
                                         </button>
                                     </div>
@@ -2680,57 +2680,7 @@ Now format this student list:
             });
         }
 
-        function renderHistory() {
-            const container = document.getElementById('history-container');
 
-            db.ref('attendance').orderByKey().startAt(currentUser.username).endAt(currentUser.username + '\uf8ff').once('value', (snapshot) => {
-                const data = snapshot.val();
-
-                if (!data) {
-                    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div>No history yet</div></div>';
-                    return;
-                }
-
-                const grouped = {};
-
-                Object.entries(data).forEach(([key, records]) => {
-                    const parts = key.split('_');
-                    if (parts[0] !== currentUser.username) return;
-
-                    const date = parts[1];
-                    const subject = parts.slice(2).join('_');
-
-                    if (!grouped[subject]) {
-                        grouped[subject] = [];
-                    }
-
-                    const recordsArray = Object.values(records);
-                    grouped[subject].push({ date, count: recordsArray.length });
-                });
-
-                let html = '';
-                Object.entries(grouped).forEach(([subject, entries]) => {
-                    html += `<h3 style="margin-top: 20px; margin-bottom: 12px; color: #667eea; font-weight: 600; font-size: 14px;">${subject}</h3>`;
-
-                    entries.sort((a, b) => b.date.localeCompare(a.date));
-
-                    entries.forEach(entry => {
-                        html += `
-                            <div class="history-card">
-                                <div class="history-date">📅 ${entry.date}</div>
-                                <div class="history-count">👥 ${entry.count} students present</div>
-                            </div>
-                        `;
-                    });
-                });
-
-                if (html === '') {
-                    html = '<div class="empty-state"><div class="empty-icon">📊</div><div>No history yet</div></div>';
-                }
-
-                container.innerHTML = html;
-            });
-        }
 
         function openGuideModal() {
             document.getElementById('guide-modal').classList.add('active');
