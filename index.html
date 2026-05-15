@@ -120,16 +120,19 @@
         <!-- MAIN APP SCREEN -->
         <div id="app-screen" class="screen">
             <div class="card">
-                <div class="header-controls" style="margin-bottom: 24px; padding-top: 10px;">
-                    <button class="info-btn" onclick="openGuideModal()">i</button>
-                    <button class="theme-btn" onclick="toggleDarkMode()"
-                        style="color: var(--text-color); background: var(--tab-bg); border-radius: 12px; padding: 6px 14px; font-size: 13px;">🌙
-                        Dark Mode</button>
-                    <div class="status-badge online" id="connection-status">
-                        <span class="status-dot"></span>
-                        <span>Connected</span>
+                <div class="header-controls">
+                    <div class="header-controls-left">
+                        <button class="info-btn" onclick="openGuideModal()">i</button>
+                        <div class="status-badge online" id="connection-status">
+                            <span class="status-dot"></span>
+                            <span>Connected</span>
+                        </div>
                     </div>
-                    <button class="logout-btn" onclick="logoutUser()">Logout</button>
+                    <div class="header-controls-right">
+                        <button class="theme-btn" onclick="toggleDarkMode()"
+                            style="color: var(--text-color); background: var(--tab-bg); border-radius: 12px; padding: 8px 16px; font-size: 13px;">🌙 Dark Mode</button>
+                        <button class="logout-btn" onclick="logoutUser()">Logout</button>
+                    </div>
                 </div>
 
                 <div class="header">
@@ -149,54 +152,69 @@
 
                 <!-- CR TAB -->
                 <div id="cr-tab" class="tab active">
-                    <div class="form-group">
-                        <label style="color: var(--text-color);">Select Subject</label>
-                        <select id="subject-select" onchange="onSubjectChange()">
-                            <option value="">-- Choose Subject --</option>
-                        </select>
-                    </div>
+                    <div class="dashboard-grid">
+                        <!-- LEFT COLUMN: CONTROLS -->
+                        <div class="control-panel">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label style="color: var(--text-color);">Select Subject</label>
+                                <select id="subject-select" onchange="onSubjectChange()">
+                                    <option value="">-- Choose Subject --</option>
+                                </select>
+                            </div>
 
-                    <a href="manage-subjects.html" style="display: block; margin-bottom: 16px;">
-                        <button class="btn btn-secondary" type="button"
-                            style="margin: 0; background: var(--tab-bg); color: var(--text-color); border: 1px solid var(--input-border);">📚
-                            Manage Subjects</button>
-                    </a>
+                            <a href="manage-subjects.html" style="display: block;">
+                                <button class="btn btn-secondary" type="button"
+                                    style="margin: 0; background: var(--tab-bg); color: var(--text-color); border: 1px solid var(--input-border); width: 100%;">
+                                    📚 Manage Subjects
+                                </button>
+                            </a>
 
-                    <button class="btn btn-primary" onclick="generateQRCode()">📲 Generate QR Code</button>
+                            <button class="btn btn-primary" onclick="generateQRCode()">📲 Generate QR Code</button>
 
-                    <div id="qr-section" style="display: none;">
-                        <div class="qr-container"
-                            style="background: var(--tab-bg); border-color: var(--primary-color);">
-                            <div id="qrcode" style="background: #fff; padding: 10px; border-radius: 8px;"></div>
-                            <div class="qr-timer" id="qr-timer"></div>
-                            <div id="timer-extension" style="display: none; margin-top: 15px;">
-                                <button class="btn btn-secondary btn-small" onclick="extendTimer()"
-                                    style="background: #fbbf24; color: #fff; border: none;">⏱️ +1 Min Extend</button>
+                            <div id="qr-section" style="display: none;">
+                                <div class="qr-container"
+                                    style="background: var(--tab-bg); border-color: var(--primary-color);">
+                                    <div id="qrcode" style="background: #fff; padding: 10px; border-radius: 8px;"></div>
+                                    <div class="qr-timer" id="qr-timer"></div>
+                                    <div id="timer-extension" style="display: none; margin-top: 15px;">
+                                        <button class="btn btn-secondary btn-small" onclick="extendTimer()"
+                                            style="background: #fbbf24; color: #fff; border: none;">⏱️ +1 Min Extend</button>
+                                    </div>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <button class="btn btn-secondary" onclick="copyQRLink()" style="font-size: 11px;">📋 Copy</button>
+                                    <button class="btn btn-danger" onclick="resetQR()" style="font-size: 11px;">✕ Clear</button>
+                                </div>
                             </div>
                         </div>
-                        <button class="btn btn-secondary" onclick="copyQRLink()">📋 Copy Link</button>
-                        <button class="btn btn-danger" onclick="resetQR()">✕ Clear QR</button>
-                    </div>
 
-                    <div class="stats">
-                        <div class="stat-card">
-                            <div class="stat-value" id="present-count">0</div>
-                            <div class="stat-label">Present</div>
+                        <!-- RIGHT COLUMN: STATS & LOG -->
+                        <div class="display-panel">
+                            <div class="stats">
+                                <div class="stat-card">
+                                    <div class="stat-value" id="present-count">0</div>
+                                    <div class="stat-label">Present</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-value" id="total-count">0</div>
+                                    <div class="stat-label">Total</div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 20px; background: rgba(0,0,0,0.05); padding: 16px; border-radius: 16px; border: 1px solid var(--border-color);">
+                                <h4 style="margin: 0 0 12px 0; font-weight: 700; color: var(--primary-color); font-size: 14px; text-transform: uppercase;">
+                                    Today's Attendance Feed
+                                </h4>
+                                <div id="attendance-list" style="max-height: 200px; overflow-y: auto; overflow-x: hidden;"></div>
+                            </div>
+
+                            <div style="margin-top: 16px;">
+                                <button onclick="openExportModal()" class="btn btn-primary"
+                                    style="width: 100%; padding: 14px; border-radius: 12px; font-weight: 700; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
+                                    📊 EXPORT HUB
+                                </button>
+                            </div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="total-count">0</div>
-                            <div class="stat-label">Total</div>
-                        </div>
-                    </div>
-
-                    <h3 style="margin: 20px 0 12px 0; font-weight: 600; color: var(--text-color);">Today's Log</h3>
-                    <div id="attendance-list"></div>
-
-                    <div style="margin-top: 25px;">
-                        <button onclick="openExportModal()" class="btn btn-primary"
-                            style="width: 100%; padding: 16px; border-radius: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
-                            📊 EXPORT HUB
-                        </button>
                     </div>
                 </div>
 
@@ -235,9 +253,9 @@
                 <!-- STUDENTS TAB -->
                 <div id="students-tab" class="tab">
                     <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px;">
-                        <h3 style="font-weight: 600; flex: 1;">Student List</h3>
-                        <button class="btn-small btn-success" onclick="openAddStudentModal()">+ Add Student</button>
+                        style="display: flex; justify-content: flex-start; align-items: center; margin-bottom: 24px; gap: 20px;">
+                        <h3 style="font-weight: 700; font-size: 20px;">Student List</h3>
+                        <button class="btn-small btn-success" onclick="openAddStudentModal()" style="padding: 10px 20px;">+ Add Student</button>
                     </div>
                     <div id="students-list" class="student-list"></div>
                 </div>
@@ -245,11 +263,10 @@
                 <!-- HISTORY TAB -->
                 <div id="history-tab" class="tab">
                     <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                        <h3 style="margin: 0; font-weight: 700;">Attendance History</h3>
+                        style="display: flex; justify-content: flex-start; align-items: center; margin-bottom: 24px; gap: 20px;">
+                        <h3 style="margin: 0; font-weight: 700; font-size: 20px;">Attendance History</h3>
                         <button class="btn-small btn-success" onclick="openExportModal()"
-                            style="width: auto; padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 13px;">📊
-                            Export Hub</button>
+                            style="width: auto; padding: 10px 20px; border-radius: 12px; border: none; cursor: pointer; font-weight: 700; font-size: 13px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">📊 Export Hub</button>
                     </div>
                     <div id="history-content"></div>
                 </div>
@@ -424,6 +441,8 @@
         let currentQRCode = null;
         let qrExpireTime = null;
         let editingStudent = null;
+        let activeListeners = {}; // Track active listeners to prevent leaks
+
 
 
         // Store current user in sessionStorage for subject management page
@@ -617,12 +636,7 @@ Now format this student list:
 
         applyStoredTheme();
 
-        // Enable Firebase Database Persistence for offline access and faster loading
-        try {
-            db.keepSynced(true); // Keep data updated in background
-        } catch (e) {
-            console.warn("Persistence note:", e.message);
-        }
+
 
         // Safety timeout for loading screen
         const loadingSafetyTimeout = setTimeout(() => {
@@ -806,7 +820,11 @@ Now format this student list:
                     html = '<div class="empty-state"><div class="empty-icon">✅</div><div>No pending requests</div></div>';
                 } else {
                     Object.entries(grouped).forEach(([subject, requests]) => {
-                        html += `<h3 style="margin-top: 20px; margin-bottom: 12px; color: var(--primary-color); font-weight: 600; font-size: 14px;">${subject} <span class="badge">${requests.length}</span></h3>`;
+                        html += `
+                            <div class="subject-group-header">
+                                <span>📚 ${subject}</span>
+                                <span class="badge">${requests.length} pending</span>
+                            </div>`;
 
                         requests.forEach(request => {
                             html += `
@@ -952,8 +970,15 @@ Now format this student list:
                 }
             });
 
-            // Load pending requests count
-            db.ref('requests').orderByKey().startAt(currentUser.username + '_' + today).endAt(currentUser.username + '_' + today + '\uf8ff').on('value', (snapshot) => {
+            // Load pending requests count with leak prevention
+            const requestsRef = db.ref('requests').orderByKey().startAt(currentUser.username + '_' + today).endAt(currentUser.username + '_' + today + '\uf8ff');
+            
+            if (activeListeners['todayRequests']) {
+                activeListeners['todayRequests'].off();
+            }
+            
+            activeListeners['todayRequests'] = requestsRef;
+            requestsRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 let pendingCount = 0;
                 if (data) {
@@ -963,7 +988,8 @@ Now format this student list:
                         });
                     });
                 }
-                document.getElementById('today-requests').textContent = pendingCount;
+                const reqEl = document.getElementById('today-requests');
+                if (reqEl) reqEl.textContent = pendingCount;
             });
         }
 
@@ -1032,10 +1058,11 @@ Now format this student list:
             if (window.currentQRListenerRef) {
                 window.currentQRListenerRef.off();
             }
-            window.currentQRListenerRef = db.ref('attendance/' + code);
+            
+            // Store the actual query being listened to
+            window.currentQRListenerRef = db.ref('attendance/' + code).orderByChild('timestamp').startAt(generationTime);
 
-            // Limit to new records only by querying timestamp
-            window.currentQRListenerRef.orderByChild('timestamp').startAt(generationTime).on('child_added', (snapshot) => {
+            window.currentQRListenerRef.on('child_added', (snapshot) => {
                 const record = snapshot.val();
                 if (record && record.name) {
                     showToast(`✅ ${record.name} (${record.rollNo}) marked attendance!`);
@@ -1124,8 +1151,14 @@ Now format this student list:
 
             const today = new Date().toISOString().split('T')[0];
             const key = `${currentUser.username}_${today}_${currentSubject}`;
+            const attendanceRef = db.ref('attendance/' + key);
 
-            db.ref('attendance/' + key).on('value', (snapshot) => {
+            if (activeListeners['attendanceList']) {
+                activeListeners['attendanceList'].off();
+            }
+            activeListeners['attendanceList'] = attendanceRef;
+
+            attendanceRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 const records = data ? Object.values(data) : [];
 
@@ -1134,11 +1167,11 @@ Now format this student list:
                     html = '<div class="empty-state"><div class="empty-icon">⏳</div><div>No attendance yet</div></div>';
                 } else {
                     html = records.map(r => `
-                        <div class="list-item">
+                        <div class="list-item" style="margin-bottom: 8px;">
                             <div class="list-item-info">
                                 <div class="list-item-name">${r.name}</div>
                                 <div class="list-item-roll">${r.rollNo}</div>
-                                <div class="list-item-time">${r.time}</div>
+                                <div class="list-item-time">${formatTime(r.time)}</div>
                             </div>
                             <div class="list-item-actions">
                                 <button class="btn-small btn-danger" onclick="deleteAttendance('${key}', '${r.rollNo}')">Delete</button>
@@ -1147,9 +1180,12 @@ Now format this student list:
                     `).join('');
                 }
 
-                document.getElementById('attendance-list').innerHTML = html;
-                document.getElementById('present-count').textContent = records.length;
-                document.getElementById('total-count').textContent = currentUser.students.length;
+                const listEl = document.getElementById('attendance-list');
+                if (listEl) {
+                    listEl.innerHTML = html;
+                    document.getElementById('present-count').textContent = records.length;
+                    document.getElementById('total-count').textContent = currentUser.students.length;
+                }
             });
         }
 

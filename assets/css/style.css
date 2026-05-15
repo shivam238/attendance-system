@@ -87,10 +87,17 @@
 
         .container {
             width: 100%;
-            max-width: 500px;
-            margin-top: 12vh;
-            /* Even more space to keep it down */
+            max-width: 1100px; /* Expansive dashboard width */
+            margin-top: 40px;
             margin-bottom: 60px;
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                max-width: 550px;
+                margin-top: 20px;
+            }
         }
 
         .card {
@@ -292,6 +299,26 @@
             gap: 10px;
         }
 
+        .student-list, #today-list, #history-content, #requests-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+            justify-content: start; /* Don't stretch to fill the whole container */
+        }
+
+        .list-item {
+            max-width: 500px; /* Prevent cards from becoming too wide */
+        }
+
+        @media (max-width: 768px) {
+            .student-list, #today-list, #history-content, #requests-container {
+                grid-template-columns: 1fr;
+            }
+            .list-item {
+                max-width: 100%;
+            }
+        }
+
         .toast {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -470,7 +497,15 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            margin-bottom: 24px;
+            gap: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-controls-left, .header-controls-right {
+            display: flex;
+            align-items: center;
             gap: 12px;
         }
 
@@ -721,10 +756,12 @@
         .tabs {
             display: flex;
             gap: 8px;
-            margin-bottom: 20px;
+            margin: 0 auto 24px auto; /* Center and add spacing */
             background: var(--tab-bg);
             padding: 6px;
             border-radius: 12px;
+            max-width: fit-content; /* Don't stretch the bar */
+            justify-content: center;
         }
 
         .tab-btn {
@@ -826,58 +863,107 @@
             font-size: 14px;
         }
 
+        /* Dashboard Grid Layout (V5 - Multi-Column) */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Two columns on desktop */
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        @media (max-width: 992px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr; /* Single column on tablets/mobile */
+            }
+        }
+
         .stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin: 16px 0;
+            gap: 16px;
+            margin: 0; /* Managed by grid gap */
         }
 
-        .stat-card {
-            background: var(--bg-gradient);
-            padding: 24px 16px;
-            border-radius: 20px;
-            text-align: center;
-            color: white;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        .stat-value {
-            font-size: 32px;
-            font-weight: 800;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            opacity: 0.9;
-            margin-top: 4px;
-            text-transform: uppercase;
+        @media (max-width: 600px) {
+            .stats {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
         }
 
         .list-item {
             background: var(--card-bg);
-            padding: 14px;
-            border-radius: 14px;
-            margin-bottom: 10px;
+            padding: 20px; /* Increased padding for better look */
+            border-radius: 18px;
+            margin-bottom: 0; /* Managed by grid gap */
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
             border: 1px solid var(--input-border);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card {
+            background: var(--bg-gradient);
+            padding: 30px 20px;
+            border-radius: 24px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            max-width: 400px; /* Constrain huge stats on desktop */
+            width: 100%;
+        }
+
+        .subject-header {
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 12px;
+            margin-bottom: 24px;
+            color: var(--secondary-color);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 800;
+            max-width: fit-content; /* Don't stretch across the whole dashboard */
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .stat-value {
+            font-size: 42px; /* Larger font for desktop */
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            opacity: 0.9;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .list-item:hover {
-            transform: translateX(4px);
+            transform: translateY(-4px) scale(1.01);
             border-color: var(--primary-color);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
         }
 
         .list-item-info {
@@ -1133,6 +1219,8 @@
 
 
         .subject-group-header {
+            grid-column: 1 / -1; /* Span full grid width */
+            width: 100%;
             background: var(--tab-bg);
             padding: 10px 16px;
             border-radius: 12px;
@@ -1146,6 +1234,19 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        .history-subject-header {
+            grid-column: 1 / -1; /* Span full grid width */
+            width: 100%;
+            margin-top: 32px;
+            margin-bottom: 16px;
+            color: var(--primary-color);
+            font-weight: 800;
+            font-size: 22px;
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 8px;
         }
 
         .list-item-actions {

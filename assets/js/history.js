@@ -31,7 +31,7 @@ function renderHistory() {
 
         let html = '';
         Object.entries(grouped).forEach(([subject, entries]) => {
-            html += `<h3 style="margin-top: 32px; margin-bottom: 16px; color: var(--primary-color); font-weight: 800; font-size: 22px; text-transform: uppercase; border-bottom: 2px solid var(--primary-color); padding-bottom: 8px;">${subject}</h3>`;
+            html += `<h3 class="history-subject-header">${subject}</h3>`;
 
             entries.sort((a, b) => b.date.localeCompare(a.date));
 
