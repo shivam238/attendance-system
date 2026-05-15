@@ -39,3 +39,27 @@ function copyQRLink() {
         showToast("📋 Link copied to clipboard!");
     });
 }
+
+function openGuideModal() {
+    const modal = document.getElementById('guide-modal');
+    if (modal) modal.classList.add('active');
+}
+
+function closeGuideModal() {
+    const modal = document.getElementById('guide-modal');
+    if (modal) modal.classList.remove('active');
+}
+
+function contactDeveloper() {
+    window.open('https://www.instagram.com/heheshivam/', '_blank');
+}
+
+function openLogoPopup() {
+    const popup = document.getElementById('logo-popup');
+    if (popup) popup.classList.add('active');
+}
+
+function closeLogoPopup() {
+    const popup = document.getElementById('logo-popup');
+    if (popup) popup.classList.remove('active');
+}

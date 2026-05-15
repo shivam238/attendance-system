@@ -342,6 +342,15 @@
             .team-section { grid-template-columns: 1fr; }
         }
     </style>
+    <style>
+        body.dark-mode { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%) !important; color: #f8fafc !important; }
+        body.dark-mode .container, body.dark-mode .card, body.dark-mode section { background: #1e293b !important; color: #f8fafc !important; }
+        body.dark-mode h1, body.dark-mode h2, body.dark-mode h3 { color: #818cf8 !important; }
+        body.dark-mode p, body.dark-mode li, body.dark-mode td, body.dark-mode th { color: #cbd5e1 !important; }
+        body.dark-mode a { color: #818cf8 !important; }
+        body.dark-mode footer, body.dark-mode .footer { background: transparent !important; border-color: #334155 !important; }
+    </style>
+    <script>if(localStorage.getItem("darkMode")==="true"){document.addEventListener("DOMContentLoaded",()=>{document.body.classList.add("dark-mode");});}</script>
 </head>
 <body>
     <div class="container">

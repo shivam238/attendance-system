@@ -244,7 +244,40 @@
             .features-grid { grid-template-columns: 1fr; }
             .stats-grid { grid-template-columns: 1fr; }
         }
+        /* Dark mode support */
+        body.dark-mode {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+        }
+        body.dark-mode .container {
+            background: #1e293b;
+            color: #f8fafc;
+        }
+        body.dark-mode h1 { color: #818cf8; }
+        body.dark-mode h2 { color: #a78bfa; }
+        body.dark-mode h3 { color: #c4b5fd; }
+        body.dark-mode p, body.dark-mode li { color: #cbd5e1; }
+        body.dark-mode strong { color: #f8fafc; }
+        body.dark-mode .feature-card { background: #0f172a; border-left-color: #818cf8; }
+        body.dark-mode .feature-title { color: #f8fafc; }
+        body.dark-mode .feature-desc { color: #94a3b8; }
+        body.dark-mode .developer-section { background: #0f172a; }
+        body.dark-mode .tagline { color: #94a3b8; border-bottom-color: #334155; }
+        body.dark-mode footer { border-top-color: #334155; }
+        body.dark-mode .copyright { color: #64748b; }
+        body.dark-mode .footer-links a { color: #818cf8; }
+        body.dark-mode .highlight-box { background: rgba(129,140,248,0.1); border-left-color: #818cf8; }
+        body.dark-mode .highlight-box p { color: #f8fafc; }
     </style>
+    <script>
+        // Apply dark mode from main app preference
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.style.display = 'none';
+            document.addEventListener('DOMContentLoaded', () => {
+                document.body.classList.add('dark-mode');
+                document.documentElement.style.display = '';
+            });
+        }
+    </script>
 </head>
 <body>
     <div class="container">

@@ -1,7 +1,7 @@
 // History management for QR Attendance System
 
 function renderHistory() {
-    const container = document.getElementById('history-container');
+    const container = document.getElementById('history-content');
     if (!container) return;
 
     db.ref('attendance').orderByKey().startAt(currentUser.username).endAt(currentUser.username + '\uf8ff').once('value', (snapshot) => {
@@ -31,7 +31,7 @@ function renderHistory() {
 
         let html = '';
         Object.entries(grouped).forEach(([subject, entries]) => {
-            html += `<h3 style="margin-top: 20px; margin-bottom: 12px; color: var(--primary-color); font-weight: 600; font-size: 14px;">${subject}</h3>`;
+            html += `<h3 style="margin-top: 32px; margin-bottom: 16px; color: var(--primary-color); font-weight: 800; font-size: 22px; text-transform: uppercase; border-bottom: 2px solid var(--primary-color); padding-bottom: 8px;">${subject}</h3>`;
 
             entries.sort((a, b) => b.date.localeCompare(a.date));
 
