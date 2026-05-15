@@ -52,4 +52,4 @@ This project is licensed under the **MIT License**.
 **Developed by Shivam Kumar Mahto**  
 🔗 [GitHub](https://github.com/shivam238) | 📷 [Instagram](https://www.instagram.com/heheshivam/)
 
-© 2025 QR Attendance System. All rights reserved.
+© 2026 QR Attendance System. All rights reserved.
