@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "qr-smart-attendance",
     "public": ".",
     "ignore": [
       "firebase.json",
