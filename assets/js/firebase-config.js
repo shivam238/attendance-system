@@ -1,4 +1,4 @@
-// Central Firebase Configuration for QR Attendance System
+// Central Firebase Configuration for ATTENDIFY
 const firebaseConfig = {
     apiKey: "AIzaSyDN6iWRpxLZuwzQYVX580eTQbZuz2VY-HU",
     authDomain: "firstfile-c763521e.firebaseapp.com",

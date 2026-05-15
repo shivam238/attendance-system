@@ -1,4 +1,4 @@
-// UI and Utility functions for QR Attendance System
+// UI and Utility functions for ATTENDIFY
 
 function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));

@@ -1,4 +1,4 @@
-// History management for QR Attendance System
+// History management for ATTENDIFY
 
 function renderHistory() {
     const container = document.getElementById('history-content');

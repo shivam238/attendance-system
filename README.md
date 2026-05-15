@@ -1,4 +1,4 @@
-# 📱 QR Code Attendance System
+# 📱 ATTENDIFY
 
 A high-performance, **Firebase-powered web application** designed for seamless student attendance management using **dynamic QR codes**.
 
@@ -52,4 +52,4 @@ This project is licensed under the **MIT License**.
 **Developed by Shivam Kumar Mahto**  
 🔗 [GitHub](https://github.com/shivam238) | 📷 [Instagram](https://www.instagram.com/heheshivam/)
 
-© 2026 QR Attendance System. All rights reserved.
+© 2026 ATTENDIFY. All rights reserved.

@@ -1,4 +1,4 @@
-// Auth management for QR Attendance System
+// Auth management for ATTENDIFY
 
 function signInWithGoogle() {
     const msgDiv = document.getElementById('login-message');
