@@ -777,6 +777,11 @@ Now format this student list:
                 opt.textContent = subj;
                 select.appendChild(opt);
             });
+
+            // Restore last active tab (default to 'today')
+            const lastTab = localStorage.getItem('lastActiveTab') || 'today';
+            // Small delay to allow DOM to be ready
+            setTimeout(() => switchAppTab(lastTab), 100);
         }
 
         // 👇👇👇 YAHAN SE ADD KARO 👇👇👇
@@ -908,6 +913,9 @@ Now format this student list:
             // Activate correct tab content
             document.getElementById(tab + '-tab').classList.add('active');
 
+            // Save active tab to localStorage for restoration on reload
+            localStorage.setItem('lastActiveTab', tab);
+
             // Load content
             if (tab === 'today') renderTodayTab();
             if (tab === 'students') loadStudents();
@@ -922,8 +930,19 @@ Now format this student list:
             const displayDate = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             document.getElementById('today-date-display').textContent = displayDate;
 
-            // Load all attendance for today
-            db.ref('attendance').orderByKey().startAt(currentUser.username + '_' + today).endAt(currentUser.username + '_' + today + '\uf8ff').once('value', (snapshot) => {
+            // Detach old listener if exists
+            if (activeListeners['todayFeed']) {
+                activeListeners['todayFeed'].off();
+            }
+
+            // Real-time listener — auto-updates when any student scans QR
+            const todayFeedRef = db.ref('attendance').orderByKey()
+                .startAt(currentUser.username + '_' + today)
+                .endAt(currentUser.username + '_' + today + '\uf8ff');
+
+            activeListeners['todayFeed'] = todayFeedRef;
+
+            todayFeedRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 let totalPresent = 0;
                 let html = '';
@@ -931,7 +950,6 @@ Now format this student list:
 
                 if (data) {
                     Object.entries(data).forEach(([key, records]) => {
-                        // Use Robust Regex for Dashboard too
                         const match = key.match(/^(.+)_(\d{4}-\d{2}-\d{2})_(.+)$/);
                         if (!match) return;
                         const subject = match[3];
