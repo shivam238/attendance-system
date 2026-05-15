@@ -347,20 +347,9 @@
         // Apply theme immediately
         const isDark = localStorage.getItem('darkMode') === 'true';
         if (isDark) document.body.classList.add('dark-mode');
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDN6iWRpxLZuwzQYVX580eTQbZuz2VY-HU",
-            authDomain: "firstfile-c763521e.firebaseapp.com",
-            databaseURL: "https://firstfile-c763521e-default-rtdb.firebaseio.com",
-            projectId: "firstfile-c763521e",
-            storageBucket: "firstfile-c763521e.firebasestorage.app",
-            messagingSenderId: "841328143028",
-            appId: "1:841328143028:web:caebd6835972138e70c5e1"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
+    </script>
+    <script src="assets/js/firebase-config.js"></script>
+    <script>
         let currentUser = null;
         let editingSubjectIndex = null;
         let originalSubjectName = null;

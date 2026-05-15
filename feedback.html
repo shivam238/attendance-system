@@ -187,21 +187,9 @@
         </form>
     </div>
 
+    <script src="assets/js/firebase-config.js"></script>
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDN6iWRpxLZuwzQYVX580eTQbZuz2VY-HU",
-            authDomain: "firstfile-c763521e.firebaseapp.com",
-            databaseURL: "https://firstfile-c763521e-default-rtdb.firebaseio.com",
-            projectId: "firstfile-c763521e",
-            storageBucket: "firstfile-c763521e.appspot.com",
-            messagingSenderId: "338947118228",
-            appId: "1:338947118228:web:7573617be2d12e616259c7"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        const stars = document.querySelectorAll('.star');
+        const feedbackBtn = document.getElementById('submitFeedback');
         const ratingInput = document.getElementById('rating');
         const ratingLabel = document.getElementById('rating-label');
         const ratingLabels = {
