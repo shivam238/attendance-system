@@ -63,3 +63,102 @@ function closeLogoPopup() {
     const popup = document.getElementById('logo-popup');
     if (popup) popup.classList.remove('active');
 }
+function initDraggableTabs() {
+    const tabsContainer = document.getElementById('main-app-tabs');
+    if (!tabsContainer) return;
+
+    let dragSrcEl = null;
+
+    // Restore Order from LocalStorage
+    const savedOrder = localStorage.getItem('tabOrder');
+    if (savedOrder) {
+        const orderArr = JSON.parse(savedOrder);
+        const tabsMap = {};
+        const buttons = Array.from(tabsContainer.querySelectorAll('.tab-btn'));
+        buttons.forEach(btn => tabsMap[btn.textContent.trim()] = btn);
+        
+        tabsContainer.innerHTML = '';
+        orderArr.forEach(name => {
+            if (tabsMap[name]) tabsContainer.appendChild(tabsMap[name]);
+        });
+        // Append any new tabs that weren't in saved order
+        buttons.forEach(btn => {
+            if (!orderArr.includes(btn.textContent.trim())) tabsContainer.appendChild(btn);
+        });
+    }
+
+    function handleDragStart(e) {
+        dragSrcEl = this;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/html', this.innerHTML);
+
+        // Let the browser take its native snapshot of the SOLID button
+        // Then we make the original button a placeholder after a tiny delay
+        setTimeout(() => {
+            this.classList.add('dragging');
+        }, 10);
+
+        if (navigator.vibrate) navigator.vibrate(50);
+    }
+
+    function handleDragOver(e) {
+        if (e.preventDefault) e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+
+        if (this !== dragSrcEl) {
+            const rect = this.getBoundingClientRect();
+            const midX = rect.left + rect.width / 2;
+            
+            // Move in DOM instantly for "App-style" slide
+            if (e.clientX < midX) {
+                this.parentNode.insertBefore(dragSrcEl, this);
+            } else {
+                this.parentNode.insertBefore(dragSrcEl, this.nextSibling);
+            }
+        }
+        return false;
+    }
+
+    function handleDragEnter(e) {
+        if (this !== dragSrcEl) this.classList.add('over');
+    }
+
+    function handleDragLeave(e) {
+        this.classList.remove('over');
+    }
+
+    function handleDrop(e) {
+        if (e.stopPropagation) e.stopPropagation();
+        this.classList.remove('over');
+        saveTabOrder();
+        return false;
+    }
+
+    function handleDragEnd(e) {
+        this.classList.remove('dragging');
+        btns.forEach(btn => btn.classList.remove('over'));
+    }
+
+    function saveTabOrder() {
+        const order = Array.from(tabsContainer.querySelectorAll('.tab-btn')).map(btn => btn.textContent.trim());
+        localStorage.setItem('tabOrder', JSON.stringify(order));
+        
+        // Push to Firebase for cross-device sync
+        if (window.syncSettingToCloud) {
+            window.syncSettingToCloud('tabOrder', order);
+        }
+    }
+
+    const btns = tabsContainer.querySelectorAll('.tab-btn');
+    btns.forEach(btn => {
+        btn.addEventListener('dragstart', handleDragStart, false);
+        btn.addEventListener('dragenter', handleDragEnter, false);
+        btn.addEventListener('dragover', handleDragOver, false);
+        btn.addEventListener('dragleave', handleDragLeave, false);
+        btn.addEventListener('drop', handleDrop, false);
+        btn.addEventListener('dragend', handleDragEnd, false);
+    });
+}
+
+// Call on load
+document.addEventListener('DOMContentLoaded', initDraggableTabs);
