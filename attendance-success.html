@@ -240,8 +240,36 @@
         const isLate = urlParams.get('late') === 'true';
         const lateMinutes = urlParams.get('lateBy') || '0';
 
-        // Update UI based on status (on-time or late)
-        if (isLate) {
+        const isAlreadyMarked = urlParams.get('alreadyMarked') === 'true';
+
+        // Update UI based on status
+        if (isAlreadyMarked) {
+            document.getElementById('status-icon').className = 'success-icon warning-icon';
+            document.getElementById('status-icon').innerHTML = '<div class="clock-icon">🔔</div>';
+
+            document.getElementById('status-title').textContent = '✅ Already Marked!';
+            document.getElementById('status-title').className = '';
+            document.getElementById('status-title').style.color = '#f59e0b';
+
+            document.getElementById('status-message').innerHTML =
+                `Hi <strong>${studentName}</strong>!<br>Your attendance has already been recorded today.<br>No need to submit again.`;
+
+            document.getElementById('student-details').innerHTML = `
+                <div class="info-row">
+                    <span class="info-label">Name:</span>
+                    <span class="info-value">${studentName}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" style="color: #f59e0b;">⚠️ Already Recorded</span>
+                </div>
+            `;
+            document.getElementById('student-details').className = 'student-info warning-info';
+
+            document.getElementById('status-note').innerHTML =
+                `ℹ️ <strong>Note:</strong> You can safely close this window. Your attendance is already saved.`;
+
+        } else if (isLate) {
             // Late attendance - request sent to CR
             document.getElementById('status-icon').className = 'success-icon warning-icon';
             document.getElementById('status-icon').innerHTML = '<div class="clock-icon">⏰</div>';

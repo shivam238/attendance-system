@@ -12,6 +12,26 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
     <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #1a202c;
+            --text-muted: #718096;
+            --input-border: #e2e8f0;
+            --border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .dark-mode {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --input-border: #334155;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -20,7 +40,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--bg-gradient);
             color: #fff;
             min-height: 100vh;
             padding: 20px;
@@ -32,12 +52,13 @@
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.95);
+            background: var(--card-bg);
             border-radius: 16px;
             padding: 24px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            color: #1a202c;
+            color: var(--text-color);
             margin-bottom: 20px;
+            border: 1px solid var(--border-color);
         }
 
         .header {
@@ -48,12 +69,12 @@
         .header h1 {
             font-size: 26px;
             font-weight: 800;
-            color: #667eea;
+            color: var(--primary-color);
             margin-bottom: 8px;
         }
 
         .header p {
-            color: #718096;
+            color: var(--text-muted);
             font-size: 13px;
         }
 
@@ -149,20 +170,29 @@
         }
 
         .subject-item {
-            background: #f8fafc;
-            padding: 14px;
-            border-radius: 8px;
-            margin-bottom: 10px;
+            background: var(--card-bg);
+            border: 1px solid var(--input-border);
+            padding: 16px;
+            border-radius: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 12px;
-            border-left: 4px solid #667eea;
+            margin-bottom: 12px;
+            color: var(--text-color);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 600px) {
+            body { padding: 12px; }
+            .card { padding: 20px 16px; }
+            .header h1 { font-size: 22px; }
+            .subject-item { padding: 12px; flex-direction: column; align-items: flex-start; gap: 10px; }
+            .subject-item .btn-danger { width: 100%; }
         }
 
         .subject-name {
             font-weight: 600;
-            color: #1a202c;
+            color: var(--text-color);
             flex: 1;
             min-width: 0;
             word-break: break-word;
@@ -222,37 +252,38 @@
         }
 
         .modal-content {
-            background: white;
+            background: var(--card-bg);
             padding: 28px;
-            border-radius: 16px;
+            border-radius: 20px;
             width: 100%;
             max-width: 500px;
-            color: #1a202c;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
         }
 
         .modal-header {
             font-size: 22px;
             font-weight: 700;
             margin-bottom: 20px;
-            color: #667eea;
+            color: var(--primary-color);
         }
 
         .modal-close {
             float: right;
             font-size: 28px;
             cursor: pointer;
-            color: #718096;
+            color: var(--text-muted);
             line-height: 1;
         }
 
         .info-text {
-            background: #eff6ff;
-            color: #1e40af;
+            background: var(--tab-bg);
+            color: var(--text-color);
             padding: 12px;
             border-radius: 8px;
             font-size: 13px;
             margin: 12px 0;
-            border-left: 4px solid #3b82f6;
+            border-left: 4px solid var(--primary-color);
             line-height: 1.6;
         }
 
@@ -313,14 +344,18 @@
     </div>
 
     <script>
+        // Apply theme immediately
+        const isDark = localStorage.getItem('darkMode') === 'true';
+        if (isDark) document.body.classList.add('dark-mode');
+
         const firebaseConfig = {
-            apiKey: "AIzaSyA4qx9Xztk8Buc6d8ecaeKkcuHJMu8qdgQ",
-            authDomain: "qr-attendance-system-a8a8a.firebaseapp.com",
-            databaseURL: "https://qr-attendance-10d7d-default-rtdb.firebaseio.com",
-            projectId: "qr-attendance-system-a8a8a",
-            storageBucket: "qr-attendance-system-a8a8a.firebasestorage.app",
-            messagingSenderId: "81759182063",
-            appId: "1:81759182063:web:37f3ec343d251c30dd191a"
+            apiKey: "AIzaSyDN6iWRpxLZuwzQYVX580eTQbZuz2VY-HU",
+            authDomain: "firstfile-c763521e.firebaseapp.com",
+            databaseURL: "https://firstfile-c763521e-default-rtdb.firebaseio.com",
+            projectId: "firstfile-c763521e",
+            storageBucket: "firstfile-c763521e.firebasestorage.app",
+            messagingSenderId: "841328143028",
+            appId: "1:841328143028:web:caebd6835972138e70c5e1"
         };
 
         firebase.initializeApp(firebaseConfig);
@@ -346,15 +381,15 @@
         function initializePage() {
             document.getElementById('loading').style.display = 'block';
 
-            // Fetch fresh data from Firebase
-            db.ref('users/' + currentUser.username).once('value', (snapshot) => {
+            // Fetch fresh data from Firebase using uid
+            db.ref('users/' + currentUser.uid).once('value', (snapshot) => {
                 if (!snapshot.exists()) {
                     alert('❌ User data not found');
                     window.location.href = 'index.html';
                     return;
                 }
 
-                currentUser = { username: currentUser.username, ...snapshot.val() };
+                currentUser = { uid: currentUser.uid, ...snapshot.val() };
 
                 document.getElementById('class-info').textContent =
                     `Passout ${20}${currentUser.year} - ${currentUser.college} ${currentUser.branch} Section ${currentUser.section}`;
@@ -405,7 +440,7 @@
 
             currentUser.subjects.push(subjectName);
 
-            db.ref('users/' + currentUser.username + '/subjects').set(currentUser.subjects).then(() => {
+            db.ref('users/' + currentUser.uid + '/subjects').set(currentUser.subjects).then(() => {
                 msgDiv.innerHTML = '<div class="message success">✅ Subject added successfully!</div>';
                 input.value = '';
                 renderSubjects();
@@ -443,7 +478,7 @@
             const oldName = currentUser.subjects[editingSubjectIndex];
             currentUser.subjects[editingSubjectIndex] = newName;
 
-            db.ref('users/' + currentUser.username + '/subjects').set(currentUser.subjects).then(() => {
+            db.ref('users/' + currentUser.uid + '/subjects').set(currentUser.subjects).then(() => {
                 msgDiv.innerHTML = '<div class="message success">✅ Subject updated successfully!</div>';
 
                 // Update all attendance records with old subject name
@@ -493,7 +528,7 @@
 
             currentUser.subjects.splice(index, 1);
 
-            db.ref('users/' + currentUser.username + '/subjects').set(currentUser.subjects).then(() => {
+            db.ref('users/' + currentUser.uid + '/subjects').set(currentUser.subjects).then(() => {
                 // Delete all attendance records for this subject
                 deleteAttendanceRecords(subjectName);
                 renderSubjects();

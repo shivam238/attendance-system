@@ -5,16 +5,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>QR Attendance System</title>
+    
+    <!-- Preconnect for speed -->
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://firebase.googleapis.com" crossorigin>
+    <link rel="dns-prefetch" href="https://www.gstatic.com">
+    <link rel="dns-prefetch" href="https://firebase.googleapis.com">
+    
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="shortcut icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Core Firebase (Async for speed) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
     <style>
+        /* CRITICAL LOADING CSS - Loads first to show spinner immediately */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1e1b4b;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        #loading-screen.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --text-color: #1a202c;
+            --text-muted: #718096;
+            --input-border: #e2e8f0;
+            --tab-bg: #f1f5f9;
+            --tab-text: #64748b;
+            --shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            --border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .dark-mode {
+            --primary-color: #818cf8;
+            --secondary-color: #a78bfa;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --input-border: #334155;
+            --tab-bg: #0f172a;
+            --tab-text: #94a3b8;
+            --shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -23,28 +94,29 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--bg-gradient);
             color: #fff;
             min-height: 100vh;
             padding: 20px;
+            transition: background 0.3s ease;
         }
 
         .container {
             max-width: 500px;
-            margin: 0 auto;
+            margin: 60px auto; /* Even more top margin to lower header as requested */
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.85);
+            background: var(--card-bg);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-radius: 24px;
             padding: 32px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-            color: #1a202c;
+            box-shadow: var(--shadow);
+            color: var(--text-color);
             margin-bottom: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transition: transform 0.3s ease;
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
         }
 
         .card:hover {
@@ -60,13 +132,35 @@
         .header h1 {
             font-size: 26px;
             font-weight: 800;
-            color: #667eea;
+            color: var(--primary-color);
             margin-bottom: 8px;
         }
 
         .header p {
-            color: #718096;
+            color: var(--text-muted);
             font-size: 13px;
+        }
+
+        /* Theme Toggle Button */
+
+        /* Theme Toggle Button */
+        .theme-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .theme-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
 
         /* Logo Animations - Premium Effects */
@@ -486,7 +580,7 @@
             display: block;
             font-weight: 600;
             margin-bottom: 8px;
-            color: #2d3748;
+            color: var(--text-color);
             font-size: 14px;
         }
 
@@ -495,7 +589,9 @@
         .form-group textarea {
             width: 100%;
             padding: 12px;
-            border: 2px solid #e2e8f0;
+            border: 2px solid var(--input-border);
+            background: var(--card-bg);
+            color: var(--text-color);
             border-radius: 8px;
             font-size: 15px;
             transition: all 0.3s;
@@ -689,14 +785,22 @@
         }
 
         .list-item {
-            background: #f8fafc;
+            background: var(--card-bg);
             padding: 14px;
-            border-radius: 8px;
+            border-radius: 14px;
             margin-bottom: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 12px;
+            border: 1px solid var(--input-border);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .list-item:hover {
+            transform: translateX(4px);
+            border-color: var(--primary-color);
         }
 
         .list-item-info {
@@ -706,19 +810,20 @@
 
         .list-item-name {
             font-weight: 600;
-            color: #1a202c;
+            color: var(--text-color);
         }
 
         .list-item-roll {
             font-size: 13px;
-            color: #718096;
+            color: var(--text-muted);
             margin-top: 4px;
         }
 
         .list-item-time {
             font-size: 12px;
-            color: #667eea;
+            color: var(--primary-color);
             margin-top: 4px;
+            font-weight: 600;
         }
 
         .list-item-actions {
@@ -764,29 +869,37 @@
         }
 
         .modal-content {
-            background: white;
+            background: var(--card-bg);
             padding: 28px;
-            border-radius: 16px;
+            border-radius: 24px;
             width: 100%;
             max-width: 500px;
             max-height: 80vh;
             overflow-y: auto;
-            color: #1a202c;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
         }
 
         .modal-header {
             font-size: 22px;
             font-weight: 700;
             margin-bottom: 20px;
-            color: #667eea;
+            color: var(--primary-color);
         }
 
         .modal-close {
             float: right;
             font-size: 28px;
+            font-weight: 700;
+            color: var(--text-muted);
             cursor: pointer;
-            color: #718096;
+            transition: color 0.2s;
             line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--text-color);
         }
 
         .empty-state {
@@ -857,7 +970,7 @@
         .guide-section {
             margin-bottom: 24px;
             padding-bottom: 24px;
-            border-bottom: 2px solid #e2e8f0;
+            border-bottom: 2px solid var(--border-color);
         }
 
         .guide-section:last-child {
@@ -867,12 +980,12 @@
         .guide-title {
             font-size: 18px;
             font-weight: 700;
-            color: #667eea;
+            color: var(--primary-color);
             margin-bottom: 12px;
         }
 
         .guide-text {
-            color: #4a5568;
+            color: var(--text-color);
             line-height: 1.6;
             margin-bottom: 8px;
         }
@@ -940,19 +1053,124 @@
             margin-bottom: 12px;
             line-height: 1.6;
         }
+
+        .stat-card {
+            padding: 16px;
+            border-radius: 18px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .subject-group-header {
+            background: var(--tab-bg);
+            padding: 10px 16px;
+            border-radius: 12px;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            border: 1px solid var(--input-border);
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .list-item-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        /* RESPONSIVE DESIGN - MOBILE FIXES */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                margin: 30px auto;
+            }
+
+            .card {
+                padding: 24px 16px;
+                border-radius: 20px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .tabs {
+                gap: 4px;
+                padding: 4px;
+                overflow-x: auto; /* Allow scrolling if tabs too wide */
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .tab-btn {
+                padding: 8px 4px;
+                font-size: 12px;
+                min-width: 80px; /* Ensure buttons don't get too small */
+            }
+
+            .stat-value {
+                font-size: 26px;
+            }
+
+            .stat-label {
+                font-size: 11px;
+            }
+
+            .subject-group-header {
+                font-size: 12px;
+                padding: 8px 12px;
+            }
+
+            .list-item {
+                padding: 12px;
+                border-radius: 12px;
+            }
+
+            .modal-content {
+                padding: 20px;
+                border-radius: 20px;
+                width: 95%;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .stats {
+                grid-template-columns: 1fr; /* Stack stats on very small screens */
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+        }
     </style>
 </head>
 
 <body>
-
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen">
+        <div class="spinner"></div>
+        <h2 style="color: #fff;">Fast as Light... ⚡</h2>
+    </div>
 
     <div class="container">
         <!-- LOGIN SCREEN -->
 
 
 
-        <div id="login-screen" class="screen active">
+        <div id="login-screen" class="screen">
             <div class="card" style="margin-top: 40px;">
+                <div style="display: flex; justify-content: flex-end; margin-bottom: -30px; position: relative; z-index: 10;">
+                    <button class="theme-btn" onclick="toggleDarkMode()">🌙 Dark Mode</button>
+                </div>
                 <div class="header">
                     <img src="logo.png" alt="Attendance System Logo" class="logo" onclick="openLogoPopup()">
                     <h1>🎓 Attendance System</h1>
@@ -1026,8 +1244,9 @@
         <!-- MAIN APP SCREEN -->
         <div id="app-screen" class="screen">
             <div class="card">
-                <div class="header-controls">
+                <div class="header-controls" style="margin-bottom: 24px; padding-top: 10px;">
                     <button class="info-btn" onclick="openGuideModal()">i</button>
+                    <button class="theme-btn" onclick="toggleDarkMode()" style="color: var(--text-color); background: var(--tab-bg); border-radius: 12px; padding: 6px 14px; font-size: 13px;">🌙 Dark Mode</button>
                     <div class="status-badge online" id="connection-status">
                         <span class="status-dot"></span>
                         <span>Connected</span>
@@ -1043,33 +1262,35 @@
 
                 <div class="tabs">
                     <button class="tab-btn active" onclick="switchAppTab('cr')">CR</button>
+                    <button class="tab-btn" onclick="switchAppTab('today')">Today</button>
                     <button class="tab-btn" onclick="switchAppTab('students')">Students</button>
                     <button class="tab-btn" onclick="switchAppTab('history')">History</button>
                     <button class="tab-btn" onclick="switchAppTab('requests')">Requests</button>
-
                 </div>
 
                 <!-- CR TAB -->
                 <div id="cr-tab" class="tab active">
                     <div class="form-group">
-                        <label>Select Subject</label>
+                        <label style="color: var(--text-color);">Select Subject</label>
                         <select id="subject-select" onchange="onSubjectChange()">
                             <option value="">-- Choose Subject --</option>
                         </select>
                     </div>
 
                     <a href="subjects.html" style="display: block; margin-bottom: 16px;">
-                        <button class="btn btn-secondary" type="button" style="margin: 0;">📚 Manage Subjects</button>
+                        <button class="btn btn-secondary" type="button" style="margin: 0; background: var(--tab-bg); color: var(--text-color); border: 1px solid var(--input-border);">📚 Manage Subjects</button>
                     </a>
 
                     <button class="btn btn-primary" onclick="generateQRCode()">📲 Generate QR Code</button>
 
                     <div id="qr-section" style="display: none;">
-                        <div class="qr-container">
-                            <div id="qrcode"></div>
+                        <div class="qr-container" style="background: var(--tab-bg); border-color: var(--primary-color);">
+                            <div id="qrcode" style="background: #fff; padding: 10px; border-radius: 8px;"></div>
                             <div class="qr-timer" id="qr-timer"></div>
+                            <div id="timer-extension" style="display: none; margin-top: 15px;">
+                                <button class="btn btn-secondary btn-small" onclick="extendTimer()" style="background: #fbbf24; color: #fff; border: none;">⏱️ +1 Min Extend</button>
+                            </div>
                         </div>
-                        <button id="extend-timer-btn" class="btn btn-secondary" onclick="extendTimer()" style="display: none; background: #fbbf24; color: #fff; border-color: #fbbf24; margin-bottom: 12px;">⏱️ +1 Min Extend</button>
                         <button class="btn btn-secondary" onclick="copyQRLink()">📋 Copy Link</button>
                         <button class="btn btn-danger" onclick="resetQR()">✕ Clear QR</button>
                     </div>
@@ -1085,13 +1306,37 @@
                         </div>
                     </div>
 
-                    <h3 style="margin: 20px 0 12px 0; font-weight: 600;">Today's Attendance</h3>
+                    <h3 style="margin: 20px 0 12px 0; font-weight: 600; color: var(--text-color);">Today's Log</h3>
                     <div id="attendance-list"></div>
 
-                    <button class="btn btn-success" onclick="downloadTodayAttendance()">📊 Download Today's
-                        Excel</button>
-                    <button class="btn btn-primary download-all-btn" onclick="downloadFullAttendance()">📦 Download Full
-                        Attendance</button>
+                    <button class="btn btn-success" onclick="downloadTodayAttendance()">📊 Download Today's Excel</button>
+                    <button class="btn btn-primary download-all-btn" onclick="downloadFullAttendance()">📦 Download Full Attendance</button>
+                </div>
+
+                <!-- TODAY TAB -->
+                <div id="today-tab" class="tab">
+                    <div class="header" style="margin-bottom: 20px; text-align: left;">
+                        <h3 style="color: var(--primary-color); font-size: 20px;">Daily Overview</h3>
+                        <p id="today-date-display" style="color: var(--text-muted);"></p>
+                    </div>
+                    <div class="stats">
+                        <div class="stat-card" onclick="openTodayStudentsModal()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); cursor: pointer; transition: 0.2s; transform: scale(1);" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                            <div id="today-present" class="stat-value">0</div>
+                            <div class="stat-label">Present Students ➔</div>
+                        </div>
+                        <div class="stat-card" onclick="switchAppTab('requests')" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); cursor: pointer; transition: 0.2s; transform: scale(1);" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                            <div id="today-requests" class="stat-value">0</div>
+                            <div class="stat-label">Pending Requests ➔</div>
+                        </div>
+                    </div>
+                    <div id="today-empty" class="empty-state">
+                        <div class="empty-icon">📅</div>
+                        <p>No attendance records for today yet.</p>
+                    </div>
+                    <div id="today-content" style="display: none;">
+                        <h4 style="margin: 20px 0 12px 0; color: var(--text-color);">Attendance Feed</h4>
+                        <div id="today-list"></div>
+                    </div>
                 </div>
 
                 <!-- STUDENTS TAB -->
@@ -1141,6 +1386,19 @@
             <button class="logo-popup-button" onclick="closeLogoPopup()">Awesome! Let's Go 🚀</button>
         </div>
     </div>
+    <!-- TODAY STUDENTS MODAL -->
+    <div id="today-students-modal" class="modal">
+        <div class="modal-content" style="max-width: 450px; max-height: 85vh; overflow-y: auto;">
+            <span class="modal-close" onclick="closeTodayStudentsModal()">&times;</span>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 class="modal-header" style="margin-bottom: 4px;">Students Present Today</h2>
+                <p style="color: var(--text-muted); font-size: 13px;">Overview of all subjects</p>
+            </div>
+            <div id="today-students-content"></div>
+            <button class="btn btn-primary" onclick="closeTodayStudentsModal()" style="margin-top: 10px;">Close</button>
+        </div>
+    </div>
+
     <!-- STUDENT ATTENDANCE MODAL -->
     <div id="student-modal" class="modal">
         <div class="modal-content">
@@ -1250,15 +1508,19 @@
     <!-- Toast Notifications Container -->
     <div id="toast-container" class="toast-container"></div>
 
+    <!-- Non-essential scripts deferred -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyDN6iWRpxLZuwzQYVX580eTQbZuz2VY-HU",
             authDomain: "firstfile-c763521e.firebaseapp.com",
             databaseURL: "https://firstfile-c763521e-default-rtdb.firebaseio.com",
             projectId: "firstfile-c763521e",
-            storageBucket: "firstfile-c763521e.firebasestorage.app",
-            messagingSenderId: "841328143028",
-            appId: "1:841328143028:web:caebd6835972138e70c5e1"
+            storageBucket: "firstfile-c763521e.appspot.com",
+            messagingSenderId: "338947118228",
+            appId: "1:338947118228:web:7573617be2d12e616259c7"
         };
 
         firebase.initializeApp(firebaseConfig);
@@ -1305,8 +1567,6 @@
 
             if (code) {
                 handleStudentLink(code);
-            } else {
-                showScreen('login-screen');
             }
         };
 
@@ -1435,16 +1695,91 @@ Now format this student list:
         }
 
 
+        // THEME HANDLING
+        function toggleDarkMode() {
+            const isDark = document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+            updateThemeButtonText();
+        }
 
-        // Auth state observer
+        function applyStoredTheme() {
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+            }
+            updateThemeButtonText();
+        }
+
+        function updateThemeButtonText() {
+            const isDark = document.body.classList.contains('dark-mode');
+            const btns = document.querySelectorAll('.theme-btn');
+            btns.forEach(btn => {
+                btn.innerHTML = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+            });
+        }
+
+        applyStoredTheme();
+
+        // Enable Firebase Database Persistence for offline access and faster loading
+        try {
+            db.keepSynced(true); // Keep data updated in background
+        } catch (e) {
+            console.warn("Persistence note:", e.message);
+        }
+
+        // Safety timeout for loading screen
+        const loadingSafetyTimeout = setTimeout(() => {
+            const ls = document.getElementById('loading-screen');
+            if (ls && !ls.classList.contains('fade-out')) {
+                console.warn('Loading taking too long, forcing fade-out...');
+                ls.classList.add('fade-out');
+            }
+        }, 5000); // Reduced to 5 seconds for snappier feel
+
+        // Auth state observer with Smart Flicker Prevention
+        let isFirstAuthCheck = true;
         auth.onAuthStateChanged((user) => {
+            const loadingScreen = document.getElementById('loading-screen');
+            
             if (user) {
-                // User is signed in
+                isFirstAuthCheck = false;
+                // Check for cached profile to show app instantly
+                const cachedProfile = localStorage.getItem('user_profile_' + user.uid);
+                if (cachedProfile) {
+                    try {
+                        const userData = JSON.parse(cachedProfile);
+                        currentUser = { uid: user.uid, email: user.email, displayName: user.displayName, ...userData };
+                        showScreen('app-screen');
+                        initializeApp();
+                        loadingScreen.classList.add('fade-out');
+                        clearTimeout(loadingSafetyTimeout);
+                        console.log("🚀 App loaded from cache (Instant-On)");
+                    } catch (e) {
+                        console.error("Cache error:", e);
+                    }
+                }
+                
+                // Still fetch latest data from Firebase in background
                 handleUserSignedIn(user);
             } else {
-                // User is signed out
-                currentUser = null;
-                showScreen('login-screen');
+                if (isFirstAuthCheck) {
+                    // On initial load, wait a moment to see if Firebase recovers the session
+                    // This prevents the "Login Screen Flash"
+                    setTimeout(() => {
+                        if (!auth.currentUser) {
+                            currentUser = null;
+                            showScreen('login-screen');
+                            loadingScreen.classList.add('fade-out');
+                            clearTimeout(loadingSafetyTimeout);
+                            isFirstAuthCheck = false;
+                        }
+                    }, 600); // 600ms is usually enough for session recovery
+                } else {
+                    currentUser = null;
+                    showScreen('login-screen');
+                    loadingScreen.classList.add('fade-out');
+                    clearTimeout(loadingSafetyTimeout);
+                }
             }
         });
 
@@ -1473,18 +1808,39 @@ Now format this student list:
                     const isProfileComplete = userData.year && userData.college && userData.branch && userData.section && userData.username;
                     
                     if (isProfileComplete) {
+                        // Cache the profile for next time
+                        localStorage.setItem('user_profile_' + userId, JSON.stringify(userData));
+                        
                         currentUser = { uid: userId, email: user.email, displayName: user.displayName, ...userData };
-                        showScreen('app-screen');
-                        initializeApp();
-                        storeUserSession();
+                        
+                        // If not already shown by cache, show it now
+                        if (!document.getElementById('app-screen').classList.contains('active')) {
+                            showScreen('app-screen');
+                            initializeApp();
+                        } else {
+                            // Just refresh headers/info if app was already shown from cache
+                            document.getElementById('class-info').textContent =
+                                `Passout ${20}${currentUser.year} - ${currentUser.college} ${currentUser.branch} Section ${currentUser.section}`;
+                        }
+                        
+                        document.getElementById('loading-screen').classList.add('fade-out');
+                        clearTimeout(loadingSafetyTimeout);
                     } else {
                         // Incomplete profile - redirect to setup
                         showScreen('setup-screen');
+                        document.getElementById('loading-screen').classList.add('fade-out');
+                        clearTimeout(loadingSafetyTimeout);
                     }
                 } else {
                     // New user - redirect to setup
                     showScreen('setup-screen');
+                    document.getElementById('loading-screen').classList.add('fade-out');
+                    clearTimeout(loadingSafetyTimeout);
                 }
+            }, (error) => {
+                console.error("Database error:", error);
+                document.getElementById('loading-screen').classList.add('fade-out');
+                clearTimeout(loadingSafetyTimeout);
             });
         }
 
@@ -1512,9 +1868,6 @@ Now format this student list:
                 opt.textContent = subj;
                 select.appendChild(opt);
             });
-
-            loadStudents();
-            renderHistory();
         }
         function renderHistory() {
             const container = document.getElementById('history-container');
@@ -1698,9 +2051,10 @@ Now format this student list:
             // Determine button index
             let btnIndex;
             if (tab === 'cr') btnIndex = 0;
-            else if (tab === 'students') btnIndex = 1;
-            else if (tab === 'history') btnIndex = 2;
-            else if (tab === 'requests') btnIndex = 3;
+            else if (tab === 'today') btnIndex = 1;
+            else if (tab === 'students') btnIndex = 2;
+            else if (tab === 'history') btnIndex = 3;
+            else if (tab === 'requests') btnIndex = 4;
 
             // Activate correct button
             document.querySelectorAll('#app-screen .tab-btn')[btnIndex].classList.add('active');
@@ -1709,9 +2063,114 @@ Now format this student list:
             document.getElementById(tab + '-tab').classList.add('active');
 
             // Load content
+            if (tab === 'today') renderTodayTab();
             if (tab === 'students') loadStudents();
             if (tab === 'history') renderHistory();
             if (tab === 'requests') renderRequests();
+        }
+
+        let todayGroupedData = {}; // Global store for today's data
+
+        function renderTodayTab() {
+            const today = new Date().toISOString().split('T')[0];
+            const displayDate = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('today-date-display').textContent = displayDate;
+
+            // Load all attendance for today
+            db.ref('attendance').orderByKey().startAt(currentUser.username + '_' + today).endAt(currentUser.username + '_' + today + '\uf8ff').once('value', (snapshot) => {
+                const data = snapshot.val();
+                let totalPresent = 0;
+                let html = '';
+                todayGroupedData = {}; // Reset global store
+
+                if (data) {
+                    Object.entries(data).forEach(([key, records]) => {
+                        const subject = key.split('_')[2];
+                        todayGroupedData[subject] = Object.values(records);
+                        
+                        html += `
+                            <div class="subject-group-header">
+                                <span>📚 ${subject}</span>
+                                <span style="font-size: 12px; opacity: 0.8;">${todayGroupedData[subject].length} present</span>
+                            </div>`;
+
+                        Object.values(records).forEach(r => {
+                            totalPresent++;
+                            html += `
+                                <div class="list-item" style="border-left: 4px solid var(--primary-color);">
+                                    <div class="list-item-info">
+                                        <div class="list-item-name">${r.name}</div>
+                                        <div class="list-item-roll">${r.rollNo}</div>
+                                        <div class="list-item-time">${r.time}</div>
+                                    </div>
+                                </div>`;
+                        });
+                    });
+                }
+
+                document.getElementById('today-present').textContent = totalPresent;
+                
+                if (totalPresent > 0) {
+                    document.getElementById('today-empty').style.display = 'none';
+                    document.getElementById('today-content').style.display = 'block';
+                    document.getElementById('today-list').innerHTML = html;
+                } else {
+                    document.getElementById('today-empty').style.display = 'flex';
+                    document.getElementById('today-content').style.display = 'none';
+                }
+            });
+
+            // Load pending requests count
+            db.ref('requests').orderByKey().startAt(currentUser.username + '_' + today).endAt(currentUser.username + '_' + today + '\uf8ff').on('value', (snapshot) => {
+                const data = snapshot.val();
+                let pendingCount = 0;
+                if (data) {
+                    Object.values(data).forEach(requests => {
+                        Object.values(requests).forEach(req => {
+                            if (req.status === 'pending') pendingCount++;
+                        });
+                    });
+                }
+                document.getElementById('today-requests').textContent = pendingCount;
+            });
+        }
+
+        function openTodayStudentsModal() {
+            const modal = document.getElementById('today-students-modal');
+            const content = document.getElementById('today-students-content');
+            modal.classList.add('active');
+
+            if (Object.keys(todayGroupedData).length === 0) {
+                content.innerHTML = '<div class="empty-state">No attendance recorded today yet.</div>';
+                return;
+            }
+
+            let html = '';
+            for (const [subject, students] of Object.entries(todayGroupedData)) {
+                html += `
+                    <div style="margin-bottom: 24px;">
+                        <h3 style="color: var(--primary-color); border-bottom: 1px solid var(--input-border); padding-bottom: 10px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+                            <span>📚 ${subject}</span>
+                            <span style="font-size: 13px; font-weight: 500; opacity: 0.8;">${students.length} Students</span>
+                        </h3>
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
+                            ${students.map(s => `
+                                <div style="background: var(--tab-bg); padding: 14px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--input-border);">
+                                    <div>
+                                        <div style="font-weight: 600; color: var(--text-color); font-size: 15px;">${s.name}</div>
+                                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">${s.rollNo}</div>
+                                    </div>
+                                    <div style="font-size: 12px; font-weight: 700; color: var(--primary-color); background: rgba(129, 140, 248, 0.1); padding: 6px 10px; border-radius: 10px;">${s.time}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>`;
+            }
+            content.innerHTML = html;
+        }
+
+        function closeTodayStudentsModal() {
+            document.getElementById('today-students-modal').classList.remove('active');
         }
 
         function onSubjectChange() {
@@ -1781,11 +2240,11 @@ Now format this student list:
                 document.getElementById('qr-timer').textContent =
                     `Expires in ${mins}:${String(secs).padStart(2, '0')}`;
 
-                const extendBtn = document.getElementById('extend-timer-btn');
+                const extensionDiv = document.getElementById('timer-extension');
                 if (remaining <= 60 && remaining > 0) {
-                    extendBtn.style.display = 'inline-block';
+                    extensionDiv.style.display = 'block';
                 } else {
-                    extendBtn.style.display = 'none';
+                    extensionDiv.style.display = 'none';
                 }
 
                 if (remaining <= 0) {
@@ -1796,17 +2255,16 @@ Now format this student list:
         }
 
         function extendTimer() {
-            if (qrExpireTime) {
-                qrExpireTime += 60 * 1000;
-                if (currentQRCode) {
-                    currentQRCode.expiryTime = qrExpireTime;
-                    db.ref('qr_sessions/' + currentQRCode.code).update({
-                        expiryTime: qrExpireTime
-                    });
-                    showToast("⏳ Timer extended by 1 minute!");
-                    document.getElementById('extend-timer-btn').style.display = 'none';
-                }
-            }
+            if (!currentQRCode) return;
+            qrExpireTime += (60 * 1000); // Add 1 minute
+            
+            // Update in Firebase
+            db.ref('qr_sessions/' + currentQRCode.code).update({
+                expiryTime: qrExpireTime
+            }).then(() => {
+                showToast('⏱️ Timer extended by 1 minute!');
+                document.getElementById('timer-extension').style.display = 'none';
+            });
         }
 
         function resetQR() {
@@ -1943,7 +2401,9 @@ Now format this student list:
                 // Check if already marked
                 db.ref('attendance/' + key).orderByChild('rollNo').equalTo(student.rollNo).once('value', (snapshot) => {
                     if (snapshot.exists()) {
-                        msgDiv.innerHTML = '<div class="message error">⚠️ Attendance already marked!</div>';
+                        // Redirect to already-marked page instead of showing error
+                        const alreadyURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&alreadyMarked=true`;
+                        window.location.href = alreadyURL;
                         return;
                     }
 
@@ -1987,10 +2447,8 @@ Now format this student list:
                             };
 
                             db.ref('requests/' + key).push(requestData).then(() => {
-                                db.ref('requests/' + key).push(requestData).then(() => {
-                                    const lateURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(requestData.requestTime)}&late=true&lateBy=${lateMinutes}`;
-                                    window.location.href = lateURL;
-                                });
+                                const lateURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(requestData.requestTime)}&late=true&lateBy=${lateMinutes}`;
+                                window.location.href = lateURL;
                             });
                         }
                     });
@@ -2066,7 +2524,9 @@ Now format this student list:
                 if (index !== -1) {
                     currentUser.students[index].name = name;
 
-                    db.ref('users/' + currentUser.username + '/students').set(currentUser.students).then(() => {
+                    db.ref('users/' + currentUser.uid + '/students').set(currentUser.students).then(() => {
+                        // Update cache
+                        localStorage.setItem('user_profile_' + currentUser.uid, JSON.stringify(currentUser));
                         msgDiv.innerHTML = '<div class="message success">✅ Student updated!</div>';
                         setTimeout(() => {
                             closeAddStudentModal();
@@ -2083,7 +2543,9 @@ Now format this student list:
 
                 currentUser.students.push({ rollNo: roll, name: name });
 
-                db.ref('users/' + currentUser.username + '/students').set(currentUser.students).then(() => {
+                db.ref('users/' + currentUser.uid + '/students').set(currentUser.students).then(() => {
+                    // Update cache
+                    localStorage.setItem('user_profile_' + currentUser.uid, JSON.stringify(currentUser));
                     msgDiv.innerHTML = '<div class="message success">✅ Student added!</div>';
                     setTimeout(() => {
                         closeAddStudentModal();
@@ -2098,7 +2560,9 @@ Now format this student list:
 
             currentUser.students = currentUser.students.filter(s => s.rollNo !== rollNo);
 
-            db.ref('users/' + currentUser.username + '/students').set(currentUser.students).then(() => {
+            db.ref('users/' + currentUser.uid + '/students').set(currentUser.students).then(() => {
+                // Update cache
+                localStorage.setItem('user_profile_' + currentUser.uid, JSON.stringify(currentUser));
                 loadStudents();
             });
         }
@@ -2277,7 +2741,7 @@ Now format this student list:
         }
 
         function contactDeveloper() {
-            window.open('https://www.instagram.com/yesss.shivam/', '_blank');
+            window.open('https://www.instagram.com/heheshivam/', '_blank');
         }
 
 
@@ -2287,6 +2751,58 @@ Now format this student list:
 
         function closeLogoPopup() {
             document.getElementById('logo-popup').classList.remove('active');
+        }
+        function initiateDeleteAccount() {
+            const confirm1 = confirm("⚠️ DANGER: Are you absolutely sure?\n\nThis will permanently delete your profile, all student records, and attendance history. This action cannot be undone.");
+            if (!confirm1) return;
+
+            const confirm2 = prompt("Type 'DELETE' to confirm account destruction:");
+            if (confirm2 !== 'DELETE') {
+                alert("Deletion cancelled. Confirmation text did not match.");
+                return;
+            }
+
+            // Start Cleanup
+            const userId = auth.currentUser.uid;
+            const username = currentUser.username;
+            
+            showToast("🗑️ Deleting data...");
+            
+            // 1. Delete Attendance History
+            db.ref('attendance').orderByKey().startAt(username).endAt(username + '\uf8ff').once('value', (snapshot) => {
+                const updates = {};
+                snapshot.forEach((child) => {
+                    updates[child.key] = null;
+                });
+                
+                db.ref('attendance').update(updates).then(() => {
+                    // 2. Delete Requests
+                    return db.ref('requests').orderByKey().startAt(username).endAt(username + '\uf8ff').once('value');
+                }).then((reqSnapshot) => {
+                    const reqUpdates = {};
+                    reqSnapshot.forEach((child) => {
+                        reqUpdates[child.key] = null;
+                    });
+                    return db.ref('requests').update(reqUpdates);
+                }).then(() => {
+                    // 3. Delete User Profile
+                    return db.ref('users/' + userId).remove();
+                }).then(() => {
+                    // 4. Delete Auth User
+                    return auth.currentUser.delete();
+                }).then(() => {
+                    alert("Account successfully deleted. You have been logged out.");
+                    localStorage.clear();
+                    window.location.reload();
+                }).catch((error) => {
+                    console.error("Deletion error:", error);
+                    if (error.code === 'auth/requires-recent-login') {
+                        alert("⚠️ For security, please logout and log back in before deleting your account.");
+                    } else {
+                        alert("❌ Error during deletion: " + error.message);
+                    }
+                });
+            });
         }
     </script>
     <footer
