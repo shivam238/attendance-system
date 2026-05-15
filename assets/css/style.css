@@ -88,7 +88,8 @@
         .container {
             width: 100%;
             max-width: 500px;
-            margin-top: 12vh; /* Even more space to keep it down */
+            margin-top: 12vh;
+            /* Even more space to keep it down */
             margin-bottom: 60px;
         }
 
@@ -753,7 +754,8 @@
         }
 
         .tab-btn.active {
-            background: #4f46e5 !important; /* Deep Indigo for high contrast */
+            background: #4f46e5 !important;
+            /* Deep Indigo for high contrast */
             color: #ffffff !important;
             box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
             font-weight: 800;
@@ -778,7 +780,8 @@
         .tab-btn.over {
             transform: scale(1.05);
             background: rgba(99, 102, 241, 0.05);
-            margin: 0 5px; /* Create temporary space */
+            margin: 0 5px;
+            /* Create temporary space */
         }
 
         .tab {
@@ -1222,10 +1225,21 @@
         }
 
         /* --- PREMIUM ANIMATIONS (applied to elements) --- */
-        .card { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
-        .screen.active { animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        .list-item { animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
-        .modal-content { animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .card {
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .screen.active {
+            animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .list-item {
+            animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .modal-content {
+            animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
 
         /* Export Hub Styles */
         .export-grid {
@@ -1249,7 +1263,7 @@
         .export-card:hover {
             border-color: var(--primary-color);
             transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(102,126,234,0.2);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
         }
 
         .export-card.active {
@@ -1269,4 +1283,58 @@
             white-space: pre-wrap;
             border: 1px solid rgba(16, 185, 129, 0.3);
             overflow-x: auto;
+        }
+
+        /* Premium Smart Drag-and-Drop Styles (V5 - Ultra Stable) */
+        .dragging-item {
+            opacity: 0.2 !important; 
+            border: 2px dashed #4f46e5 !important;
+            background: rgba(79, 70, 229, 0.05) !important;
+            box-shadow: none !important;
+            transform: scale(0.96) !important;
+            transition: none !important; /* No transition for the placeholder itself */
+        }
+
+        .list-item, .tab-btn, .subject-item {
+            transition: transform 0.4s cubic-bezier(0.2, 1, 0.3, 1), opacity 0.2s ease;
+            position: relative;
+            user-select: none;
+            will-change: transform; /* Performance boost */
+        }
+
+        /* Prevent scrollbar jitter by freezing the container layout during drag */
+        .student-list.dragging-active, .subject-list.dragging-active {
+            overflow-y: hidden !important; 
+            padding-right: 8px; /* Offset for hidden scrollbar to prevent horizontal jump */
+        }
+
+        .dragging-item::after {
+            content: "MOVE HERE";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #4f46e5;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .drag-handle {
+            cursor: grab;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            font-size: 18px;
+            color: var(--primary-color);
+            transition: all 0.2s ease;
+        }
+
+        .drag-handle:hover {
+            background: var(--primary-color);
+            color: white;
         }

@@ -8,7 +8,7 @@
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="shortcut icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
-    
+
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -47,7 +47,9 @@
             <button class="btn btn-primary" id="add-btn" onclick="addSubject()">➕ ADD SUBJECT</button>
 
             <div class="subject-list" id="subject-list">
-                <div class="empty-state"><p>Checking login status...</p></div>
+                <div class="empty-state">
+                    <p>Checking login status...</p>
+                </div>
             </div>
         </div>
     </div>
@@ -76,7 +78,7 @@
             const msgDiv = document.getElementById('add-message');
             if (msgDiv) {
                 msgDiv.innerHTML = `<div class="message ${type}">${msg}</div>`;
-                setTimeout(() => { if(msgDiv) msgDiv.innerHTML = ''; }, 3000);
+                setTimeout(() => { if (msgDiv) msgDiv.innerHTML = ''; }, 3000);
             }
         }
 
@@ -100,6 +102,65 @@
             });
         }
 
+        // --- Smart Drag-and-Drop Engine ---
+        let draggedItem = null;
+
+        function setupDraggableItem(item) {
+            item.draggable = true;
+            item.addEventListener('dragstart', (e) => {
+                draggedItem = item;
+                item.classList.add('dragging-item');
+                e.dataTransfer.effectAllowed = 'move';
+            });
+
+            item.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const draggingEl = document.querySelector('.dragging-item');
+                if (!draggingEl || draggingEl.parentNode !== item.parentNode || draggingEl === item) return;
+                
+                const bounding = item.getBoundingClientRect();
+                const offset = bounding.y + bounding.height / 2;
+                
+                if (e.clientY < offset) {
+                    item.parentNode.insertBefore(draggingEl, item);
+                } else {
+                    item.parentNode.insertBefore(draggingEl, item.nextSibling);
+                }
+            });
+
+            item.addEventListener('dragleave', () => {
+                // Style handled via CSS class
+            });
+
+            item.addEventListener('drop', (e) => {
+                e.preventDefault();
+                saveNewOrder(item.parentNode);
+            });
+            });
+
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging-item');
+                draggedItem = null;
+                document.querySelectorAll('.subject-item').forEach(el => {
+                    el.style.borderTop = 'none';
+                    el.style.borderBottom = 'none';
+                });
+            });
+        }
+
+        async function saveNewOrder(parent) {
+            const newOrder = Array.from(parent.querySelectorAll('.subject-name')).map(el => el.textContent);
+            const user = auth.currentUser;
+            if (!user) return;
+
+            try {
+                await db.ref('users/' + user.uid).update({ subjects: newOrder });
+                showMessage("✅ Order saved!");
+            } catch (e) {
+                showMessage("Error saving order: " + e.message, "error");
+            }
+        }
+
         function renderSubjects(subjects) {
             const list = document.getElementById('subject-list');
             if (!list) return;
@@ -119,12 +180,16 @@
                 const item = document.createElement('div');
                 item.className = 'subject-item';
                 item.innerHTML = `
-                    <div class="subject-name">${sub}</div>
+                    <div style="display:flex; align-items:center; gap:12px; flex:1;">
+                        <div class="drag-handle" style="cursor:grab; opacity:0.6;">⠿</div>
+                        <div class="subject-name">${sub}</div>
+                    </div>
                     <div class="subject-actions">
                         <button class="btn btn-small btn-primary" onclick="renameSubject(${index})" style="width:40px;height:40px;padding:0;display:flex;align-items:center;justify-content:center;">✏️</button>
                         <button class="btn btn-small btn-danger" onclick="deleteSubject(${index})" style="width:40px;height:40px;padding:0;display:flex;align-items:center;justify-content:center;">🗑️</button>
                     </div>
                 `;
+                setupDraggableItem(item);
                 list.appendChild(item);
             });
         }
@@ -144,17 +209,17 @@
             try {
                 const snapshot = await db.ref('users/' + user.uid + '/subjects').once('value');
                 let currentSubjects = snapshot.val() || [];
-                
+
                 if (currentSubjects.includes(name)) {
                     showMessage("Subject already exists", "error");
                     btn.disabled = false;
                     btn.innerHTML = "➕ ADD SUBJECT";
                     return;
                 }
-                
+
                 currentSubjects.push(name);
                 await db.ref('users/' + user.uid).update({ subjects: currentSubjects });
-                
+
                 input.value = '';
                 showMessage("✅ Added Successfully!");
             } catch (e) {

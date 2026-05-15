@@ -5,17 +5,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>QR Attendance System</title>
-    
+
     <!-- Preconnect for speed -->
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://firebase.googleapis.com" crossorigin>
     <link rel="dns-prefetch" href="https://www.gstatic.com">
     <link rel="dns-prefetch" href="https://firebase.googleapis.com">
-    
+
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="shortcut icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
-    
+
     <!-- Core Firebase (Async for speed) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -38,7 +38,8 @@
 
         <div id="login-screen" class="screen">
             <div class="card" style="margin-top: 40px;">
-                <div style="display: flex; justify-content: flex-end; margin-bottom: -30px; position: relative; z-index: 10;">
+                <div
+                    style="display: flex; justify-content: flex-end; margin-bottom: -30px; position: relative; z-index: 10;">
                     <button class="theme-btn" onclick="toggleDarkMode()">🌙 Dark Mode</button>
                 </div>
                 <div class="header">
@@ -48,15 +49,19 @@
                 </div>
 
                 <div class="google-login-container" style="padding: 20px 0;">
-                    <div class="info-text" style="text-align: center; margin-bottom: 24px; background: rgba(102, 126, 234, 0.1); border-left: none; border-bottom: 3px solid #667eea;">
-                        👋 <strong>Welcome back!</strong><br>Please sign in with your Google account to access your class dashboard.
+                    <div class="info-text"
+                        style="text-align: center; margin-bottom: 24px; background: rgba(102, 126, 234, 0.1); border-left: none; border-bottom: 3px solid #667eea;">
+                        👋 <strong>Welcome back!</strong><br>Please sign in with your Google account to access your
+                        class dashboard.
                     </div>
-                    
-                    <button class="btn btn-google" onclick="signInWithGoogle()" style="height: 56px; border-radius: 12px; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                        <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" class="google-icon">
+
+                    <button class="btn btn-google" onclick="signInWithGoogle()"
+                        style="height: 56px; border-radius: 12px; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google"
+                            class="google-icon">
                         Continue with Google
                     </button>
-                    
+
                     <p class="google-login-note" style="margin-top: 20px; opacity: 0.8;">
                         Secure, fast, and no password to remember!
                     </p>
@@ -104,7 +109,8 @@
                         placeholder="JOHN DOE - 25/B09/001&#10;JANE SMITH - 25/B09/002&#10;AMIT KUMAR - 25/B09/003"></textarea>
                     <button class="copy-prompt-btn" onclick="copyStudentPrompt()">📋 Copy ChatGPT Prompt</button>
                 </div>
-                <div class="info-text">ℹ️ Student format: NAME - ROLLNO (one per line)<br><br>💡 Click "Copy ChatGPT Prompt" button, paste in ChatGPT with your student list, then copy result here!</div>
+                <div class="info-text">ℹ️ Student format: NAME - ROLLNO (one per line)<br><br>💡 Click "Copy ChatGPT
+                    Prompt" button, paste in ChatGPT with your student list, then copy result here!</div>
                 <button class="btn btn-primary" onclick="saveClassSetup()">Save & Continue</button>
                 <button class="btn btn-secondary" onclick="logoutUser()">Logout</button>
                 <div id="setup-message"></div>
@@ -116,7 +122,9 @@
             <div class="card">
                 <div class="header-controls" style="margin-bottom: 24px; padding-top: 10px;">
                     <button class="info-btn" onclick="openGuideModal()">i</button>
-                    <button class="theme-btn" onclick="toggleDarkMode()" style="color: var(--text-color); background: var(--tab-bg); border-radius: 12px; padding: 6px 14px; font-size: 13px;">🌙 Dark Mode</button>
+                    <button class="theme-btn" onclick="toggleDarkMode()"
+                        style="color: var(--text-color); background: var(--tab-bg); border-radius: 12px; padding: 6px 14px; font-size: 13px;">🌙
+                        Dark Mode</button>
                     <div class="status-badge online" id="connection-status">
                         <span class="status-dot"></span>
                         <span>Connected</span>
@@ -149,17 +157,21 @@
                     </div>
 
                     <a href="manage-subjects.html" style="display: block; margin-bottom: 16px;">
-                        <button class="btn btn-secondary" type="button" style="margin: 0; background: var(--tab-bg); color: var(--text-color); border: 1px solid var(--input-border);">📚 Manage Subjects</button>
+                        <button class="btn btn-secondary" type="button"
+                            style="margin: 0; background: var(--tab-bg); color: var(--text-color); border: 1px solid var(--input-border);">📚
+                            Manage Subjects</button>
                     </a>
 
                     <button class="btn btn-primary" onclick="generateQRCode()">📲 Generate QR Code</button>
 
                     <div id="qr-section" style="display: none;">
-                        <div class="qr-container" style="background: var(--tab-bg); border-color: var(--primary-color);">
+                        <div class="qr-container"
+                            style="background: var(--tab-bg); border-color: var(--primary-color);">
                             <div id="qrcode" style="background: #fff; padding: 10px; border-radius: 8px;"></div>
                             <div class="qr-timer" id="qr-timer"></div>
                             <div id="timer-extension" style="display: none; margin-top: 15px;">
-                                <button class="btn btn-secondary btn-small" onclick="extendTimer()" style="background: #fbbf24; color: #fff; border: none;">⏱️ +1 Min Extend</button>
+                                <button class="btn btn-secondary btn-small" onclick="extendTimer()"
+                                    style="background: #fbbf24; color: #fff; border: none;">⏱️ +1 Min Extend</button>
                             </div>
                         </div>
                         <button class="btn btn-secondary" onclick="copyQRLink()">📋 Copy Link</button>
@@ -181,7 +193,8 @@
                     <div id="attendance-list"></div>
 
                     <div style="margin-top: 25px;">
-                        <button onclick="openExportModal()" class="btn btn-primary" style="width: 100%; padding: 16px; border-radius: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
+                        <button onclick="openExportModal()" class="btn btn-primary"
+                            style="width: 100%; padding: 16px; border-radius: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
                             📊 EXPORT HUB
                         </button>
                     </div>
@@ -194,11 +207,17 @@
                         <p id="today-date-display" style="color: var(--text-muted);"></p>
                     </div>
                     <div class="stats">
-                        <div class="stat-card" onclick="openTodayStudentsModal()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); cursor: pointer; transition: 0.2s; transform: scale(1);" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                        <div class="stat-card" onclick="openTodayStudentsModal()"
+                            style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); cursor: pointer; transition: 0.2s; transform: scale(1);"
+                            onmouseover="this.style.transform='scale(1.02)'"
+                            onmouseout="this.style.transform='scale(1)'">
                             <div id="today-present" class="stat-value">0</div>
                             <div class="stat-label">Present Students ➔</div>
                         </div>
-                        <div class="stat-card" onclick="switchAppTab('requests')" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); cursor: pointer; transition: 0.2s; transform: scale(1);" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                        <div class="stat-card" onclick="switchAppTab('requests')"
+                            style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); cursor: pointer; transition: 0.2s; transform: scale(1);"
+                            onmouseover="this.style.transform='scale(1.02)'"
+                            onmouseout="this.style.transform='scale(1)'">
                             <div id="today-requests" class="stat-value">0</div>
                             <div class="stat-label">Pending Requests ➔</div>
                         </div>
@@ -225,9 +244,12 @@
 
                 <!-- HISTORY TAB -->
                 <div id="history-tab" class="tab">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                         <h3 style="margin: 0; font-weight: 700;">Attendance History</h3>
-                        <button class="btn-small btn-success" onclick="openExportModal()" style="width: auto; padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 13px;">📊 Export Hub</button>
+                        <button class="btn-small btn-success" onclick="openExportModal()"
+                            style="width: auto; padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 13px;">📊
+                            Export Hub</button>
                     </div>
                     <div id="history-content"></div>
                 </div>
@@ -395,7 +417,7 @@
     <script src="assets/js/ui.js"></script>
     <script src="assets/js/history.js"></script>
     <script src="assets/js/export.js"></script>
-    
+
     <script>
         let currentUser = null;
         let currentSubject = null;
@@ -570,7 +592,7 @@ Now format this student list:
             const isDark = document.body.classList.toggle('dark-mode');
             localStorage.setItem('darkMode', isDark);
             updateThemeButtonText();
-            
+
             // Cloud Sync
             if (window.syncSettingToCloud) {
                 window.syncSettingToCloud('darkMode', isDark);
@@ -615,7 +637,7 @@ Now format this student list:
         let isFirstAuthCheck = true;
         auth.onAuthStateChanged((user) => {
             const loadingScreen = document.getElementById('loading-screen');
-            
+
             if (user) {
                 isFirstAuthCheck = false;
                 // Check for cached profile to show app instantly
@@ -633,7 +655,7 @@ Now format this student list:
                         console.error("Cache error:", e);
                     }
                 }
-                
+
                 // Still fetch latest data from Firebase in background
                 handleUserSignedIn(user);
             } else {
@@ -662,11 +684,11 @@ Now format this student list:
 
         function handleUserSignedIn(user) {
             const userId = user.uid;
-            
+
             db.ref('users/' + userId).once('value', (snapshot) => {
                 if (snapshot.exists()) {
                     const userData = snapshot.val();
-                    
+
                     // --- CLOUD SETTINGS SYNC ---
                     if (userData.settings) {
                         if (userData.settings.tabOrder) {
@@ -685,11 +707,11 @@ Now format this student list:
                     // ----------------------------
 
                     const isProfileComplete = userData.year && userData.college && userData.branch && userData.section && userData.username;
-                    
+
                     if (isProfileComplete) {
                         localStorage.setItem('user_profile_' + userId, JSON.stringify(userData));
                         currentUser = { uid: userId, email: user.email, displayName: user.displayName, ...userData };
-                        
+
                         if (!document.getElementById('app-screen').classList.contains('active')) {
                             showScreen('app-screen');
                             initializeApp();
@@ -697,7 +719,7 @@ Now format this student list:
                             document.getElementById('class-info').textContent =
                                 `Passout ${20}${currentUser.year} - ${currentUser.college} ${currentUser.branch} Section ${currentUser.section}`;
                         }
-                        
+
                         document.getElementById('loading-screen').classList.add('fade-out');
                         clearTimeout(loadingSafetyTimeout);
                     } else {
@@ -718,10 +740,10 @@ Now format this student list:
         }
 
         // Global function to push settings to cloud
-        window.syncSettingToCloud = function(key, value) {
+        window.syncSettingToCloud = function (key, value) {
             if (auth.currentUser) {
                 db.ref('users/' + auth.currentUser.uid + '/settings').update({ [key]: value })
-                  .catch(err => console.error("Cloud Sync Error:", err));
+                    .catch(err => console.error("Cloud Sync Error:", err));
             }
         };
 
@@ -895,9 +917,9 @@ Now format this student list:
                         const match = key.match(/^(.+)_(\d{4}-\d{2}-\d{2})_(.+)$/);
                         if (!match) return;
                         const subject = match[3];
-                        
+
                         todayGroupedData[subject] = Object.values(records);
-                        
+
                         html += `
                             <div class="subject-group-header">
                                 <span>📚 ${subject}</span>
@@ -911,7 +933,7 @@ Now format this student list:
                                     <div class="list-item-info">
                                         <div class="list-item-name">${r.name}</div>
                                         <div class="list-item-roll">${r.rollNo}</div>
-                                        <div class="list-item-time">${r.time}</div>
+                                        <div class="list-item-time">${formatTime(r.time)}</div>
                                     </div>
                                 </div>`;
                         });
@@ -919,7 +941,7 @@ Now format this student list:
                 }
 
                 document.getElementById('today-present').textContent = totalPresent;
-                
+
                 if (totalPresent > 0) {
                     document.getElementById('today-empty').style.display = 'none';
                     document.getElementById('today-content').style.display = 'block';
@@ -1011,7 +1033,7 @@ Now format this student list:
                 window.currentQRListenerRef.off();
             }
             window.currentQRListenerRef = db.ref('attendance/' + code);
-            
+
             // Limit to new records only by querying timestamp
             window.currentQRListenerRef.orderByChild('timestamp').startAt(generationTime).on('child_added', (snapshot) => {
                 const record = snapshot.val();
@@ -1067,7 +1089,7 @@ Now format this student list:
         function extendTimer() {
             if (!currentQRCode) return;
             qrExpireTime += (60 * 1000); // Add 1 minute
-            
+
             // Update in Firebase
             db.ref('qr_sessions/' + currentQRCode.code).update({
                 expiryTime: qrExpireTime
@@ -1247,6 +1269,129 @@ Now format this student list:
             document.getElementById('modal-message').innerHTML = '';
         }
 
+        // --- Smart Drag-and-Drop Engine ---
+        let draggedItem = null;
+        let draggedType = null; // 'student' or 'subject'
+
+        function setupDraggableItem(item, type) {
+            item.draggable = true;
+            item.addEventListener('dragstart', (e) => {
+                draggedItem = item;
+                draggedType = type;
+                item.classList.add('dragging-item');
+                // Freeze scrollbar to prevent vibration
+                item.parentNode.classList.add('dragging-active');
+                e.dataTransfer.effectAllowed = 'move';
+            });
+
+            item.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const draggingEl = document.querySelector('.dragging-item');
+                if (!draggingEl || draggingEl.parentNode !== item.parentNode || draggingEl === item) return;
+                
+                const bounding = item.getBoundingClientRect();
+                const offset = bounding.y + bounding.height / 2;
+                
+                if (e.clientY < offset) {
+                    item.parentNode.insertBefore(draggingEl, item);
+                } else {
+                    item.parentNode.insertBefore(draggingEl, item.nextSibling);
+                }
+            });
+
+            item.addEventListener('drop', (e) => {
+                e.preventDefault();
+                finalizeNewOrder(draggedType, item.parentNode);
+            });
+
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging-item');
+                // Unfreeze scrollbars
+                document.querySelectorAll('.student-list, .subject-list, .nav-tabs, .tabs-container, .student-list-container').forEach(c => {
+                    c.classList.remove('dragging-active');
+                });
+                draggedItem = null;
+            });
+        }
+
+        function finalizeNewOrder(type, parent) {
+            const newOrderNames = Array.from(parent.querySelectorAll('.list-item-name, .tab-btn')).map(el => el.textContent.trim());
+            
+            if (type === 'student') {
+                const newStudents = [];
+                newOrderNames.forEach(name => {
+                    const student = currentUser.students.find(s => s.name === name);
+                    if (student) newStudents.push(student);
+                });
+                currentUser.students = newStudents;
+                saveStudentOrder();
+                showToast("👥 Student order saved!");
+            } else if (type === 'subject') {
+                currentUser.subjects = newOrderNames;
+                saveSubjectsToCloud();
+                showToast("📚 Subject order saved!");
+            } else if (type === 'setup-subject') {
+                setupSubjects = newOrderNames;
+                showToast("📚 Setup order updated!");
+            } else if (type === 'tab') {
+                const tabOrder = Array.from(parent.querySelectorAll('.tab-btn')).map(btn => {
+                    const text = btn.textContent.trim().toLowerCase();
+                    if (text === 'cr') return 'cr';
+                    if (text === 'today') return 'today';
+                    if (text === 'students') return 'students';
+                    if (text === 'history') return 'history';
+                    if (text === 'requests') return 'requests';
+                    return text;
+                });
+                localStorage.setItem('tabs_order', JSON.stringify(tabOrder));
+                if (window.syncSettingToCloud) window.syncSettingToCloud('tabs_order', tabOrder);
+                showToast("📑 Tab order saved!");
+            }
+        }
+
+        function setupHorizontalDrag(item, type) {
+            item.draggable = true;
+            item.addEventListener('dragstart', (e) => {
+                draggedItem = item;
+                draggedType = type;
+                item.classList.add('dragging-item');
+                // Freeze scrollbar to prevent vibration
+                item.parentNode.classList.add('dragging-active');
+                e.dataTransfer.effectAllowed = 'move';
+            });
+
+            item.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const draggingEl = document.querySelector('.dragging-item');
+                if (!draggingEl || draggingEl.parentNode !== item.parentNode || draggingEl === item) return;
+                
+                const bounding = item.getBoundingClientRect();
+                const offset = bounding.x + bounding.width / 2;
+                
+                if (e.clientX < offset) {
+                    item.parentNode.insertBefore(draggingEl, item);
+                } else {
+                    item.parentNode.insertBefore(draggingEl, item.nextSibling);
+                }
+            });
+
+            item.addEventListener('drop', (e) => {
+                e.preventDefault();
+                finalizeNewOrder(draggedType, item.parentNode);
+            });
+
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging-item');
+                document.querySelectorAll('.student-list, .subject-list, .nav-tabs, .tabs-container, .student-list-container').forEach(c => {
+                    c.classList.remove('dragging-active');
+                });
+                draggedItem = null;
+            });
+        }
+
+        // Initialize Tabs
+        document.querySelectorAll('.tab-btn').forEach(btn => setupHorizontalDrag(btn, 'tab'));
+
         function loadStudents() {
             const list = document.getElementById('students-list');
             if (!currentUser.students || currentUser.students.length === 0) {
@@ -1254,20 +1399,60 @@ Now format this student list:
                 return;
             }
 
-            let html = currentUser.students.map(s => `
-                <div class="list-item">
-                    <div class="list-item-info">
-                        <div class="list-item-name">${s.name}</div>
-                        <div class="list-item-roll">${s.rollNo}</div>
+            list.innerHTML = '';
+            currentUser.students.forEach((s) => {
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:12px; flex:1;">
+                        <div class="drag-handle">⠿</div>
+                        <div class="list-item-info">
+                            <div class="list-item-name">${s.name}</div>
+                            <div class="list-item-roll">${s.rollNo}</div>
+                        </div>
                     </div>
                     <div class="list-item-actions">
                         <button class="btn-small btn-primary" onclick="editStudent('${s.rollNo}')">Edit</button>
                         <button class="btn-small btn-danger" onclick="deleteStudent('${s.rollNo}')">Delete</button>
                     </div>
-                </div>
-            `).join('');
+                `;
+                setupDraggableItem(item, 'student');
+                list.appendChild(item);
+            });
+        }
 
-            list.innerHTML = html;
+        function renderSubjects() {
+            const list = document.getElementById('subjects-list-container'); // Need to ensure this ID exists
+            if (!list || !currentUser.subjects) return;
+
+            list.innerHTML = '';
+            currentUser.subjects.forEach(sub => {
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:12px; flex:1;">
+                        <div class="drag-handle">⠿</div>
+                        <div class="list-item-name" style="font-weight:600;">${sub}</div>
+                    </div>
+                    <div class="list-item-actions">
+                        <button class="btn-icon" onclick="deleteSubject('${sub}')">🗑️</button>
+                    </div>
+                `;
+                setupDraggableItem(item, 'subject');
+                list.appendChild(item);
+            });
+        }
+
+        function saveStudentOrder() {
+            // Update LocalStorage
+            localStorage.setItem(`students_${currentUser.uid}`, JSON.stringify(currentUser.students));
+
+            // Sync to Firebase
+            if (window.syncSettingToCloud) {
+                window.syncSettingToCloud('students', currentUser.students);
+            } else {
+                db.ref(`users/${currentUser.uid}/students`).set(currentUser.students);
+            }
         }
 
         function openAddStudentModal() {
@@ -1414,14 +1599,18 @@ Now format this student list:
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
                 <div>
                     <h2 style="margin:0;color:var(--primary-color);font-size:24px;">🚀 Export Hub Pro</h2>
-                    <p style="margin:4px 0 0;font-size:12px;color:var(--text-muted);">Highly customizable attendance reports</p>
+                    <p style="margin:4px 0 0;font-size:12px;color:var(--text-muted);">Highly customizable attendance
+                        reports</p>
                 </div>
-                <button onclick="closeExportModal()" style="background:var(--tab-bg);border:none;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer;color:var(--text-color);">×</button>
+                <button onclick="closeExportModal()"
+                    style="background:var(--tab-bg);border:none;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer;color:var(--text-color);">×</button>
             </div>
 
             <!-- Step 1: Layout Selection -->
             <div style="margin-bottom:20px;">
-                <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">① Selection Mode</div>
+                <div
+                    style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">
+                    ① Selection Mode</div>
                 <div class="export-grid" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));">
                     <div class="export-card active" id="layout-today" onclick="setExportLayout('today', this)">
                         <div style="font-size:20px;">📅</div>
@@ -1443,19 +1632,26 @@ Now format this student list:
             </div>
 
             <!-- Step 2: Advanced Filters -->
-            <div style="margin-bottom:20px;padding:18px;background:var(--tab-bg);border-radius:14px;border:1px solid var(--border-color);">
-                <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:15px;">② Fine Tune Filters</div>
+            <div
+                style="margin-bottom:20px;padding:18px;background:var(--tab-bg);border-radius:14px;border:1px solid var(--border-color);">
+                <div
+                    style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:15px;">
+                    ② Fine Tune Filters</div>
 
                 <!-- Date Range Row -->
                 <div id="filter-date-range" style="display:none;margin-bottom:15px;">
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                         <div>
-                            <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:5px;">From Date:</label>
-                            <input type="date" id="export-date-from" onchange="updateExportPreview()" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-color);">
+                            <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:5px;">From
+                                Date:</label>
+                            <input type="date" id="export-date-from" onchange="updateExportPreview()"
+                                style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-color);">
                         </div>
                         <div>
-                            <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:5px;">To Date:</label>
-                            <input type="date" id="export-date-to" onchange="updateExportPreview()" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-color);">
+                            <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:5px;">To
+                                Date:</label>
+                            <input type="date" id="export-date-to" onchange="updateExportPreview()"
+                                style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-color);">
                         </div>
                     </div>
                 </div>
@@ -1464,24 +1660,32 @@ Now format this student list:
                 <div style="margin-bottom:15px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                         <label style="font-size:13px;font-weight:600;">Subjects:</label>
-                        <button onclick="toggleAllSubjects(true)" style="background:transparent; border:none; color:var(--primary-color); font-size:11px; cursor:pointer; font-weight:700;">Select All</button>
+                        <button onclick="toggleAllSubjects(true)"
+                            style="background:transparent; border:none; color:var(--primary-color); font-size:11px; cursor:pointer; font-weight:700;">Select
+                            All</button>
                     </div>
-                    <div id="export-subjects-list" style="max-height:100px; overflow-y:auto; padding:10px; background:var(--card-bg); border:1px solid var(--border-color); border-radius:8px; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                    <div id="export-subjects-list"
+                        style="max-height:100px; overflow-y:auto; padding:10px; background:var(--card-bg); border:1px solid var(--border-color); border-radius:8px; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
                         <!-- Checkboxes will be injected here -->
                     </div>
                 </div>
 
                 <!-- Student Search (Hidden by default) -->
-                <div id="filter-student-row" style="display:none;margin-bottom:15px;display:flex;align-items:center;gap:12px;">
+                <div id="filter-student-row"
+                    style="display:none;margin-bottom:15px;display:flex;align-items:center;gap:12px;">
                     <label style="font-size:13px;font-weight:600;min-width:70px;">Student:</label>
-                    <input type="text" id="export-student-search" placeholder="Search by Name or Roll..." oninput="updateExportPreview()" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-color);">
+                    <input type="text" id="export-student-search" placeholder="Search by Name or Roll..."
+                        oninput="updateExportPreview()"
+                        style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-color);">
                 </div>
 
                 <!-- Layout & Time Settings -->
-                <div style="margin-bottom:15px; display:flex; flex-direction:column; gap:10px; padding-top:10px; border-top:1px solid var(--border-color);">
+                <div
+                    style="margin-bottom:15px; display:flex; flex-direction:column; gap:10px; padding-top:10px; border-top:1px solid var(--border-color);">
                     <div style="display:flex;align-items:center;justify-content:space-between;">
                         <span style="font-size:13px;font-weight:600;">Time Format:</span>
-                        <select id="export-time-format" onchange="updateExportPreview()" style="padding:6px; border-radius:6px; font-size:12px; background:var(--card-bg); color:var(--text-color); border:1px solid var(--border-color); cursor:pointer;">
+                        <select id="export-time-format" onchange="updateExportPreview()"
+                            style="padding:6px; border-radius:6px; font-size:12px; background:var(--card-bg); color:var(--text-color); border:1px solid var(--border-color); cursor:pointer;">
                             <option value="12h">🕒 12-Hour (AM/PM)</option>
                             <option value="24h">⌚ 24-Hour</option>
                         </select>
@@ -1489,16 +1693,23 @@ Now format this student list:
 
                     <div style="display:flex;align-items:center;justify-content:space-between;">
                         <span style="font-size:13px;font-weight:600;">Layout Type:</span>
-                        <div style="display:flex;background:var(--card-bg);padding:4px;border-radius:8px;border:1px solid var(--border-color);">
-                            <button id="format-list" onclick="setExportFormat('list')" style="padding:6px 14px;border:none;border-radius:6px;font-size:11px;cursor:pointer;background:var(--primary-color);color:#fff;font-weight:700;">📜 List View</button>
-                            <button id="format-matrix" onclick="setExportFormat('matrix')" style="padding:6px 14px;border:none;border-radius:6px;font-size:11px;cursor:pointer;background:transparent;color:var(--text-color);font-weight:700;">📊 Register</button>
+                        <div
+                            style="display:flex;background:var(--card-bg);padding:4px;border-radius:8px;border:1px solid var(--border-color);">
+                            <button id="format-list" onclick="setExportFormat('list')"
+                                style="padding:6px 14px;border:none;border-radius:6px;font-size:11px;cursor:pointer;background:var(--primary-color);color:#fff;font-weight:700;">📜
+                                List View</button>
+                            <button id="format-matrix" onclick="setExportFormat('matrix')"
+                                style="padding:6px 14px;border:none;border-radius:6px;font-size:11px;cursor:pointer;background:transparent;color:var(--text-color);font-weight:700;">📊
+                                Register</button>
                         </div>
                     </div>
-                    
+
                     <!-- Matrix Specific Options -->
-                    <div id="matrix-options" style="display:none; align-items:center; justify-content:space-between; padding:8px; background:rgba(102, 126, 234, 0.05); border-radius:8px;">
+                    <div id="matrix-options"
+                        style="display:none; align-items:center; justify-content:space-between; padding:8px; background:rgba(102, 126, 234, 0.05); border-radius:8px;">
                         <span style="font-size:11px; font-weight:700; color:var(--text-muted);">CELL CONTENT:</span>
-                        <select id="matrix-cell-type" onchange="updateExportPreview()" style="padding:4px 8px; font-size:11px; border-radius:4px; background:var(--card-bg); color:var(--text-color); border:1px solid var(--border-color);">
+                        <select id="matrix-cell-type" onchange="updateExportPreview()"
+                            style="padding:4px 8px; font-size:11px; border-radius:4px; background:var(--card-bg); color:var(--text-color); border:1px solid var(--border-color);">
                             <option value="short">P/A (Short)</option>
                             <option value="full">Present/Absent (Full)</option>
                         </select>
@@ -1508,24 +1719,37 @@ Now format this student list:
 
             <!-- Step 3: Column Selection -->
             <div style="margin-bottom:20px;padding:15px;background:var(--tab-bg);border-radius:14px;">
-                <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">③ Columns</div>
+                <div
+                    style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">
+                    ③ Columns</div>
                 <div style="display:grid;grid-template-columns: repeat(3, 1fr);gap:10px;">
-                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;"><input type="checkbox" id="export-sno" checked onchange="updateExportPreview()"> S.No</label>
-                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;"><input type="checkbox" id="export-roll" checked onchange="updateExportPreview()"> Roll No</label>
-                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;"><input type="checkbox" id="export-date-col" checked onchange="updateExportPreview()"> Date</label>
-                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;"><input type="checkbox" id="export-time" checked onchange="updateExportPreview()"> Time</label>
-                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;"><input type="checkbox" id="export-subject-col" checked onchange="updateExportPreview()"> Subject</label>
-                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;"><input type="checkbox" id="export-status" checked onchange="updateExportPreview()"> Status</label>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;"><input
+                            type="checkbox" id="export-sno" checked onchange="updateExportPreview()"> S.No</label>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;"><input
+                            type="checkbox" id="export-roll" checked onchange="updateExportPreview()"> Roll No</label>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;"><input
+                            type="checkbox" id="export-date-col" checked onchange="updateExportPreview()"> Date</label>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;"><input
+                            type="checkbox" id="export-time" checked onchange="updateExportPreview()"> Time</label>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;"><input
+                            type="checkbox" id="export-subject-col" checked onchange="updateExportPreview()">
+                        Subject</label>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;"><input
+                            type="checkbox" id="export-status" checked onchange="updateExportPreview()"> Status</label>
                 </div>
             </div>
 
             <!-- Step 4: Live Preview -->
             <div style="margin-bottom:24px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">④ Live Preview</div>
-                    <div id="export-status-info" style="font-size:10px; color:var(--primary-color); font-weight:600;"></div>
+                    <div
+                        style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">
+                        ④ Live Preview</div>
+                    <div id="export-status-info" style="font-size:10px; color:var(--primary-color); font-weight:600;">
+                    </div>
                 </div>
-                <div id="export-preview" style="background:var(--card-bg);border-radius:12px;padding:12px;min-height:100px;border:1px solid var(--border-color);overflow-x:auto;">
+                <div id="export-preview"
+                    style="background:var(--card-bg);border-radius:12px;padding:12px;min-height:100px;border:1px solid var(--border-color);overflow-x:auto;">
                     <div style="color:var(--text-muted);text-align:center;padding:20px;">⏳ Loading records...</div>
                 </div>
             </div>
@@ -1533,7 +1757,8 @@ Now format this student list:
             <!-- Actions -->
             <div style="display:flex;gap:12px;">
                 <button class="btn btn-secondary" onclick="closeExportModal()" style="flex:1;">Cancel</button>
-                <button class="btn btn-primary" onclick="downloadExport()" style="flex:2;font-size:16px;">🚀 DOWNLOAD REPORT</button>
+                <button class="btn btn-primary" onclick="downloadExport()" style="flex:2;font-size:16px;">🚀 DOWNLOAD
+                    REPORT</button>
             </div>
         </div>
     </div>

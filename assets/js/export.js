@@ -294,7 +294,10 @@ function renderListPreview(el, data) {
 
 // Function to manually mark attendance from the Export Hub
 function quickMarkPresent(rollNo, name, date, subject) {
-    const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+    // Standardize to 24h HH:mm:ss to match QR scanning
+    const now = new Date();
+    const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+    
     const attendanceKey = `${currentUser.username}_${date}_${subject}`;
     const studentUid = rollNo.replace(/\//g, '_'); // sanitize key
 

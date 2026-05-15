@@ -39,7 +39,7 @@ function renderHistory() {
                 let studentsHtml = entry.students.map(s => `
                     <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color); font-size: 13px;">
                         <div><strong style="color: var(--text-color);">${s.name}</strong> <br> <span style="color: var(--text-muted); font-size: 12px;">Roll: ${s.rollNo}</span></div>
-                        <div style="color: #10b981; font-weight: 500;">${s.time}</div>
+                        <div style="color: #10b981; font-weight: 500;">${typeof formatTime === 'function' ? formatTime(s.time) : s.time}</div>
                     </div>
                 `).join('');
 
