@@ -156,11 +156,10 @@
 
         /* Theme Toggle Button */
 
-        /* Theme Toggle Button */
         .theme-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
+            background: var(--tab-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-color);
             padding: 8px 12px;
             border-radius: 20px;
             cursor: pointer;
@@ -173,8 +172,9 @@
         }
 
         .theme-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: var(--input-border);
         }
+
 
         /* Logo Animations - Premium Effects */
         @keyframes float {
