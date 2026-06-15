@@ -1068,17 +1068,27 @@
         }
 
         .modal-close {
+            position: sticky;
+            top: 0px;
             float: right;
+            display: inline-block;
             font-size: 28px;
             font-weight: 700;
             color: var(--text-muted);
             cursor: pointer;
             transition: color 0.2s;
             line-height: 1;
+            z-index: 100;
+            background: var(--card-bg);
+            padding: 4px 8px;
+            border-radius: 50%;
+            margin-top: -10px;
+            margin-right: -10px;
         }
 
         .modal-close:hover {
             color: var(--text-color);
+            background: rgba(255, 255, 255, 0.1);
         }
 
         .empty-state {
