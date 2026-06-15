@@ -117,15 +117,21 @@
         /* ── Bullet list ── */
         .bullet-list { list-style: none; }
         .bullet-list li {
-            padding: 7px 0;
+            padding: 7px 0 7px 20px;
             color: #334155;
             font-size: 13.5px;
             border-bottom: 1px dashed #f1f5f9;
-            display: flex;
-            gap: 8px;
+            position: relative;
         }
         .bullet-list li:last-child { border-bottom: none; }
-        .bullet-list li::before { content: "▸"; color: #667eea; font-size: 12px; margin-top: 2px; flex-shrink: 0; }
+        .bullet-list li::before {
+            content: "▸";
+            color: #667eea;
+            font-size: 12px;
+            position: absolute;
+            left: 0;
+            top: 8px;
+        }
 
         /* ── Info / warning boxes ── */
         .info-box {

@@ -456,6 +456,15 @@ function downloadExport() {
 
     const fileName = `Attendance_${exportFormat}_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(wb, fileName);
+    
+    // Log Analytics Event
+    if (typeof logAnalyticsEvent !== 'undefined') {
+        logAnalyticsEvent("excel_export", {
+            mode: selectedLayout,
+            format: exportFormat
+        });
+    }
+
     showToast('✅ Excel Downloaded!');
     closeExportModal();
 }

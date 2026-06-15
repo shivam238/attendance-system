@@ -24,6 +24,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
 
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
@@ -43,7 +44,7 @@
         <div id="login-screen" class="screen">
             <div class="card" style="margin-top: 40px;">
                 <div
-                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: -30px; position: relative; z-index: 10;">
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; position: relative; z-index: 10;">
                     <a href="manual.html" target="_blank" style="text-decoration: none;">
                         <button class="info-btn" title="User Manual" style="font-size: 13px; width: auto; padding: 0 12px; height: 32px; border-radius: 10px;">📖 Manual</button>
                     </a>
@@ -113,9 +114,9 @@
                             <label style="color: var(--text-color);">Enter 6-Digit OTP</label>
                             <input type="text" id="otp-login-input" placeholder="e.g. 123456" maxlength="6" style="height: 50px; font-size: 18px; text-align: center; letter-spacing: 4px;">
                         </div>
-                        <div style="display: flex; gap: 8px;">
-                            <button class="btn btn-secondary" onclick="resetPhoneLoginUI()" style="flex: 1; height: 50px; border-radius: 12px; padding: 0;">Edit Number</button>
-                            <button class="btn btn-success" onclick="verifyPhoneLoginOTP()" style="flex: 2; height: 50px; border-radius: 12px; padding: 0;">Verify & Login</button>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="btn btn-secondary" onclick="resetPhoneLoginUI()" style="flex: 1; min-width: 120px; height: 50px; border-radius: 12px; padding: 0;">Edit Number</button>
+                            <button class="btn btn-success" onclick="verifyPhoneLoginOTP()" style="flex: 2; min-width: 150px; height: 50px; border-radius: 12px; padding: 0;">Verify &amp; Login</button>
                         </div>
                     </div>
                 </div>
@@ -127,7 +128,7 @@
         <div id="setup-screen" class="screen">
             <div class="card">
                 <div
-                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: -30px; position: relative; z-index: 10;">
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; position: relative; z-index: 10;">
                     <a href="manual.html" target="_blank" style="text-decoration: none;">
                         <button class="info-btn" title="User Manual" style="font-size: 13px; width: auto; padding: 0 12px; height: 32px; border-radius: 10px;">📖 Manual</button>
                     </a>
@@ -188,7 +189,7 @@
                             <span>Connected</span>
                         </div>
                     </div>
-                    <div class="header-controls-right" style="display: flex; gap: 8px; align-items: center;">
+                    <div class="header-controls-right">
                         <button class="theme-btn" onclick="toggleDarkMode()"
                             style="color: var(--text-color); background: var(--tab-bg); border-radius: 12px; padding: 8px 16px; font-size: 13px;">🌙 Dark Mode</button>
                         <button class="settings-btn" onclick="openProfileModal()"
@@ -1564,6 +1565,12 @@ Now format this student list:
 
             document.getElementById('qr-section').style.display = 'block';
             startQRTimer();
+
+            // Log Analytics Event
+            logAnalyticsEvent("qr_generated", {
+                subject: currentSubject,
+                has_geofencing: !!locationData
+            });
         }
 
         let qrTimerInterval;
@@ -1708,6 +1715,20 @@ Now format this student list:
             };
 
             db.ref('requests/' + key).push(requestData).then(() => {
+                // Log Analytics Event
+                logAnalyticsEvent("attendance_submitted", {
+                    subject: subject,
+                    status: gpsDenied ? "gps_denied" : "out_of_range"
+                });
+
+                if (!gpsDenied) {
+                    logAnalyticsEvent("geofence_violation", {
+                        subject: subject,
+                        distance: distance,
+                        allowed_radius: session.location.radius
+                    });
+                }
+
                 let redirectURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(requestData.requestTime)}`;
                 
                 if (gpsDenied) {
@@ -1734,6 +1755,11 @@ Now format this student list:
                 };
 
                 db.ref('attendance/' + key).push(attendanceData).then(() => {
+                    // Log Analytics Event
+                    logAnalyticsEvent("attendance_submitted", {
+                        subject: subject,
+                        status: "present"
+                    });
                     const successURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(attendanceData.time)}`;
                     window.location.href = successURL;
                 });
@@ -1750,6 +1776,11 @@ Now format this student list:
                 };
 
                 db.ref('requests/' + key).push(requestData).then(() => {
+                    // Log Analytics Event
+                    logAnalyticsEvent("attendance_submitted", {
+                        subject: subject,
+                        status: "late_pending"
+                    });
                     const lateURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(requestData.requestTime)}&late=true&lateBy=${lateMinutes}`;
                     window.location.href = lateURL;
                 });
@@ -2176,6 +2207,12 @@ Now format this student list:
 
                 const filename = `Attendance_${currentSubject}_${today}.xlsx`;
                 XLSX.writeFile(wb, filename);
+
+                // Log Analytics Event
+                logAnalyticsEvent("excel_export", {
+                    mode: "today",
+                    subject: currentSubject
+                });
 
                 alert(`✅ Downloaded!\nPresent: ${records.length}/${currentUser.students.length}`);
             });
