@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ATTENDIFY</title>
 
+    <!-- Leaflet Maps CSS & JS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
     <!-- Preconnect for speed -->
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://firebase.googleapis.com" crossorigin>
@@ -219,7 +223,18 @@
                                 </button>
                             </a>
 
-                            <button class="btn btn-primary" onclick="generateQRCode()">📲 Generate QR Code</button>
+                            <div class="form-group" style="margin-top: 15px; margin-bottom: 15px;">
+                                <label style="color: var(--text-color); display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px;">📍 Geofencing (Allowed Area)</label>
+                                <select id="geofence-select" style="width: 100%; padding: 10px; border-radius: 10px; background: var(--tab-bg); border: 1px solid var(--input-border); color: var(--text-color); font-weight: 500;">
+                                    <option value="none">Disabled (No Range Limit)</option>
+                                    <option value="custom" selected>Enabled (Verify Student Location)</option>
+                                </select>
+                                <button class="btn btn-secondary btn-small" type="button" id="customize-location-btn" onclick="openMapModal()" style="margin-top: 10px; width: 100%; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--tab-bg); color: var(--text-color); border: 1px solid var(--input-border);">
+                                    📍 Configure Area on Map (50m)
+                                </button>
+                            </div>
+
+                            <button class="btn btn-primary" id="generate-qr-btn" onclick="generateQRCode()">📲 Generate QR Code</button>
 
                             <div id="qr-section" style="display: none;">
                                 <div class="qr-container"
@@ -976,11 +991,30 @@ Now format this student list:
                             </div>`;
 
                         requests.forEach(request => {
+                            let statusBadge = '';
+                            let borderLeftColor = '#f59e0b'; // orange for late
+
+                            if (request.outOfRange) {
+                                statusBadge = `<div style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-bottom: 4px; display: inline-block;">📍 Out of Range (${request.distance}m)</div>`;
+                                borderLeftColor = '#ef4444'; // red for out of range
+                            } else if (request.gpsDenied) {
+                                statusBadge = `<div style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-bottom: 4px; display: inline-block;">⚠️ GPS Denied</div>`;
+                                borderLeftColor = '#ef4444';
+                            }
+
+                            if (request.lateBy && request.lateBy > 0) {
+                                statusBadge += `<div style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-block; margin-left: 4px;">🕒 ${request.lateBy} min late</div>`;
+                            } else if (!request.outOfRange && !request.gpsDenied) {
+                                statusBadge = `<div style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-block;">🕒 Review Required</div>`;
+                            }
+
                             html += `
-                                <div style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 16px; margin-bottom: 12px; box-shadow: var(--shadow); border-left: 4px solid #f59e0b;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 16px; margin-bottom: 12px; box-shadow: var(--shadow); border-left: 4px solid ${borderLeftColor};">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
                                         <div style="font-weight: 700; font-size: 15px; color: var(--text-color);">${request.name}</div>
-                                        <div style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">🕒 ${request.lateBy} min late</div>
+                                        <div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+                                            ${statusBadge}
+                                        </div>
                                     </div>
                                     <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 4px;"><strong>Roll No:</strong> ${request.rollNo}</div>
                                     <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px;"><strong>Requested at:</strong> ${request.requestTime}</div>
@@ -1206,6 +1240,202 @@ Now format this student list:
                 return;
             }
 
+            const geofenceLimit = document.getElementById('geofence-select').value;
+            const generateBtn = document.getElementById('generate-qr-btn');
+
+            if (geofenceLimit !== 'none') {
+                if (selectedLat && selectedLng) {
+                    const locationData = {
+                        lat: selectedLat,
+                        lng: selectedLng,
+                        radius: geofenceRadius
+                    };
+                    proceedWithQRGeneration(locationData);
+                } else {
+                    generateBtn.textContent = '📍 Fetching Location...';
+                    generateBtn.disabled = true;
+
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const locationData = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude,
+                                radius: geofenceRadius
+                            };
+                            generateBtn.textContent = '📲 Generate QR Code';
+                            generateBtn.disabled = false;
+                            proceedWithQRGeneration(locationData);
+                        },
+                        (error) => {
+                            generateBtn.textContent = '📲 Generate QR Code';
+                            generateBtn.disabled = false;
+                            const msg = error.code === 1 ? 
+                                "Location permission was denied. Generate QR code without Geofencing?" :
+                                "Could not retrieve location. Generate QR code without Geofencing?";
+                            if (confirm(`⚠️ ${msg}`)) {
+                                proceedWithQRGeneration(null);
+                            }
+                        },
+                        { enableHighAccuracy: true, timeout: 6000 }
+                    );
+                }
+            } else {
+                proceedWithQRGeneration(null);
+            }
+        }
+
+        // Geofencing and Leaflet state
+        let map = null;
+        let mapMarker = null;
+        let mapCircle = null;
+        let selectedLat = null;
+        let selectedLng = null;
+        let geofenceRadius = 50; // default radius
+
+        function formatRadius(meters) {
+            if (meters >= 1000) {
+                return `${(meters / 1000).toFixed(1)} km`;
+            }
+            return `${meters}m`;
+        }
+
+        function updateMapRadius(val) {
+            geofenceRadius = parseInt(val);
+            document.getElementById('map-radius-value').textContent = formatRadius(geofenceRadius);
+            if (mapCircle) {
+                mapCircle.setRadius(geofenceRadius);
+                // Auto-fit zoom so the circle is always fully visible
+                if (map) {
+                    map.fitBounds(mapCircle.getBounds(), { padding: [20, 20] });
+                }
+            }
+        }
+
+        function openMapModal() {
+            const geofenceLimit = document.getElementById('geofence-select').value;
+            if (geofenceLimit === 'none') {
+                alert('⚠️ Please enable Geofencing (select a range) first.');
+                return;
+            }
+
+            document.getElementById('map-modal').classList.add('active');
+
+            // Get current location to center map
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = selectedLat || position.coords.latitude;
+                    const lng = selectedLng || position.coords.longitude;
+                    initMap(lat, lng, geofenceRadius);
+                },
+                (error) => {
+                    // Fallback: center on DTU campus, Delhi
+                    const lat = selectedLat || 28.7499;
+                    const lng = selectedLng || 77.1167;
+                    initMap(lat, lng, geofenceRadius);
+                },
+                { enableHighAccuracy: true }
+            );
+        }
+
+        function closeMapModal() {
+            document.getElementById('map-modal').classList.remove('active');
+        }
+
+        function initMap(lat, lng, radius) {
+            selectedLat = lat;
+            selectedLng = lng;
+
+            // Set slider value
+            document.getElementById('map-radius-slider').value = radius;
+            document.getElementById('map-radius-value').textContent = formatRadius(radius);
+
+            setTimeout(() => {
+                if (map) {
+                    if (mapMarker) mapMarker.setLatLng([lat, lng]);
+                    if (mapCircle) {
+                        mapCircle.setLatLng([lat, lng]);
+                        mapCircle.setRadius(radius);
+                        map.fitBounds(mapCircle.getBounds(), { padding: [20, 20] });
+                    }
+                    map.invalidateSize();
+                    return;
+                }
+
+                // Fix Leaflet marker icon path issues on CDN
+                delete L.Icon.Default.prototype._getIconUrl;
+                L.Icon.Default.mergeOptions({
+                    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+                    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                });
+
+                map = L.map('map').setView([lat, lng], 17);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+
+                mapMarker = L.marker([lat, lng], { draggable: true }).addTo(map);
+                mapCircle = L.circle([lat, lng], {
+                    color: '#3b82f6',
+                    fillColor: '#3b82f6',
+                    fillOpacity: 0.15,
+                    radius: radius
+                }).addTo(map);
+
+                // Auto-fit zoom to show the full circle on first load
+                map.fitBounds(mapCircle.getBounds(), { padding: [20, 20] });
+
+                // Update coordinates when marker is dragged
+                mapMarker.on('dragend', function (event) {
+                    const marker = event.target;
+                    const position = marker.getLatLng();
+                    selectedLat = position.lat;
+                    selectedLng = position.lng;
+                    mapCircle.setLatLng(position);
+                });
+
+                // Update marker when map is clicked
+                map.on('click', function(event) {
+                    const latlng = event.latlng;
+                    mapMarker.setLatLng(latlng);
+                    mapCircle.setLatLng(latlng);
+                    selectedLat = latlng.lat;
+                    selectedLng = latlng.lng;
+                });
+
+                map.invalidateSize();
+            }, 200);
+        }
+
+        function saveMapLocation() {
+            const formatted = formatRadius(geofenceRadius);
+            document.getElementById('customize-location-btn').innerHTML = `📍 Configure Area on Map (${formatted})`;
+            showToast(`📍 Location & ${formatted} radius saved!`);
+            closeMapModal();
+        }
+
+        // Attach listener to select element
+        document.addEventListener('DOMContentLoaded', () => {
+            const geofenceSelect = document.getElementById('geofence-select');
+            const mapBtn = document.getElementById('customize-location-btn');
+            
+            if (geofenceSelect && mapBtn) {
+                geofenceSelect.addEventListener('change', function() {
+                    const radius = this.value;
+                    if (radius === 'none') {
+                        mapBtn.style.display = 'none';
+                        selectedLat = null;
+                        selectedLng = null;
+                    } else {
+                        mapBtn.style.display = 'flex';
+                    }
+                });
+            }
+        });
+
+        function proceedWithQRGeneration(locationData) {
             const today = new Date().toISOString().split('T')[0];
             const code = `${currentUser.username}_${today}_${currentSubject}`;
             const expiryTime = Date.now() + (5 * 60 * 1000); // 5 minutes
@@ -1232,13 +1462,19 @@ Now format this student list:
                 }
             });
 
-            // Save expiry to Firebase
-            db.ref('qr_sessions/' + code).set({
+            // Save expiry and location to Firebase
+            const sessionData = {
                 generatedAt: Date.now(),
                 expiryTime: expiryTime,
                 subject: currentSubject,
                 username: currentUser.username
-            });
+            };
+
+            if (locationData) {
+                sessionData.location = locationData;
+            }
+
+            db.ref('qr_sessions/' + code).set(sessionData);
 
             document.getElementById('qrcode').innerHTML = '';
             new QRCode(document.getElementById('qrcode'), {
@@ -1360,6 +1596,87 @@ Now format this student list:
             }
         }
 
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // Earth radius in meters
+            const phi1 = lat1 * Math.PI / 180;
+            const phi2 = lat2 * Math.PI / 180;
+            const deltaPhi = (lat2 - lat1) * Math.PI / 180;
+            const deltaLambda = (lon2 - lon1) * Math.PI / 180;
+
+            const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+                      Math.cos(phi1) * Math.cos(phi2) *
+                      Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            return R * c; // in meters
+        }
+
+        function submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, distance, gpsDenied) {
+            const lateMinutes = isWithin5Minutes ? 0 : Math.floor((currentTime - session.expiryTime) / (1000 * 60));
+            
+            const requestData = {
+                rollNo: student.rollNo,
+                name: student.name,
+                subject: subject,
+                requestTime: new Date().toLocaleTimeString('en-IN'),
+                timestamp: currentTime,
+                status: 'pending',
+                outOfRange: !gpsDenied,
+                gpsDenied: gpsDenied,
+                distance: distance || null,
+                radiusLimit: session.location.radius,
+                lateBy: lateMinutes
+            };
+
+            db.ref('requests/' + key).push(requestData).then(() => {
+                let redirectURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(requestData.requestTime)}`;
+                
+                if (gpsDenied) {
+                    redirectURL += `&gpsDenied=true`;
+                } else {
+                    redirectURL += `&outOfRange=true&distance=${distance}`;
+                }
+
+                if (lateMinutes > 0) {
+                    redirectURL += `&late=true&lateBy=${lateMinutes}`;
+                }
+
+                window.location.href = redirectURL;
+            });
+        }
+
+        function proceedWithAttendanceSave(student, subject, key, currentTime, isWithin5Minutes, session) {
+            if (isWithin5Minutes) {
+                const attendanceData = {
+                    rollNo: student.rollNo,
+                    name: student.name,
+                    time: new Date().toLocaleTimeString('en-IN'),
+                    timestamp: currentTime
+                };
+
+                db.ref('attendance/' + key).push(attendanceData).then(() => {
+                    const successURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(attendanceData.time)}`;
+                    window.location.href = successURL;
+                });
+            } else {
+                const lateMinutes = Math.floor((currentTime - session.expiryTime) / (1000 * 60));
+                const requestData = {
+                    rollNo: student.rollNo,
+                    name: student.name,
+                    subject: subject,
+                    requestTime: new Date().toLocaleTimeString('en-IN'),
+                    timestamp: currentTime,
+                    lateBy: lateMinutes,
+                    status: 'pending'
+                };
+
+                db.ref('requests/' + key).push(requestData).then(() => {
+                    const lateURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(requestData.requestTime)}&late=true&lateBy=${lateMinutes}`;
+                    window.location.href = lateURL;
+                });
+            }
+        }
+
         function submitAttendance() {
             const roll = document.getElementById('student-roll').value.trim().toUpperCase();
             const msgDiv = document.getElementById('modal-message');
@@ -1424,37 +1741,36 @@ Now format this student list:
                         }
 
                         const isWithin5Minutes = currentTime <= session.expiryTime;
+                        const sessionLoc = session.location;
 
-                        if (isWithin5Minutes) {
-                            // Direct attendance - within 5 minutes
-                            const attendanceData = {
-                                rollNo: student.rollNo,
-                                name: student.name,
-                                time: new Date().toLocaleTimeString('en-IN'),
-                                timestamp: currentTime
-                            };
+                        if (sessionLoc) {
+                            // Geofencing enabled for session
+                            msgDiv.innerHTML = '<div class="message info" style="color: var(--primary-color);">📍 Verifying classroom location... Please allow GPS access.</div>';
 
-                            db.ref('attendance/' + key).push(attendanceData).then(() => {
-                                const successURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(attendanceData.time)}`;
-                                window.location.href = successURL;
-                            });
+                            if (!navigator.geolocation) {
+                                submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, null, true);
+                                return;
+                            }
+
+                            navigator.geolocation.getCurrentPosition(
+                                (position) => {
+                                    const studentLat = position.coords.latitude;
+                                    const studentLng = position.coords.longitude;
+                                    const distance = calculateDistance(studentLat, studentLng, sessionLoc.lat, sessionLoc.lng);
+
+                                    if (distance > sessionLoc.radius) {
+                                        submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, Math.round(distance), false);
+                                    } else {
+                                        proceedWithAttendanceSave(student, subject, key, currentTime, isWithin5Minutes, session);
+                                    }
+                                },
+                                (error) => {
+                                    submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, null, true);
+                                },
+                                { enableHighAccuracy: true, timeout: 5000 }
+                            );
                         } else {
-                            // Late request - after 5 minutes
-                            const lateMinutes = Math.floor((currentTime - session.expiryTime) / (1000 * 60));
-                            const requestData = {
-                                rollNo: student.rollNo,
-                                name: student.name,
-                                subject: subject,
-                                requestTime: new Date().toLocaleTimeString('en-IN'),
-                                timestamp: currentTime,
-                                lateBy: lateMinutes,
-                                status: 'pending'
-                            };
-
-                            db.ref('requests/' + key).push(requestData).then(() => {
-                                const lateURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(requestData.requestTime)}&late=true&lateBy=${lateMinutes}`;
-                                window.location.href = lateURL;
-                            });
+                            proceedWithAttendanceSave(student, subject, key, currentTime, isWithin5Minutes, session);
                         }
                     });
                 });
@@ -1958,6 +2274,40 @@ Now format this student list:
                 <button class="btn btn-secondary" onclick="closeExportModal()" style="flex:1;">Cancel</button>
                 <button class="btn btn-primary" onclick="downloadExport()" style="flex:2;font-size:16px;">🚀 DOWNLOAD
                     REPORT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAP PICKER MODAL -->
+    <div id="map-modal" class="modal">
+        <div class="modal-content" style="max-width: 600px; width: 100%; max-height: 90vh; display: flex; flex-direction: column; padding: 20px; overflow: hidden; box-sizing: border-box;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div>
+                    <h2 style="margin: 0; color: var(--primary-color); font-size: 20px;">📍 Select Classroom Location</h2>
+                    <p style="margin: 4px 0 0; font-size: 12px; color: var(--text-muted);">Adjust classroom center point and radius range</p>
+                </div>
+                <button onclick="closeMapModal()" style="background: var(--tab-bg); border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 20px; cursor: pointer; color: var(--text-color); display: flex; align-items: center; justify-content: center;">×</button>
+            </div>
+            
+            <div id="map" style="height: 280px; width: 100%; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); z-index: 10; box-sizing: border-box;"></div>
+            
+            <!-- Dynamic Radius Slider -->
+            <div style="margin-bottom: 15px; background: var(--tab-bg); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); box-sizing: border-box;">
+                <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text-color); margin-bottom: 8px; font-weight: 600;">
+                    <span>📏 Attendance Boundary Radius:</span>
+                    <span style="color: var(--primary-color);" id="map-radius-value">50 meters</span>
+                </div>
+                <input type="range" id="map-radius-slider" min="10" max="2000" step="10" value="50" style="width: 100%; height: 6px; border-radius: 3px; outline: none; background: var(--border-color); cursor: pointer;" oninput="updateMapRadius(this.value)">
+                <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-top: 4px;">
+                    <span>10m (Tight)</span>
+                    <span>1.0 km (Medium)</span>
+                    <span>2.0 km (Large)</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+                <button class="btn btn-secondary" onclick="closeMapModal()" style="flex: 1; margin: 0;">Cancel</button>
+                <button class="btn btn-primary" onclick="saveMapLocation()" style="flex: 2; margin: 0;">📍 Set Location</button>
             </div>
         </div>
     </div>

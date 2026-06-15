@@ -239,8 +239,13 @@
         const time = urlParams.get('time') || new Date().toLocaleTimeString('en-IN');
         const isLate = urlParams.get('late') === 'true';
         const lateMinutes = urlParams.get('lateBy') || '0';
-
         const isAlreadyMarked = urlParams.get('alreadyMarked') === 'true';
+
+        const isOutOfRange = urlParams.get('outOfRange') === 'true';
+        const distance = urlParams.get('distance') || '0';
+        const gpsDenied = urlParams.get('gpsDenied') === 'true';
+
+        let isPendingRequest = isLate || isOutOfRange || gpsDenied;
 
         // Update UI based on status
         if (isAlreadyMarked) {
@@ -268,6 +273,48 @@
 
             document.getElementById('status-note').innerHTML =
                 `ℹ️ <strong>Note:</strong> You can safely close this window. Your attendance is already saved.`;
+
+        } else if (isOutOfRange) {
+            document.getElementById('status-icon').className = 'success-icon warning-icon';
+            document.getElementById('status-icon').innerHTML = '<div class="clock-icon">📍</div>';
+            
+            document.getElementById('late-badge-container').innerHTML = 
+                `<div class="late-badge" style="background: #fee2e2; color: #991b1b;">⚠️ Out of Range (${distance}m)</div>`;
+            
+            document.getElementById('status-title').textContent = '📍 Location Mismatch';
+            document.getElementById('status-title').className = 'warning-title';
+            document.getElementById('status-title').style.color = '#dc2626';
+            
+            document.getElementById('status-message').innerHTML = 
+                `Your current location is <strong>${distance} meters</strong> away from the classroom.<br>Your attendance request has been sent to the CR for manual approval.`;
+            
+            document.getElementById('student-details').className = 'student-info warning-info';
+            document.getElementById('student-details').style.borderLeftColor = '#dc2626';
+            
+            document.getElementById('status-note').className = 'note warning-note';
+            document.getElementById('status-note').innerHTML = 
+                `⚠️ <strong>Pending Approval:</strong> Since you were detected outside the classroom range, your attendance requires CR approval. Please inform your CR to approve your request.`;
+
+        } else if (gpsDenied) {
+            document.getElementById('status-icon').className = 'success-icon warning-icon';
+            document.getElementById('status-icon').innerHTML = '<div class="clock-icon">⚠️</div>';
+            
+            document.getElementById('late-badge-container').innerHTML = 
+                `<div class="late-badge" style="background: #fee2e2; color: #991b1b;">⚠️ GPS Access Denied</div>`;
+            
+            document.getElementById('status-title').textContent = '⚠️ GPS Permission Required';
+            document.getElementById('status-title').className = 'warning-title';
+            document.getElementById('status-title').style.color = '#dc2626';
+            
+            document.getElementById('status-message').innerHTML = 
+                `We could not verify your location because GPS permission was denied or unavailable.<br>Your attendance request has been sent to the CR for manual verification.`;
+            
+            document.getElementById('student-details').className = 'student-info warning-info';
+            document.getElementById('student-details').style.borderLeftColor = '#dc2626';
+            
+            document.getElementById('status-note').className = 'note warning-note';
+            document.getElementById('status-note').innerHTML = 
+                `⚠️ <strong>Pending Approval:</strong> Your attendance request is pending CR approval because location checks could not be completed. Please ask your CR to verify and approve.`;
 
         } else if (isLate) {
             // Late attendance - request sent to CR
@@ -311,11 +358,19 @@
             </div>
         `;
 
-        if (isLate) {
+        if (isPendingRequest) {
+            let statusLabel = '⏳ Pending CR Approval';
+            if (isLate && isOutOfRange) {
+                statusLabel = '⏳ Pending (Late & Out of Range)';
+            } else if (isOutOfRange) {
+                statusLabel = '⏳ Pending (Location Mismatch)';
+            } else if (gpsDenied) {
+                statusLabel = '⏳ Pending (GPS Permission Denied)';
+            }
             detailsHTML += `
                 <div class="info-row">
                     <span class="info-label">Status:</span>
-                    <span class="info-value late">⏳ Pending CR Approval</span>
+                    <span class="info-value late">${statusLabel}</span>
                 </div>
             `;
         } else {

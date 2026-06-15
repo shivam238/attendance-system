@@ -1515,3 +1515,86 @@
             color: #ffffff !important;
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
         }
+
+        /* ==========================================================================
+           Leaflet CSS Fallback & Rendering Fixes
+           ========================================================================== */
+        .leaflet-container {
+            position: relative;
+            overflow: hidden;
+            background: #1e293b;
+            -ms-touch-action: none;
+            touch-action: none;
+        }
+        .leaflet-map-pane, .leaflet-tile, .leaflet-marker-icon, .leaflet-marker-shadow, .leaflet-tile-container, .leaflet-pane {
+            position: absolute;
+            left: 0;
+            top: 0;
+            margin: 0;
+            padding: 0;
+        }
+        .leaflet-tile {
+            filter: inherit;
+            visibility: hidden;
+            user-select: none;
+            -webkit-user-drag: none;
+            max-width: none !important;
+            max-height: none !important;
+        }
+        .leaflet-tile-loaded {
+            visibility: inherit;
+        }
+        .leaflet-zoom-box, .leaflet-image-layer, .leaflet-layer {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        .leaflet-container img.leaflet-tile {
+            max-width: none !important;
+            max-height: none !important;
+        }
+        /* Leaflet controls positioning safety */
+        .leaflet-control-container {
+            position: absolute;
+            z-index: 800;
+            pointer-events: none;
+        }
+        .leaflet-top, .leaflet-bottom {
+            position: absolute;
+            z-index: 1000;
+            pointer-events: none;
+        }
+        .leaflet-top { top: 0; }
+        .leaflet-right { right: 0; }
+        .leaflet-bottom { bottom: 0; }
+        .leaflet-left { left: 0; }
+        .leaflet-control {
+            float: left;
+            clear: both;
+            pointer-events: auto;
+        }
+        .leaflet-right .leaflet-control { float: right; }
+        .leaflet-top .leaflet-control { margin-top: 10px; }
+        .leaflet-bottom .leaflet-control { margin-bottom: 10px; }
+        .leaflet-left .leaflet-control { margin-left: 10px; }
+        .leaflet-right .leaflet-control { margin-right: 10px; }
+        
+        .leaflet-bar {
+            box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .leaflet-bar a {
+            background-color: #fff;
+            border-bottom: 1px solid #ccc;
+            width: 26px;
+            height: 26px;
+            line-height: 26px;
+            display: block;
+            text-align: center;
+            text-decoration: none;
+            color: black;
+        }
+        .leaflet-bar a:hover {
+            background-color: #f4f4f4;
+        }
