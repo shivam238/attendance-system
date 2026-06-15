@@ -1416,6 +1416,105 @@ Now format this student list:
             closeMapModal();
         }
 
+        async function searchLocation() {
+            const query = document.getElementById('map-search-input').value.trim();
+            const errEl = document.getElementById('map-search-error');
+            const btn = document.getElementById('map-search-btn');
+            const dropdown = document.getElementById('map-search-dropdown');
+
+            if (!query) {
+                errEl.textContent = '⚠️ Please enter a location to search.';
+                errEl.style.display = 'block';
+                dropdown.style.display = 'none';
+                return;
+            }
+
+            errEl.style.display = 'none';
+            dropdown.style.display = 'none';
+            btn.textContent = '⏳';
+            btn.disabled = true;
+
+            try {
+                // Fetch up to 5 results, India-biased but not restricted
+                const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&countrycodes=in&addressdetails=1`;
+                const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+                const data = await res.json();
+
+                if (!data || data.length === 0) {
+                    // Retry without country restriction if nothing found in India
+                    const url2 = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&addressdetails=1`;
+                    const res2 = await fetch(url2, { headers: { 'Accept-Language': 'en' } });
+                    const data2 = await res2.json();
+                    if (!data2 || data2.length === 0) {
+                        errEl.textContent = '❌ No results found. Try a different or more specific name.';
+                        errEl.style.display = 'block';
+                        return;
+                    }
+                    renderSearchResults(data2);
+                } else {
+                    renderSearchResults(data);
+                }
+            } catch (e) {
+                errEl.textContent = '❌ Search failed. Check your internet connection.';
+                errEl.style.display = 'block';
+            } finally {
+                btn.textContent = 'Search';
+                btn.disabled = false;
+            }
+        }
+
+        function renderSearchResults(results) {
+            const dropdown = document.getElementById('map-search-dropdown');
+            dropdown.innerHTML = '';
+
+            results.forEach((result) => {
+                const item = document.createElement('div');
+                item.style.cssText = 'padding: 10px 14px; cursor: pointer; font-size: 12px; border-bottom: 1px solid var(--border-color); line-height: 1.4; transition: background 0.15s;';
+                
+                // Build a clean short label
+                const addr = result.address || {};
+                const shortName = result.name || addr.amenity || addr.building || addr.road || '';
+                const city = addr.city || addr.town || addr.village || addr.county || '';
+                const state = addr.state || '';
+                const label = [shortName, city, state].filter(Boolean).join(', ') || result.display_name;
+
+                item.innerHTML = `<strong style="color: var(--text-color);">📍 ${label}</strong><br><span style="color: var(--text-muted); font-size: 11px;">${result.display_name}</span>`;
+
+                item.onmouseover = () => item.style.background = 'rgba(99,102,241,0.1)';
+                item.onmouseout = () => item.style.background = 'transparent';
+
+                item.onclick = () => {
+                    const lat = parseFloat(result.lat);
+                    const lng = parseFloat(result.lon);
+                    selectedLat = lat;
+                    selectedLng = lng;
+
+                    if (map && mapMarker && mapCircle) {
+                        mapMarker.setLatLng([lat, lng]);
+                        mapCircle.setLatLng([lat, lng]);
+                        map.fitBounds(mapCircle.getBounds(), { padding: [20, 20] });
+                    }
+
+                    // Update input to show selected name
+                    document.getElementById('map-search-input').value = label;
+                    dropdown.style.display = 'none';
+                };
+
+                dropdown.appendChild(item);
+            });
+
+            dropdown.style.display = 'block';
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('map-search-dropdown');
+            const searchBar = document.getElementById('map-search-input');
+            if (dropdown && !dropdown.contains(e.target) && e.target !== searchBar) {
+                dropdown.style.display = 'none';
+            }
+        });
+
         // Attach listener to select element
         document.addEventListener('DOMContentLoaded', () => {
             const geofenceSelect = document.getElementById('geofence-select');
@@ -2281,15 +2380,32 @@ Now format this student list:
     <!-- MAP PICKER MODAL -->
     <div id="map-modal" class="modal">
         <div class="modal-content" style="max-width: 600px; width: 100%; max-height: 90vh; display: flex; flex-direction: column; padding: 20px; overflow: hidden; box-sizing: border-box;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                 <div>
                     <h2 style="margin: 0; color: var(--primary-color); font-size: 20px;">📍 Select Classroom Location</h2>
-                    <p style="margin: 4px 0 0; font-size: 12px; color: var(--text-muted);">Adjust classroom center point and radius range</p>
+                    <p style="margin: 4px 0 0; font-size: 12px; color: var(--text-muted);">Search or drag the marker to your classroom</p>
                 </div>
                 <button onclick="closeMapModal()" style="background: var(--tab-bg); border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 20px; cursor: pointer; color: var(--text-color); display: flex; align-items: center; justify-content: center;">×</button>
             </div>
-            
-            <div id="map" style="height: 280px; width: 100%; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); z-index: 10; box-sizing: border-box;"></div>
+
+            <!-- Location Search Bar -->
+            <div style="position: relative; margin-bottom: 10px;">
+                <div style="display: flex; gap: 8px;">
+                    <input
+                        type="text"
+                        id="map-search-input"
+                        placeholder="🔍 Search college, building, city..."
+                        onkeydown="if(event.key==='Enter') searchLocation()"
+                        style="flex: 1; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--input-border); background: var(--tab-bg); color: var(--text-color); font-size: 13px; outline: none; margin: 0;"
+                    >
+                    <button onclick="searchLocation()" id="map-search-btn" style="padding: 10px 16px; border-radius: 10px; border: none; background: var(--primary-color); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap;">Search</button>
+                </div>
+                <div id="map-search-error" style="font-size: 11px; color: #ef4444; margin-top: 5px; display: none;"></div>
+                <!-- Results dropdown -->
+                <div id="map-search-dropdown" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); z-index: 9999; max-height: 200px; overflow-y: auto;"></div>
+            </div>
+
+            <div id="map" style="height: 250px; width: 100%; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border-color); z-index: 10; box-sizing: border-box;"></div>
             
             <!-- Dynamic Radius Slider -->
             <div style="margin-bottom: 15px; background: var(--tab-bg); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); box-sizing: border-box;">
