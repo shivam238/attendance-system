@@ -48,7 +48,14 @@
                     <p>Experience the future of attendance tracking</p>
                 </div>
 
-                <div class="google-login-container" style="padding: 20px 0;">
+                <!-- Tabs to switch between Google and Phone Login -->
+                <div class="login-tabs" style="display: flex; gap: 8px; margin-bottom: 20px; background: var(--tab-bg); padding: 4px; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <button class="tab-btn active" id="login-tab-google" onclick="toggleLoginMode('google')" style="flex: 1; padding: 10px; font-size: 13px; margin: 0; background: transparent; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; color: var(--text-muted); transition: all 0.2s;">Google Login</button>
+                    <button class="tab-btn" id="login-tab-phone" onclick="toggleLoginMode('phone')" style="flex: 1; padding: 10px; font-size: 13px; margin: 0; background: transparent; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; color: var(--text-muted); transition: all 0.2s;">Phone Login</button>
+                </div>
+
+                <!-- Google Login Section -->
+                <div class="google-login-container" style="padding: 10px 0;">
                     <div class="info-text"
                         style="text-align: center; margin-bottom: 24px; background: rgba(102, 126, 234, 0.1); border-left: none; border-bottom: 3px solid #667eea;">
                         👋 <strong>Welcome back!</strong><br>Please sign in with your Google account to access your
@@ -65,6 +72,40 @@
                     <p class="google-login-note" style="margin-top: 20px; opacity: 0.8;">
                         Secure, fast, and no password to remember!
                     </p>
+                </div>
+
+                <!-- Phone Login Section -->
+                <div id="phone-login-container" style="display: none; padding: 10px 0;">
+                    <div class="info-text" style="text-align: center; margin-bottom: 24px; background: rgba(129, 140, 248, 0.1); border-left: none; border-bottom: 3px solid #4f46e5;">
+                        📱 <strong>Sign in with Phone</strong><br>Enter your registered mobile number to receive a one-time password (OTP).
+                    </div>
+
+                    <!-- Recaptcha Container (Required for Firebase Phone Auth) -->
+                    <div id="recaptcha-container"></div>
+
+                    <!-- Phone Number Input Section -->
+                    <div id="phone-input-section">
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label style="color: var(--text-color);">Mobile Number</label>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <span style="background: var(--tab-bg); border: 1px solid var(--input-border); border-radius: 10px; padding: 12px 14px; font-weight: 600; font-size: 15px; color: var(--text-color);">+91</span>
+                                <input type="tel" id="phone-login-input" placeholder="Enter 10-digit number" maxlength="10" style="flex: 1; margin: 0; height: 50px;">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="sendPhoneLoginOTP()" style="height: 50px; border-radius: 12px; font-size: 15px; width: 100%;">Send OTP</button>
+                    </div>
+
+                    <!-- OTP Input Section -->
+                    <div id="otp-input-section" style="display: none;">
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label style="color: var(--text-color);">Enter 6-Digit OTP</label>
+                            <input type="text" id="otp-login-input" placeholder="e.g. 123456" maxlength="6" style="height: 50px; font-size: 18px; text-align: center; letter-spacing: 4px;">
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-secondary" onclick="resetPhoneLoginUI()" style="flex: 1; height: 50px; border-radius: 12px; padding: 0;">Edit Number</button>
+                            <button class="btn btn-success" onclick="verifyPhoneLoginOTP()" style="flex: 2; height: 50px; border-radius: 12px; padding: 0;">Verify & Login</button>
+                        </div>
+                    </div>
                 </div>
                 <div id="login-message"></div>
             </div>
@@ -128,9 +169,11 @@
                             <span>Connected</span>
                         </div>
                     </div>
-                    <div class="header-controls-right">
+                    <div class="header-controls-right" style="display: flex; gap: 8px; align-items: center;">
                         <button class="theme-btn" onclick="toggleDarkMode()"
                             style="color: var(--text-color); background: var(--tab-bg); border-radius: 12px; padding: 8px 16px; font-size: 13px;">🌙 Dark Mode</button>
+                        <button class="settings-btn" onclick="openProfileModal()"
+                            style="color: var(--text-color); background: var(--tab-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">⚙️ Settings</button>
                         <button class="logout-btn" onclick="logoutUser()">Logout</button>
                     </div>
                 </div>
@@ -351,6 +394,81 @@
             <button class="btn btn-success" onclick="saveStudent()">💾 Save</button>
             <button class="btn btn-danger" onclick="closeAddStudentModal()">Cancel</button>
             <div id="add-student-message"></div>
+        </div>
+    </div>
+
+    <!-- PROFILE/SETTINGS MODAL -->
+    <div id="profile-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeProfileModal()">&times;</span>
+            <h2 class="modal-header">⚙️ Account Settings</h2>
+            
+            <div class="settings-section" style="background: var(--tab-bg); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-color);">
+                <h3 style="margin-top: 0; font-size: 15px; color: var(--primary-color);">📋 Class Details</h3>
+                <div style="font-size: 14px; margin-bottom: 6px;"><strong>Username (Class ID):</strong> <span id="settings-username">N/A</span></div>
+                <div style="font-size: 14px;"><strong>Class:</strong> <span id="settings-class-details">N/A</span></div>
+            </div>
+            
+            <div class="settings-section">
+                <h3 style="font-size: 15px; color: var(--primary-color); margin-bottom: 12px;">🔗 Linked Logins</h3>
+                
+                <!-- Google Link Status -->
+                <div class="auth-provider-status" id="google-status-container" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 12px; background: var(--tab-bg); border-radius: 12px; border: 1px solid var(--border-color);">
+                    <div>
+                        <div style="font-weight: 700; font-size: 14px;">Google Account</div>
+                        <div id="google-email" style="font-size: 12px; color: var(--text-muted); word-break: break-all; margin-top: 2px;">Not Linked</div>
+                    </div>
+                    <div id="google-action-btn-container"></div>
+                </div>
+
+                <!-- Phone Link Status -->
+                <div class="auth-provider-status" id="phone-status-container" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--tab-bg); border-radius: 12px; border: 1px solid var(--border-color);">
+                    <div>
+                        <div style="font-weight: 700; font-size: 14px;">Phone Number</div>
+                        <div id="phone-display" style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Not Linked</div>
+                    </div>
+                    <div id="phone-action-btn-container"></div>
+                </div>
+            </div>
+
+            <!-- Phone Verification Form -->
+            <div id="phone-linking-form" style="display: none; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                <h3 style="font-size: 14px; margin-bottom: 12px;">Link Phone Number</h3>
+                <div id="link-recaptcha-container"></div>
+                
+                <div id="link-phone-input-section">
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label style="color: var(--text-color);">10-Digit Mobile Number</label>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span style="background: var(--tab-bg); border: 1px solid var(--input-border); border-radius: 10px; padding: 8px 12px; font-weight: 600; font-size: 14px; color: var(--text-color);">+91</span>
+                            <input type="tel" id="link-phone-input" placeholder="e.g. 9876543210" maxlength="10" style="flex: 1; margin: 0; height: 42px;">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-small" id="btn-send-link-otp" onclick="sendLinkPhoneOTP()" style="width: 100%; height: 40px; margin: 0;">Send OTP</button>
+                </div>
+                
+                <div id="link-otp-container" style="display: none; margin-top: 12px;">
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label style="color: var(--text-color);">Enter 6-Digit OTP</label>
+                        <input type="text" id="link-otp-input" placeholder="e.g. 123456" maxlength="6" style="height: 42px; text-align: center; font-size: 16px; letter-spacing: 2px;">
+                    </div>
+                    <button class="btn btn-success btn-small" onclick="verifyLinkPhoneOTP()" style="width: 100%; height: 40px; margin: 0;">Verify & Link</button>
+                </div>
+                <div id="link-phone-message"></div>
+            </div>
+
+            <!-- Google Linking Form -->
+            <div id="google-linking-form" style="display: none; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                <button class="btn btn-google" onclick="linkGoogleAccount()" style="height: 46px; border-radius: 10px; font-size: 14px; margin: 0; width: 100%;">
+                    <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" class="google-icon" style="width: 16px; height: 16px;">
+                    Link Google Account
+                </button>
+                <div id="link-google-message"></div>
+            </div>
+
+            <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
+                <button class="btn btn-secondary btn-small" onclick="closeProfileModal()" style="margin: 0; padding: 8px 16px;">Close</button>
+            </div>
         </div>
     </div>
 
@@ -594,8 +712,8 @@ Now format this student list:
                 username: year + college + branch + section,
                 subjects: subjects,
                 students: students,
-                email: user.email,
-                displayName: user.displayName,
+                email: user.email || "",
+                displayName: user.displayName || "",
                 createdAt: Date.now()
             }).then(() => {
                 msgDiv.innerHTML = '<div class="message success">✅ Setup complete! Redirecting...</div>';
@@ -740,11 +858,27 @@ Now format this student list:
                         clearTimeout(loadingSafetyTimeout);
                     } else {
                         showScreen('setup-screen');
+                        if (user.phoneNumber) {
+                            const rawPhone = user.phoneNumber.replace("+91", "").trim();
+                            const phoneInput = document.getElementById('setup-phone');
+                            if (phoneInput) {
+                                phoneInput.value = rawPhone;
+                                phoneInput.disabled = true;
+                            }
+                        }
                         document.getElementById('loading-screen').classList.add('fade-out');
                         clearTimeout(loadingSafetyTimeout);
                     }
                 } else {
                     showScreen('setup-screen');
+                    if (user.phoneNumber) {
+                        const rawPhone = user.phoneNumber.replace("+91", "").trim();
+                        const phoneInput = document.getElementById('setup-phone');
+                        if (phoneInput) {
+                            phoneInput.value = rawPhone;
+                            phoneInput.disabled = true;
+                        }
+                    }
                     document.getElementById('loading-screen').classList.add('fade-out');
                     clearTimeout(loadingSafetyTimeout);
                 }

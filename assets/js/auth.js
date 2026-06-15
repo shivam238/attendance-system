@@ -75,3 +75,302 @@ function initiateDeleteAccount() {
         });
     });
 }
+
+// Phone Login and Linking functions
+
+function toggleLoginMode(mode) {
+    const googleContainer = document.querySelector('.google-login-container');
+    const phoneContainer = document.getElementById('phone-login-container');
+    const msgDiv = document.getElementById('login-message');
+    if (msgDiv) msgDiv.innerHTML = '';
+
+    const googleTab = document.getElementById('login-tab-google');
+    const phoneTab = document.getElementById('login-tab-phone');
+
+    if (mode === 'phone') {
+        googleContainer.style.display = 'none';
+        phoneContainer.style.display = 'block';
+        if (googleTab) googleTab.classList.remove('active');
+        if (phoneTab) phoneTab.classList.add('active');
+    } else {
+        googleContainer.style.display = 'block';
+        phoneContainer.style.display = 'none';
+        if (googleTab) googleTab.classList.add('active');
+        if (phoneTab) phoneTab.classList.remove('active');
+    }
+}
+
+function sendPhoneLoginOTP() {
+    const phoneInput = document.getElementById('phone-login-input');
+    const phone = phoneInput.value.trim();
+    const msgDiv = document.getElementById('login-message');
+
+    if (!phone || phone.length !== 10 || isNaN(phone)) {
+        if (msgDiv) msgDiv.innerHTML = '<div class="message error">❌ Please enter a valid 10-digit phone number</div>';
+        return;
+    }
+
+    if (msgDiv) msgDiv.innerHTML = '<div class="message">🔄 Sending OTP...</div>';
+
+    const formattedPhone = "+91" + phone;
+
+    try {
+        if (!window.phoneLoginRecaptchaVerifier) {
+            window.phoneLoginRecaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                'size': 'invisible',
+                'callback': (response) => {
+                    // Recaptcha resolved
+                }
+            });
+        }
+
+        auth.signInWithPhoneNumber(formattedPhone, window.phoneLoginRecaptchaVerifier)
+            .then((confirmationResult) => {
+                window.phoneLoginConfirmationResult = confirmationResult;
+                document.getElementById('phone-input-section').style.display = 'none';
+                document.getElementById('otp-input-section').style.display = 'block';
+                if (msgDiv) msgDiv.innerHTML = '<div class="message success">📩 OTP sent successfully!</div>';
+            })
+            .catch((error) => {
+                console.error("Phone sign-in error:", error);
+                if (msgDiv) msgDiv.innerHTML = '<div class="message error">❌ Failed to send OTP: ' + error.message + '</div>';
+                if (window.phoneLoginRecaptchaVerifier) {
+                    window.phoneLoginRecaptchaVerifier.clear();
+                    window.phoneLoginRecaptchaVerifier = null;
+                }
+            });
+    } catch (e) {
+        console.error("Verifier error:", e);
+        if (msgDiv) msgDiv.innerHTML = '<div class="message error">❌ Error initializing verification: ' + e.message + '</div>';
+    }
+}
+
+function verifyPhoneLoginOTP() {
+    const otpInput = document.getElementById('otp-login-input');
+    const code = otpInput.value.trim();
+    const msgDiv = document.getElementById('login-message');
+
+    if (!code || code.length !== 6 || isNaN(code)) {
+        if (msgDiv) msgDiv.innerHTML = '<div class="message error">❌ Please enter a valid 6-digit OTP</div>';
+        return;
+    }
+
+    if (msgDiv) msgDiv.innerHTML = '<div class="message">🔄 Verifying OTP...</div>';
+
+    window.phoneLoginConfirmationResult.confirm(code)
+        .then((result) => {
+            if (msgDiv) msgDiv.innerHTML = '<div class="message success">✅ Verification successful! Logging in...</div>';
+        })
+        .catch((error) => {
+            console.error("OTP Verification error:", error);
+            if (msgDiv) msgDiv.innerHTML = '<div class="message error">❌ Invalid OTP: ' + error.message + '</div>';
+        });
+}
+
+function resetPhoneLoginUI() {
+    document.getElementById('phone-input-section').style.display = 'block';
+    document.getElementById('otp-input-section').style.display = 'none';
+    document.getElementById('phone-login-input').value = '';
+    document.getElementById('otp-login-input').value = '';
+    const msgDiv = document.getElementById('login-message');
+    if (msgDiv) msgDiv.innerHTML = '';
+}
+
+// Modal Functions
+function openProfileModal() {
+    const modal = document.getElementById('profile-modal');
+    if (!modal) return;
+    
+    modal.classList.add('active');
+    
+    if (currentUser) {
+        document.getElementById('settings-username').textContent = currentUser.username || 'N/A';
+        document.getElementById('settings-class-details').textContent = 
+            `Passout 20${currentUser.year} - ${currentUser.college} ${currentUser.branch} Section ${currentUser.section}`;
+            
+        const user = auth.currentUser;
+        if (user) {
+            let isGoogleLinked = false;
+            let googleEmail = "Not Linked";
+            let isPhoneLinked = false;
+            let phoneNumber = "Not Linked";
+            
+            user.providerData.forEach((profile) => {
+                if (profile.providerId === 'google.com') {
+                    isGoogleLinked = true;
+                    googleEmail = profile.email || user.email || "Linked";
+                }
+                if (profile.providerId === 'phone') {
+                    isPhoneLinked = true;
+                    phoneNumber = profile.phoneNumber || user.phoneNumber || "Linked";
+                }
+            });
+            
+            document.getElementById('google-email').textContent = googleEmail;
+            const googleActionContainer = document.getElementById('google-action-btn-container');
+            if (isGoogleLinked) {
+                googleActionContainer.innerHTML = '<span style="color: #10b981; font-weight: 600;">✅ Linked</span>';
+                document.getElementById('google-linking-form').style.display = 'none';
+            } else {
+                googleActionContainer.innerHTML = '<button class="btn btn-small btn-primary" onclick="showGoogleLinkingForm()" style="margin: 0;">Link Google</button>';
+            }
+            
+            document.getElementById('phone-display').textContent = phoneNumber;
+            const phoneActionContainer = document.getElementById('phone-action-btn-container');
+            if (isPhoneLinked) {
+                phoneActionContainer.innerHTML = '<span style="color: #10b981; font-weight: 600;">✅ Linked</span>';
+                document.getElementById('phone-linking-form').style.display = 'none';
+            } else {
+                phoneActionContainer.innerHTML = '<button class="btn btn-small btn-primary" onclick="showPhoneLinkingForm()" style="margin: 0;">Link Phone</button>';
+            }
+        }
+    }
+}
+
+function closeProfileModal() {
+    const modal = document.getElementById('profile-modal');
+    if (modal) modal.classList.remove('active');
+    
+    document.getElementById('phone-linking-form').style.display = 'none';
+    document.getElementById('google-linking-form').style.display = 'none';
+    document.getElementById('link-phone-input').value = '';
+    document.getElementById('link-otp-input').value = '';
+    document.getElementById('link-otp-container').style.display = 'none';
+    document.getElementById('btn-send-link-otp').style.display = 'block';
+    const msgLink = document.getElementById('link-phone-message');
+    if (msgLink) msgLink.innerHTML = '';
+}
+
+function showPhoneLinkingForm() {
+    document.getElementById('phone-linking-form').style.display = 'block';
+    document.getElementById('google-linking-form').style.display = 'none';
+}
+
+function showGoogleLinkingForm() {
+    document.getElementById('google-linking-form').style.display = 'block';
+    document.getElementById('phone-linking-form').style.display = 'none';
+}
+
+function sendLinkPhoneOTP() {
+    const phoneInput = document.getElementById('link-phone-input');
+    const phone = phoneInput.value.trim();
+    const msgDiv = document.getElementById('link-phone-message');
+    
+    if (!phone || phone.length !== 10 || isNaN(phone)) {
+        if (msgDiv) msgDiv.innerHTML = '<div style="color: #ef4444; font-weight: 600; font-size: 13px; margin-top: 8px;">❌ Enter a valid 10-digit number</div>';
+        return;
+    }
+    
+    if (msgDiv) msgDiv.innerHTML = '<div style="color: var(--text-color); margin-top: 8px;">🔄 Sending OTP...</div>';
+    
+    const formattedPhone = "+91" + phone;
+    
+    try {
+        if (!window.linkPhoneRecaptchaVerifier) {
+            window.linkPhoneRecaptchaVerifier = new firebase.auth.RecaptchaVerifier('link-recaptcha-container', {
+                'size': 'invisible'
+            });
+        }
+        
+        const provider = new firebase.auth.PhoneAuthProvider();
+        provider.verifyPhoneNumber(formattedPhone, window.linkPhoneRecaptchaVerifier)
+            .then((verificationId) => {
+                window.phoneLinkVerificationId = verificationId;
+                document.getElementById('link-otp-container').style.display = 'block';
+                document.getElementById('btn-send-link-otp').style.display = 'none';
+                if (msgDiv) msgDiv.innerHTML = '<div style="color: #10b981; font-weight: 600; font-size: 13px; margin-top: 8px;">📩 OTP sent successfully!</div>';
+            })
+            .catch((error) => {
+                console.error("Phone linking send error:", error);
+                if (msgDiv) msgDiv.innerHTML = '<div style="color: #ef4444; font-weight: 600; font-size: 13px; margin-top: 8px;">❌ Failed to send OTP: ' + error.message + '</div>';
+                if (window.linkPhoneRecaptchaVerifier) {
+                    window.linkPhoneRecaptchaVerifier.clear();
+                    window.linkPhoneRecaptchaVerifier = null;
+                }
+            });
+    } catch (e) {
+        console.error("Phone linking verifier error:", e);
+        if (msgDiv) msgDiv.innerHTML = '<div style="color: #ef4444; font-weight: 600; font-size: 13px; margin-top: 8px;">❌ Initialisation error: ' + e.message + '</div>';
+    }
+}
+
+function verifyLinkPhoneOTP() {
+    const otpInput = document.getElementById('link-otp-input');
+    const code = otpInput.value.trim();
+    const phoneInput = document.getElementById('link-phone-input');
+    const phone = phoneInput.value.trim();
+    const msgDiv = document.getElementById('link-phone-message');
+    
+    if (!code || code.length !== 6 || isNaN(code)) {
+        if (msgDiv) msgDiv.innerHTML = '<div style="color: #ef4444; font-weight: 600; font-size: 13px; margin-top: 8px;">❌ Enter a valid 6-digit OTP</div>';
+        return;
+    }
+    
+    if (msgDiv) msgDiv.innerHTML = '<div style="color: var(--text-color); margin-top: 8px;">🔄 Linking account...</div>';
+    
+    const credential = firebase.auth.PhoneAuthProvider.credential(
+        window.phoneLinkVerificationId,
+        code
+    );
+    
+    const user = auth.currentUser;
+    if (!user) {
+        if (msgDiv) msgDiv.innerHTML = '<div style="color: #ef4444; font-weight: 600; font-size: 13px; margin-top: 8px;">❌ Not logged in</div>';
+        return;
+    }
+    
+    user.linkWithCredential(credential)
+        .then((userCredential) => {
+            const formattedPhone = "+91" + phone;
+            return db.ref('users/' + user.uid).update({ phone: formattedPhone });
+        })
+        .then(() => {
+            alert("✅ Phone number linked successfully!");
+            closeProfileModal();
+            handleUserSignedIn(auth.currentUser);
+        })
+        .catch((error) => {
+            console.error("OTP Link confirm error:", error);
+            if (error.code === 'auth/credential-already-in-use') {
+                if (msgDiv) msgDiv.innerHTML = '<div style="color: #ef4444; font-weight: 600; font-size: 13px; margin-top: 8px;">❌ This phone number is already linked to another account!</div>';
+            } else {
+                if (msgDiv) msgDiv.innerHTML = '<div style="color: #ef4444; font-weight: 600; font-size: 13px; margin-top: 8px;">❌ Linking failed: ' + error.message + '</div>';
+            }
+        });
+}
+
+function linkGoogleAccount() {
+    const msgDiv = document.getElementById('link-google-message');
+    if (msgDiv) msgDiv.innerHTML = '<div style="color: var(--text-color); margin-top: 8px;">🔄 Redirecting to Google...</div>';
+    
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({
+        prompt: 'select_account'
+    });
+    
+    const user = auth.currentUser;
+    if (!user) return;
+    
+    user.linkWithPopup(provider)
+        .then((result) => {
+            const linkedUser = result.user;
+            return db.ref('users/' + user.uid).update({
+                email: linkedUser.email || user.email || "",
+                displayName: linkedUser.displayName || user.displayName || ""
+            });
+        })
+        .then(() => {
+            alert("✅ Google account linked successfully!");
+            closeProfileModal();
+            handleUserSignedIn(auth.currentUser);
+        })
+        .catch((error) => {
+            console.error("Google linking error:", error);
+            if (error.code === 'auth/credential-already-in-use') {
+                if (msgDiv) msgDiv.innerHTML = '<div style="color: #ef4444; font-weight: 600; font-size: 13px; margin-top: 8px;">❌ This Google account is already linked to another user!</div>';
+            } else {
+                if (msgDiv) msgDiv.innerHTML = '<div style="color: #ef4444; font-weight: 600; font-size: 13px; margin-top: 8px;">❌ Linking failed: ' + error.message + '</div>';
+            }
+        });
+}
+
