@@ -80,6 +80,11 @@
                         📱 <strong>Sign in with Phone</strong><br>Enter your registered mobile number to receive a one-time password (OTP).
                     </div>
 
+                    <!-- Setup/Maintenance Notice Banner -->
+                    <div style="background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 12px; border-radius: 10px; margin-bottom: 20px; font-size: 13px; line-height: 1.5; color: var(--text-color);">
+                        ⚠️ <strong>Service under Setup:</strong> Real SMS OTP delivery is currently offline. For testing, please sign in using Google or use registered test phone credentials.
+                    </div>
+
                     <!-- Recaptcha Container (Required for Firebase Phone Auth) -->
                     <div id="recaptcha-container"></div>
 
@@ -434,6 +439,9 @@
             <!-- Phone Verification Form -->
             <div id="phone-linking-form" style="display: none; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
                 <h3 style="font-size: 14px; margin-bottom: 12px;">Link Phone Number</h3>
+                <div style="background: rgba(245, 158, 11, 0.1); border-left: 3px solid #f59e0b; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 12px; line-height: 1.4; color: var(--text-color);">
+                    ⚠️ <strong>Notice:</strong> Real SMS delivery is currently offline. You can only link using registered test phone numbers.
+                </div>
                 <div id="link-recaptcha-container"></div>
                 
                 <div id="link-phone-input-section">
