@@ -5,8 +5,223 @@ function showScreen(screenId) {
     const target = document.getElementById(screenId);
     if (target) {
         target.classList.add('active');
+        const landingPage = document.getElementById('landing-page');
+        if (landingPage) {
+            landingPage.classList.toggle('is-hidden', screenId !== 'login-screen');
+            if (screenId === 'login-screen') {
+                scheduleLandingReveal();
+            }
+        }
         window.scrollTo(0, 0);
     }
+}
+
+function scrollToLogin(event) {
+    if (event) event.preventDefault();
+    closeLandingMenu();
+    const loginScreen = document.getElementById('login-screen');
+    if (loginScreen) {
+        const targetTop = loginScreen.getBoundingClientRect().top + window.scrollY - 84;
+        window.scrollTo({ top: Math.max(targetTop, 0), behavior: 'smooth' });
+    }
+}
+
+function scrollToLandingSection(event, sectionId) {
+    if (event) event.preventDefault();
+    closeLandingMenu();
+
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+
+    const targetTop = section.getBoundingClientRect().top + window.scrollY - 78;
+    window.scrollTo({ top: Math.max(targetTop, 0), behavior: 'smooth' });
+    window.history.replaceState(null, '', `#${sectionId}`);
+
+    setTimeout(() => replayLandingSectionReveal(section), 260);
+    setTimeout(() => replayLandingSectionReveal(section), 620);
+}
+
+function toggleLandingMenu(btn) {
+    const menu = document.getElementById('landing-mobile-menu');
+    if (!menu) return;
+    const isOpen = menu.classList.toggle('open');
+    btn.classList.toggle('open', isOpen);
+    btn.setAttribute('aria-expanded', String(isOpen));
+}
+
+function closeLandingMenu() {
+    const menu = document.getElementById('landing-mobile-menu');
+    const btn = document.querySelector('.landing-menu-btn');
+    if (!menu || !btn) return;
+    menu.classList.remove('open');
+    btn.classList.remove('open');
+    btn.setAttribute('aria-expanded', 'false');
+}
+
+document.addEventListener('click', (event) => {
+    const menu = document.getElementById('landing-mobile-menu');
+    const btn = document.querySelector('.landing-menu-btn');
+    if (!menu || !btn || !menu.classList.contains('open')) return;
+    if (!menu.contains(event.target) && !btn.contains(event.target)) {
+        closeLandingMenu();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const subjects = ['MATHEMATICS', 'PHYSICS', 'DATA STRUCTURES', 'CIRCUITS', 'ENGINEERING MATHS'];
+    const chip = document.getElementById('landing-subject-chip');
+    const live = document.getElementById('landing-live-count');
+    let subjectIndex = 0;
+
+    if (chip) {
+        setInterval(() => {
+            chip.style.opacity = '0';
+            setTimeout(() => {
+                subjectIndex = (subjectIndex + 1) % subjects.length;
+                chip.textContent = subjects[subjectIndex];
+                chip.style.opacity = '1';
+            }, 320);
+        }, 3200);
+    }
+
+    if (live) {
+        setInterval(() => {
+            live.textContent = String(Math.floor(Math.random() * 10) + 20);
+        }, 4000);
+    }
+
+    prepareLandingReveal();
+    scheduleLandingReveal();
+});
+
+let landingRevealItems = [];
+let landingRevealObserver = null;
+let landingRevealStarted = false;
+let landingRevealScrollBound = false;
+
+function prepareLandingReveal() {
+    const landingPage = document.getElementById('landing-page');
+    if (!landingPage) return;
+    if (landingRevealItems.length) return;
+
+    const revealGroups = [
+        '.landing-hero-copy > *',
+        '.landing-qr-visual',
+        '.landing-section .landing-eyebrow',
+        '.landing-section h2',
+        '.landing-section-copy',
+        '.landing-steps article',
+        '.landing-feature-grid article',
+        '.landing-role-grid article',
+        '.landing-finale .landing-eyebrow',
+        '.landing-finale h2',
+        '.landing-finale .landing-section-copy',
+        '.landing-flow-panel'
+    ];
+
+    landingRevealItems = Array.from(landingPage.querySelectorAll(revealGroups.join(',')));
+    if (!landingRevealItems.length) return;
+
+    landingRevealItems.forEach((item, index) => {
+        item.classList.add('landing-reveal');
+        item.style.transitionDelay = `${Math.min((index % 6) * 70, 280)}ms`;
+    });
+}
+
+function scheduleLandingReveal() {
+    const landingPage = document.getElementById('landing-page');
+    if (!landingPage || landingPage.classList.contains('is-hidden')) return;
+    prepareLandingReveal();
+
+    const loadingScreen = document.getElementById('loading-screen');
+    if (loadingScreen && !loadingScreen.classList.contains('fade-out')) {
+        loadingScreen.addEventListener('transitionend', startLandingReveal, { once: true });
+        setTimeout(startLandingReveal, 700);
+        return;
+    }
+
+    requestAnimationFrame(startLandingReveal);
+}
+
+function startLandingReveal() {
+    if (landingRevealStarted) return;
+    landingRevealStarted = true;
+    prepareLandingReveal();
+    if (!landingRevealItems.length) return;
+
+    bindLandingRevealScroll();
+    revealVisibleLandingItems();
+
+    if (!('IntersectionObserver' in window)) {
+        return;
+    }
+
+    landingRevealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            const item = entry.target;
+            item.classList.add('is-visible');
+            landingRevealObserver.unobserve(item);
+
+            setTimeout(() => {
+                item.style.transitionDelay = '';
+            }, 900);
+        });
+    }, {
+        threshold: 0.15,
+        rootMargin: '0px 0px -8% 0px'
+    });
+
+    landingRevealItems.forEach(item => landingRevealObserver.observe(item));
+}
+
+function bindLandingRevealScroll() {
+    if (landingRevealScrollBound) return;
+    landingRevealScrollBound = true;
+    window.addEventListener('scroll', revealVisibleLandingItems, { passive: true });
+    window.addEventListener('resize', revealVisibleLandingItems);
+}
+
+function revealVisibleLandingItems() {
+    if (!landingRevealItems.length) return;
+
+    const revealLine = window.innerHeight * 0.88;
+    landingRevealItems.forEach(item => {
+        if (item.classList.contains('is-visible')) return;
+        const rect = item.getBoundingClientRect();
+        if (rect.top <= revealLine && rect.bottom >= 0) {
+            item.classList.add('is-visible');
+            setTimeout(() => {
+                item.style.transitionDelay = '';
+            }, 900);
+        }
+    });
+}
+
+function replayLandingSectionReveal(section) {
+    const sectionItems = Array.from(section.querySelectorAll([
+        '.landing-eyebrow',
+        'h2',
+        '.landing-section-copy',
+        '.landing-steps article',
+        '.landing-feature-grid article',
+        '.landing-role-grid article',
+        '.landing-flow-panel'
+    ].join(',')));
+
+    if (!sectionItems.length) return;
+
+    sectionItems.forEach((item, index) => {
+        item.classList.add('landing-reveal');
+        item.classList.remove('is-visible');
+        item.style.transitionDelay = `${Math.min(index * 70, 280)}ms`;
+    });
+
+    section.offsetHeight;
+
+    requestAnimationFrame(() => {
+        sectionItems.forEach(item => item.classList.add('is-visible'));
+    });
 }
 
 function showToast(message, duration = 3000) {

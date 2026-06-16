@@ -1,8 +1,12 @@
-const CACHE_NAME = 'attendify-cache-v3';
+const CACHE_NAME = 'attendify-cache-v8';
 const ASSETS = [
     './',
     './index.html',
     './assets/css/style.css',
+    './assets/css/subjects.css',
+    './assets/js/auth.js',
+    './assets/js/ui.js',
+    './assets/js/history.js',
     './assets/js/firebase-config.js',
     './assets/js/export.js',
     './logo.webp',
@@ -52,9 +56,11 @@ self.addEventListener('fetch', (e) => {
                    e.request.url === self.location.origin + '/' || 
                    e.request.url === self.location.origin ||
                    e.request.url.endsWith('/');
+    const isFreshAsset = e.request.destination === 'style' ||
+                         e.request.destination === 'script';
 
-    if (isHtml) {
-        // Network-First Strategy for HTML to ensure updates are seen immediately
+    if (isHtml || isFreshAsset) {
+        // Network-First Strategy for HTML/CSS/JS to avoid mixed old-cache + new-HTML UI.
         e.respondWith(
             fetch(e.request)
                 .then((networkResponse) => {

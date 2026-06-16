@@ -4,8 +4,15 @@
     "public": ".",
     "ignore": [
       "firebase.json",
+      ".*",
+      ".*/**",
       "**/.*",
-      "**/node_modules/**"
+      "**/.*/**",
+      ".git/**",
+      ".agents/**",
+      ".codex/**",
+      "**/node_modules/**",
+      "attendify-support-chatbot/**"
     ],
     "redirects": [
       {
