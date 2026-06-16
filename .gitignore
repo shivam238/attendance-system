@@ -33,3 +33,6 @@ ui-debug.log*
 # Project specific backups
 *_backup.html
 *_b*.html
+
+# Local Netlify folder
+.netlify

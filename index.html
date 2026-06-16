@@ -172,6 +172,10 @@
                     <input type="text" id="setup-section" placeholder="e.g., 5">
                 </div>
                 <div class="form-group">
+                    <label>College Website (Optional)</label>
+                    <input type="url" id="setup-website" placeholder="e.g., https://dtu.ac.in">
+                </div>
+                <div class="form-group">
                     <label>CR Mobile Number (for OTP verification)</label>
                     <input type="tel" id="setup-phone" placeholder="e.g., 9876543210" maxlength="10">
                 </div>
@@ -668,10 +672,15 @@ Now format this student list:
             const college = document.getElementById('setup-college').value.trim().toUpperCase();
             const branch = document.getElementById('setup-branch').value.trim().toUpperCase();
             const section = document.getElementById('setup-section').value.trim();
+            let website = document.getElementById('setup-website').value.trim();
             const phone = document.getElementById('setup-phone').value.trim();
             const subjectsText = document.getElementById('setup-subjects').value.trim();
             const studentsText = document.getElementById('setup-students').value.trim();
             const msgDiv = document.getElementById('setup-message');
+
+            if (website && !/^https?:\/\//i.test(website)) {
+                website = 'https://' + website;
+            }
 
             if (!year || !college || !branch || !section || !phone || !subjectsText || !studentsText) {
                 msgDiv.innerHTML = '<div class="message error">❌ Please fill all fields</div>';
@@ -729,7 +738,7 @@ Now format this student list:
             msgDiv.innerHTML = '<div class="message">💾 Saving class data...</div>';
 
             db.ref('users/' + user.uid).set({
-                year, college, branch, section, phone,
+                year, college, branch, section, phone, website,
                 username: year + college + branch + section,
                 subjects: subjects,
                 students: students,

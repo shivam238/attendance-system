@@ -359,9 +359,14 @@
                     <p id="dashboard-student-roll" style="font-size: 13px; color: var(--text-muted); font-weight: 600; margin-top: 2px;">Roll No: N/A</p>
                     <p id="dashboard-class-details" style="font-size: 13px; color: var(--text-muted); margin-top: 1px;">Class: N/A</p>
                 </div>
-                <button class="btn-small btn-primary" onclick="window.print()" style="margin: 0; padding: 10px 18px; display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
-                    🖨️ Export PDF Report
-                </button>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <a id="college-website-btn" href="#" target="_blank" class="btn-small" style="display: none; margin: 0; padding: 10px 18px; align-items: center; gap: 6px; border: 1px solid var(--border-color); text-decoration: none; font-size: 13px; font-weight: 600; color: var(--text-color); border-radius: 8px; background: rgba(99, 102, 241, 0.05);">
+                        🌐 College Portal
+                    </a>
+                    <button class="btn-small btn-primary" onclick="window.print()" style="margin: 0; padding: 10px 18px; display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
+                        🖨️ Export PDF Report
+                    </button>
+                </div>
             </div>
 
             <!-- Overall Progress ring -->
@@ -651,6 +656,17 @@
             const sectionInfo = classUserData.section ? `, Sec ${classUserData.section}` : '';
             const collegeInfo = classUserData.college ? ` (${classUserData.college})` : '';
             document.getElementById('dashboard-class-details').textContent = `Class ID: ${classId} | ${branchInfo}${sectionInfo}${collegeInfo}`;
+
+            // Handle college website button
+            const websiteBtn = document.getElementById('college-website-btn');
+            if (websiteBtn) {
+                if (classUserData.website) {
+                    websiteBtn.href = classUserData.website;
+                    websiteBtn.style.display = 'inline-flex';
+                } else {
+                    websiteBtn.style.display = 'none';
+                }
+            }
 
             // Initialize subjects statistics
             const subjects = classUserData.subjects || [];
