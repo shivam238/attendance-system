@@ -1,4 +1,3 @@
-export default `
 # ATTENDIFY AI Customer Support Knowledge Base
 
 Generated from the repository code only. Use this as source material for an AI customer support chatbot. If a behavior is not present in the code, do not claim it exists.
@@ -9,26 +8,26 @@ ATTENDIFY is a Firebase-powered web application for QR-based student attendance.
 
 Students do not need to install a native app. They scan a QR code or open a shared attendance link, enter their roll number or name, optionally allow browser location access, and receive a status page showing whether attendance was marked or sent for CR approval.
 
-The app is hosted as a static Firebase Hosting site named \`qr-smart-attendance\`. The front end is written in HTML, CSS, and vanilla JavaScript. Firebase Auth is used for sign-in, Firebase Realtime Database stores users, attendance records, QR sessions, requests, and feedback, and Firebase Analytics is used for event logging when available.
+The app is hosted as a static Firebase Hosting site named `qr-smart-attendance`. The front end is written in HTML, CSS, and vanilla JavaScript. Firebase Auth is used for sign-in, Firebase Realtime Database stores users, attendance records, QR sessions, requests, and feedback, and Firebase Analytics is used for event logging when available.
 
 Primary source files:
-- \`index.html\`: main login, setup, CR dashboard, student QR submission handler, requests, geofencing, QR sessions, student management.
-- \`manage-subjects.html\`: subject add, rename, delete, reorder page.
-- \`track.html\`: student attendance tracking portal.
-- \`attendance-success.html\`: student result/status page.
-- \`assets/js/auth.js\`: Google/phone auth, linked login methods, account deletion.
-- \`assets/js/export.js\`: Export Hub, Excel download, manual present/absent edits.
-- \`assets/js/history.js\`: attendance history rendering.
-- \`assets/js/ui.js\`: shared UI helpers.
-- \`firebase-config.js\`, \`database.rules.json\`, \`firebase.json\`, \`service-worker.js\`, \`manifest.json\`: platform configuration.
+- `index.html`: main login, setup, CR dashboard, student QR submission handler, requests, geofencing, QR sessions, student management.
+- `manage-subjects.html`: subject add, rename, delete, reorder page.
+- `track.html`: student attendance tracking portal.
+- `attendance-success.html`: student result/status page.
+- `assets/js/auth.js`: Google/phone auth, linked login methods, account deletion.
+- `assets/js/export.js`: Export Hub, Excel download, manual present/absent edits.
+- `assets/js/history.js`: attendance history rendering.
+- `assets/js/ui.js`: shared UI helpers.
+- `firebase-config.js`, `database.rules.json`, `firebase.json`, `service-worker.js`, `manifest.json`: platform configuration.
 
 ## Key Terms
 
 - **CR**: The class representative or educator using the dashboard to manage class attendance.
-- **Class ID / Username**: Generated during setup as \`year + college + branch + section\`, for example \`29DTUCSE5\`.
-- **QR session**: A subject-specific attendance session stored at \`qr_sessions/{classId}_{date}_{subject}\`.
-- **Attendance record**: A present mark stored under \`attendance/{classId}_{date}_{subject}\`.
-- **Request**: A pending attendance submission that needs CR review, stored under \`requests/{classId}_{date}_{subject}\`.
+- **Class ID / Username**: Generated during setup as `year + college + branch + section`, for example `29DTUCSE5`.
+- **QR session**: A subject-specific attendance session stored at `qr_sessions/{classId}_{date}_{subject}`.
+- **Attendance record**: A present mark stored under `attendance/{classId}_{date}_{subject}`.
+- **Request**: A pending attendance submission that needs CR review, stored under `requests/{classId}_{date}_{subject}`.
 - **Geofencing**: Optional location verification against a classroom/campus radius.
 
 ## User Roles
@@ -62,13 +61,13 @@ Can:
 ## Authentication and Account Setup
 
 ### Google Login
-Google login is implemented with Firebase Auth popup sign-in. The app requests account selection with \`prompt: select_account\`. If sign-in fails, the login screen displays the Firebase error message.
+Google login is implemented with Firebase Auth popup sign-in. The app requests account selection with `prompt: select_account`. If sign-in fails, the login screen displays the Firebase error message.
 
 Correct chatbot answer:
 > Use the Google Login tab and choose "Continue with Google." If sign-in fails, retry with a stable internet connection and make sure popups are allowed for the site.
 
 ### Phone Login
-The UI includes phone login using Firebase Phone Auth and invisible reCAPTCHA. The app validates Indian 10-digit numbers, formats them as \`+91\`, sends an OTP, then verifies a 6-digit code.
+The UI includes phone login using Firebase Phone Auth and invisible reCAPTCHA. The app validates Indian 10-digit numbers, formats them as `+91`, sends an OTP, then verifies a 6-digit code.
 
 Important limitation from the UI:
 - The login screen says real SMS OTP delivery is currently offline.
@@ -81,47 +80,47 @@ Correct chatbot answer:
 After sign-in, if the user has no complete profile, the setup screen appears.
 
 Required fields:
-- Passout year: exactly 2 digits, for example \`29\`.
+- Passout year: exactly 2 digits, for example `29`.
 - College: converted to uppercase.
 - Branch: converted to uppercase.
 - Section.
 - CR mobile number: exactly 10 digits.
 - Subjects: one per line.
-- Students: one per line in \`NAME - ROLLNO\` format.
+- Students: one per line in `NAME - ROLLNO` format.
 
 Optional field:
-- College website. If entered without \`http://\` or \`https://\`, the app prepends \`https://\`.
+- College website. If entered without `http://` or `https://`, the app prepends `https://`.
 
 Generated user profile fields:
-- \`year\`
-- \`college\`
-- \`branch\`
-- \`section\`
-- \`phone\`
-- \`website\`
-- \`username\`
-- \`subjects\`
-- \`students\`
-- \`email\`
-- \`displayName\`
-- \`createdAt\`
+- `year`
+- `college`
+- `branch`
+- `section`
+- `phone`
+- `website`
+- `username`
+- `subjects`
+- `students`
+- `email`
+- `displayName`
+- `createdAt`
 
 The username/Class ID is generated as:
-\`\`\`text
+```text
 year + college + branch + section
-\`\`\`
+```
 Example:
-\`\`\`text
+```text
 29 + DTU + CSE + 5 = 29DTUCSE5
-\`\`\`
+```
 
 ### Student List Format
 Students must be entered one per line:
-\`\`\`text
+```text
 JOHN DOE - 25/B09/001
 JANE SMITH - 25/B09/002
-\`\`\`
-If a line does not contain exactly \`space-dash-space\`, setup fails with an invalid format message.
+```
+If a line does not contain exactly `space-dash-space`, setup fails with an invalid format message.
 The setup page includes a "Copy ChatGPT Prompt" button that copies formatting instructions for preparing student lists.
 
 ## Main CR Dashboard
@@ -134,9 +133,9 @@ Dashboard tabs:
 - **Requests**: approve or reject pending attendance submissions.
 
 The app also stores UI preferences:
-- Last active tab in \`localStorage\`.
-- Dark mode in \`localStorage\` and optionally \`users/{uid}/settings/darkMode\`.
-- Main tab order in \`localStorage\` and cloud settings.
+- Last active tab in `localStorage`.
+- Dark mode in `localStorage` and optionally `users/{uid}/settings/darkMode`.
+- Main tab order in `localStorage` and cloud settings.
 
 ## Attendance Workflow: CR
 
@@ -153,13 +152,13 @@ The app also stores UI preferences:
 
 ### QR Session Behavior
 When a CR generates a QR:
-- The session key is \`{classId}_{YYYY-MM-DD}_{subject}\`.
-- A \`qr_sessions\` record is saved with:
-  - \`generatedAt\`
-  - \`expiryTime\`
-  - \`subject\`
-  - \`username\`
-  - optional \`location\`
+- The session key is `{classId}_{YYYY-MM-DD}_{subject}`.
+- A `qr_sessions` record is saved with:
+  - `generatedAt`
+  - `expiryTime`
+  - `subject`
+  - `username`
+  - optional `location`
 - The default expiry is 5 minutes.
 - The timer can be extended by 1 minute.
 - The QR can be opened fullscreen.
@@ -167,10 +166,10 @@ When a CR generates a QR:
 - A real-time listener shows toast notifications when students are added after the session generation time.
 
 ### Active Session Recovery
-If a CR reloads while a QR session is still active, the app checks \`qr_sessions/{code}\` and restores the QR code, countdown, and listener if \`expiryTime > Date.now()\`.
+If a CR reloads while a QR session is still active, the app checks `qr_sessions/{code}` and restores the QR code, countdown, and listener if `expiryTime > Date.now()`.
 
 ### Manual QR Clear
-If the CR manually clears the QR, the app removes the matching \`qr_sessions/{code}\` record. After that, students attempting submission see an invalid or expired session error and cannot create a late request for that session.
+If the CR manually clears the QR, the app removes the matching `qr_sessions/{code}` record. After that, students attempting submission see an invalid or expired session error and cannot create a late request for that session.
 
 ### Natural QR Expiry
 When the timer reaches zero, the QR disappears from the CR dashboard. The session record may still exist. If a student already has the QR submission page and submits after expiry, the app creates a pending late request instead of directly marking attendance.
@@ -178,14 +177,14 @@ When the timer reaches zero, the QR disappears from the CR dashboard. The sessio
 ## Attendance Workflow: Student QR Submission
 
 1. Student scans the QR or opens the link.
-2. The URL contains \`?code={classId}_{date}_{subject}\`.
+2. The URL contains `?code={classId}_{date}_{subject}`.
 3. The app opens the Mark Attendance modal.
 4. Student enters roll number or full name.
-5. The app finds the class by \`users.username\`.
+5. The app finds the class by `users.username`.
 6. The app finds the student by exact roll number. If not found, it tries exact full-name match.
 7. If multiple students have the same exact name, the student is asked to enter roll number.
 8. If already marked, the app redirects to an "Already Marked" status page.
-9. The app checks \`qr_sessions/{code}\`.
+9. The app checks `qr_sessions/{code}`.
 10. If no active session record exists, the student sees "Invalid or expired session."
 11. If geofencing is enabled, the browser asks for location.
 12. Depending on time and location result:
@@ -193,7 +192,7 @@ When the timer reaches zero, the QR disappears from the CR dashboard. The sessio
     - Late: request is created for CR approval.
     - Out of range: request is created for CR approval.
     - GPS denied/unavailable: request is created for CR approval.
-13. Student is redirected to \`attendance-success.html\` with status details in URL parameters.
+13. Student is redirected to `attendance-success.html` with status details in URL parameters.
 
 ### Student Input Rules
 - Roll number input is converted to uppercase.
@@ -202,7 +201,7 @@ When the timer reaches zero, the QR disappears from the CR dashboard. The sessio
 - If a full name matches more than one student, the app rejects name submission and asks for roll number.
 
 ### Duplicate Submissions
-Before marking attendance, the app checks \`attendance/{code}\` for a record with the same \`rollNo\`. If one exists, it redirects to the already-marked page.
+Before marking attendance, the app checks `attendance/{code}` for a record with the same `rollNo`. If one exists, it redirects to the already-marked page.
 
 ## Geofencing
 
@@ -233,17 +232,17 @@ When a student submits to a geofenced session:
 - Student latitude/longitude is not stored in the request; only distance and flags are stored.
 
 Request data may include:
-- \`rollNo\`
-- \`name\`
-- \`subject\`
-- \`requestTime\`
-- \`timestamp\`
-- \`status: pending\`
-- \`outOfRange\`
-- \`gpsDenied\`
-- \`distance\`
-- \`radiusLimit\`
-- \`lateBy\`
+- `rollNo`
+- `name`
+- `subject`
+- `requestTime`
+- `timestamp`
+- `status: pending`
+- `outOfRange`
+- `gpsDenied`
+- `distance`
+- `radiusLimit`
+- `lateBy`
 
 ## Requests Workflow
 
@@ -267,23 +266,23 @@ Each card may show:
 ### Approving a Request
 On approval:
 - The app asks for confirmation.
-- It pushes an attendance record under \`attendance/{key}\`.
+- It pushes an attendance record under `attendance/{key}`.
 - The record contains:
-  - \`rollNo\`
-  - \`name\`
-  - current \`time\`
-  - \`timestamp\`
-  - \`lateApproval: true\`
+  - `rollNo`
+  - `name`
+  - current `time`
+  - `timestamp`
+  - `lateApproval: true`
 - The request is updated to:
-  - \`status: approved\`
-  - \`approvedAt\`
+  - `status: approved`
+  - `approvedAt`
 
 ### Rejecting a Request
 On rejection:
 - The app asks for confirmation.
 - The request is updated to:
-  - \`status: rejected\`
-  - \`rejectedAt\`
+  - `status: rejected`
+  - `rejectedAt`
 Rejected requests do not create attendance records.
 
 ## Student Management
@@ -304,12 +303,12 @@ Edit student behavior:
 
 Delete student behavior:
 - Confirmation is required.
-- The student is removed from \`users/{uid}/students\`.
+- The student is removed from `users/{uid}/students`.
 - Existing attendance records are not automatically rewritten or deleted by this operation.
 
 ## Subject Management
 
-Subjects can be managed from \`manage-subjects.html\`.
+Subjects can be managed from `manage-subjects.html`.
 
 Available actions:
 - Add a subject.
@@ -323,7 +322,7 @@ Add subject validation:
 
 Rename behavior:
 - Uses a browser prompt.
-- Updates \`users/{uid}/subjects\`.
+- Updates `users/{uid}/subjects`.
 - Existing historical attendance keys for the old subject name are not renamed by this code.
 
 Delete behavior:
@@ -335,7 +334,7 @@ Delete behavior:
 
 The Today tab:
 - Shows today's date.
-- Listens in real time to attendance keys starting with \`{classId}_{today}\`.
+- Listens in real time to attendance keys starting with `{classId}_{today}`.
 - Groups records by subject.
 - Shows unique present student count across all today's subject records.
 - Shows pending request count for today.
@@ -346,7 +345,7 @@ Important detail:
 
 ## History Tab
 
-History reads \`attendance\` keys for the current class, groups by subject, sorts entries by date descending, and shows:
+History reads `attendance` keys for the current class, groups by subject, sorts entries by date descending, and shows:
 - Subject.
 - Date.
 - Present count.
@@ -358,7 +357,7 @@ If there are no records, it shows "No history yet."
 
 ## Export Hub
 
-Export Hub uses SheetJS (\`xlsx\`) to generate \`.xlsx\` files.
+Export Hub uses SheetJS (`xlsx`) to generate `.xlsx` files.
 
 ### Export Selection Modes
 - **Today**: records for the current local date.
@@ -368,7 +367,7 @@ Export Hub uses SheetJS (\`xlsx\`) to generate \`.xlsx\` files.
 
 ### Subject Filtering
 The subject checkbox list is populated from:
-- \`currentUser.subjects\`
+- `currentUser.subjects`
 - Subjects discovered from attendance keys.
 
 Users can select all subjects or choose specific subjects.
@@ -388,12 +387,12 @@ List view:
 Register/matrix view:
 - Rows are students.
 - Columns are dates.
-- Cells show \`P\`/\`A\` or \`Present\`/\`Absent\`.
+- Cells show `P`/`A` or `Present`/`Absent`.
 
 ### Attendance Status Calculation
 If a class student list exists, Export Hub compares every configured student against each attendance record:
-- If matching roll number exists: \`Present\`.
-- Otherwise: \`Absent\`.
+- If matching roll number exists: `Present`.
+- Otherwise: `Absent`.
 
 If there is no configured student list, Export Hub falls back to raw attendance records and only shows present records.
 
@@ -403,41 +402,41 @@ From list preview:
 - Present records show a minus button to mark absent.
 
 Manual mark present writes to:
-\`\`\`text
+```text
 attendance/{classId}_{date}_{subject}/{sanitizedRollNo}
-\`\`\`
+```
 
 Manual mark absent removes:
-\`\`\`text
+```text
 attendance/{classId}_{date}_{subject}/{sanitizedRollNo}
-\`\`\`
+```
 
-Roll numbers are sanitized by replacing \`/\` with \`_\` in this manual-edit path.
+Roll numbers are sanitized by replacing `/` with `_` in this manual-edit path.
 
 ### File Naming
 Downloaded file name:
-\`\`\`text
+```text
 Attendance_{format}_{YYYY-MM-DD}.xlsx
-\`\`\`
+```
 Examples:
-\`\`\`text
+```text
 Attendance_list_2026-06-16.xlsx
 Attendance_matrix_2026-06-16.xlsx
-\`\`\`
+```
 
 ## Student Portal
 
-The student portal is \`track.html\`.
+The student portal is `track.html`.
 
 Students log in with:
 - Class ID.
 - Roll number.
 
 No Firebase Auth account is required for the student portal. The portal validates that:
-- The Class ID exists in \`users.username\`.
+- The Class ID exists in `users.username`.
 - The roll number exists in that class's student list.
 
-The portal stores a local session in \`localStorage\` as \`student_session\` and auto-logins next time if valid.
+The portal stores a local session in `localStorage` as `student_session` and auto-logins next time if valid.
 
 Student portal dashboard shows:
 - Student name.
@@ -453,22 +452,22 @@ Student portal dashboard shows:
 - Browser print/PDF export button.
 
 Statuses shown in logs:
-- \`Present\`
-- \`Absent\`
-- \`Pending Approval\`
+- `Present`
+- `Absent`
+- `Pending Approval`
 
 ### How Student Portal Calculates Attendance
 For each subject configured in the class:
 - Total classes equals the number of attendance session keys found for that subject.
 - A student is present if their roll number exists in that session's records.
-- If a pending request exists for a date/subject, the log status becomes \`Pending Approval\`.
+- If a pending request exists for a date/subject, the log status becomes `Pending Approval`.
 
 Important limitation:
-- If no attendance record/session exists for a subject/date, the portal does not count that date as a class. It only calculates totals from sessions present in the \`attendance\` database.
+- If no attendance record/session exists for a subject/date, the portal does not count that date as a class. It only calculates totals from sessions present in the `attendance` database.
 
 ## Attendance Status Page
 
-\`attendance-success.html\` displays different outcomes based on URL parameters.
+`attendance-success.html` displays different outcomes based on URL parameters.
 
 ### Marked Present
 Shows:
@@ -508,14 +507,14 @@ Shows:
 - Pending approval note.
 
 ### Student Tracker Link
-If the \`class\` parameter is present, the status page displays a "View Full Attendance" button linking to:
-\`\`\`text
+If the `class` parameter is present, the status page displays a "View Full Attendance" button linking to:
+```text
 track.html?class={classId}&roll={rollNo}
-\`\`\`
+```
 
 ## Feedback
 
-The status page includes a Feedback button that opens \`feedback.html\`.
+The status page includes a Feedback button that opens `feedback.html`.
 
 The feedback form collects:
 - Full name.
@@ -530,31 +529,31 @@ The feedback form collects:
 - Date.
 - User agent.
 
-It writes feedback to \`feedbacks\`.
+It writes feedback to `feedbacks`.
 
 Known issue from code:
-- \`feedback.html\` uses \`stars.forEach(...)\`, but the \`stars\` variable is not defined in the shown script. Unless defined elsewhere at runtime, this can break star rating behavior and possibly prevent form submission.
+- `feedback.html` uses `stars.forEach(...)`, but the `stars` variable is not defined in the shown script. Unless defined elsewhere at runtime, this can break star rating behavior and possibly prevent form submission.
 
 ## Contact and Static Pages
 
 Contact page includes:
-- Email: \`sm3165599@gmail.com\` (copies the email address to clipboard and triggers a toast message).
-- Instagram: \`https://www.instagram.com/heheshivam/\` (opens in a new tab).
-- LinkedIn: \`https://www.linkedin.com/in/shivam-kumar-mahto-046228361/\` (opens in a new tab).
+- Email: `sm3165599@gmail.com` (copies the email address to clipboard and triggers a toast message).
+- Instagram: `https://www.instagram.com/heheshivam/` (opens in a new tab).
+- LinkedIn: `https://www.linkedin.com/in/shivam-kumar-mahto-046228361/` (opens in a new tab).
 - **AI Support Widget**: An interactive, inline AI support chatbot is embedded directly at the bottom of the Contact page to answer support queries in real time.
 
 Static pages:
-- \`about.html\`
-- \`contact.html\`
-- \`manual.html\`
-- \`privacy-policy.html\`
-- \`terms.html\`
-- \`404.html\`
+- `about.html`
+- `contact.html`
+- `manual.html`
+- `privacy-policy.html`
+- `terms.html`
+- `404.html`
 
 Manual page:
 - Embedded in dashboard guide modal.
-- Available as \`manual.html\`.
-- Includes a download link for \`QR Attendance System - Complete User Manual.pdf\`.
+- Available as `manual.html`.
+- Includes a download link for `QR Attendance System - Complete User Manual.pdf`.
 
 ## PWA and Offline Behavior
 
@@ -562,7 +561,7 @@ The app includes a web app manifest:
 - Name: Attendify.
 - Display: standalone.
 - Orientation: portrait-primary.
-- Icon: \`logo.png\`.
+- Icon: `logo.png`.
 
 The service worker caches:
 - Main app pages.
@@ -581,84 +580,84 @@ Correct chatbot answer:
 
 ## Data Model
 
-### \`users/{uid}\`
+### `users/{uid}`
 Stores CR profile and class configuration.
 Fields seen in code:
-- \`year\`
-- \`college\`
-- \`branch\`
-- \`section\`
-- \`phone\`
-- \`website\`
-- \`username\`
-- \`subjects\`
-- \`students\`
-- \`email\`
-- \`displayName\`
-- \`createdAt\`
-- \`settings\`
+- `year`
+- `college`
+- `branch`
+- `section`
+- `phone`
+- `website`
+- `username`
+- `subjects`
+- `students`
+- `email`
+- `displayName`
+- `createdAt`
+- `settings`
 
-### \`attendance/{classId}_{date}_{subject}\`
+### `attendance/{classId}_{date}_{subject}`
 Stores attendance records for one class/date/subject session.
 Record fields seen in code:
-- \`rollNo\`
-- \`name\`
-- \`time\`
-- \`timestamp\`
-- optional \`lateApproval\`
+- `rollNo`
+- `name`
+- `time`
+- `timestamp`
+- optional `lateApproval`
 
 Records may be created with auto-generated push IDs or with a sanitized roll-number key from Export Hub quick edits.
 
-### \`requests/{classId}_{date}_{subject}\`
+### `requests/{classId}_{date}_{subject}`
 Stores pending, approved, and rejected attendance exceptions.
 Request fields seen in code:
-- \`rollNo\`
-- \`name\`
-- \`subject\`
-- \`requestTime\`
-- \`timestamp\`
-- \`status\`
-- \`lateBy\`
-- \`outOfRange\`
-- \`gpsDenied\`
-- \`distance\`
-- \`radiusLimit\`
-- \`approvedAt\`
-- \`rejectedAt\`
+- `rollNo`
+- `name`
+- `subject`
+- `requestTime`
+- `timestamp`
+- `status`
+- `lateBy`
+- `outOfRange`
+- `gpsDenied`
+- `distance`
+- `radiusLimit`
+- `approvedAt`
+- `rejectedAt`
 
-### \`qr_sessions/{classId}_{date}_{subject}\`
+### `qr_sessions/{classId}_{date}_{subject}`
 Stores active or recently generated QR sessions.
 Fields:
-- \`generatedAt\`
-- \`expiryTime\`
-- \`subject\`
-- \`username\`
-- optional \`location.lat\`
-- optional \`location.lng\`
-- optional \`location.radius\`
+- `generatedAt`
+- `expiryTime`
+- `subject`
+- `username`
+- optional `location.lat`
+- optional `location.lng`
+- optional `location.radius`
 
-### \`feedbacks\`
+### `feedbacks`
 Stores feedback form submissions.
 Fields:
-- \`name\`
-- \`email\`
-- \`college\`
-- \`branch\`
-- \`role\`
-- \`rating\`
-- \`feedback\`
-- \`improvements\`
-- \`timestamp\`
-- \`date\`
-- \`userAgent\`
+- `name`
+- `email`
+- `college`
+- `branch`
+- `role`
+- `rating`
+- `feedback`
+- `improvements`
+- `timestamp`
+- `date`
+- `userAgent`
 
 ## Database Rules and Security Caveat
 
-The repository's \`database.rules.json\` grants:
-- \`users\`: global read; write only to own UID.
-- \`attendance\`: global read and write.
-- \`requests\`: global read and write.
-- \`qr_sessions\`: global read and write.
+The repository's `database.rules.json` grants:
+- `users`: global read; write only to own UID.
+- `attendance`: global read and write.
+- `requests`: global read and write.
+- `qr_sessions`: global read and write.
 
 Support chatbot should not claim strict per-class access control is enforced by database rules. The app UI organizes data by class ID and logged-in user, but database rules in this repo are broad for attendance, requests, and QR sessions.
 
@@ -668,11 +667,11 @@ Safe answer:
 ## Analytics Events
 
 The code logs analytics events when Firebase Analytics is available:
-- \`qr_generated\`
-- \`attendance_submitted\`
-- \`geofence_violation\`
-- \`excel_export\`
-- \`feedback_submitted\`
+- `qr_generated`
+- `attendance_submitted`
+- `geofence_violation`
+- `excel_export`
+- `feedback_submitted`
 
 If Analytics is unavailable, events are logged to console as dummy messages.
 
@@ -682,17 +681,16 @@ Only state these if relevant to user support.
 
 1. Phone OTP real SMS delivery is marked "currently offline" in the UI.
 2. The contact page FAQ mentions a "Forgot Password" flow, but no implemented forgot-password UI or function is present in the code.
-3. \`feedback.html\` references \`stars\` without defining it, so feedback rating interactions may fail.
-4. \`assets/js/ui.js\` has a \`copyQRLink()\` implementation that points to \`attendance.html?id=...\`, but \`index.html\` defines another \`copyQRLink()\` that copies the actual \`?code=...\` link. There is no \`attendance.html\` file in the repository.
+3. `feedback.html` references `stars` without defining it, so feedback rating interactions may fail.
+4. `assets/js/ui.js` has a `copyQRLink()` implementation that points to `attendance.html?id=...`, but `index.html` defines another `copyQRLink()` that copies the actual `?code=...` link. There is no `attendance.html` file in the repository.
 5. Deleting or renaming a subject does not migrate existing attendance history keys for that subject.
 6. Deleting student removes them from class list but does not rewrite/delete historical attendance records.
-7. Student portal totals count sessions present in the \`attendance\` database. A class held without any attendance session record is not counted.
+7. Student portal totals count sessions present in the `attendance` database. A class held without any attendance session record is not counted.
 8. Requests tab only displays today's pending requests.
 9. Approving a request pushes a new attendance record without rechecking for duplicate roll numbers in that session.
-10. QR session expiry removes the QR from the CR UI, but late requests can still be created if the \`qr_sessions\` record remains and the student submits after expiry.
+10. QR session expiry removes the QR from the CR UI, but late requests can still be created if the `qr_sessions` record remains and the student submits after expiry.
 11. Manual QR clear removes the session and blocks late requests.
 12. Geolocation depends on browser/device support, permission, GPS/network accuracy, and HTTPS/browser policies.
 13. Static pages can be cached offline, but database-backed features need Firebase connectivity.
 14. Database rules are broad for attendance, requests, and QR sessions.
-15. Firebase Hosting rewrites all unknown paths to \`index.html\`, so a missing URL may load the app rather than the static 404 page.
-`;
+15. Firebase Hosting rewrites all unknown paths to `index.html`, so a missing URL may load the app rather than the static 404 page.

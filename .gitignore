@@ -17,6 +17,7 @@ build/
 *.txt
 !README.md
 !License.txt
+!**/knowledge_base.txt
 
 # Firebase
 .firebase/

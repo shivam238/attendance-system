@@ -224,6 +224,7 @@
             <li><a href="#requests">Managing Requests</a></li>
             <li><a href="#history">History & Export</a></li>
             <li><a href="#account">Account Management</a></li>
+            <li><a href="#support">Customer Support & AI Assistant</a></li>
         </ol>
     </div>
 
@@ -276,9 +277,10 @@
             <div class="step"><span class="step-num">1</span><span class="step-text">Open the app and click the <strong>Google Login</strong> button to sign in with your college Google account.</span></div>
             <div class="step"><span class="step-num">2</span><span class="step-text">On the Setup screen, enter your <strong>Passout Year</strong> (last 2 digits, e.g. <code>29</code>), College, Branch, and Section.</span></div>
             <div class="step"><span class="step-num">3</span><span class="step-text">Enter your <strong>Mobile Number</strong> (10 digits) for OTP verification and account recovery.</span></div>
-            <div class="step"><span class="step-num">4</span><span class="step-text">Enter all <strong>Subjects</strong> — one per line (e.g. MATHEMATICS-1, PHYSICS, BASIC CIVIL ENGINEERING).</span></div>
-            <div class="step"><span class="step-num">5</span><span class="step-text">Click <strong>"Copy ChatGPT Prompt"</strong> → paste in ChatGPT with your class roster → copy the formatted result → paste it in the Students field.</span></div>
-            <div class="step"><span class="step-num">6</span><span class="step-text">Click <strong>Save & Continue</strong>. Your class ID (e.g. <code>29DTUCSE5</code>) is auto-generated.</span></div>
+            <div class="step"><span class="step-num">4</span><span class="step-text"><em>(Optional)</em> Enter your <strong>College Website</strong> URL (e.g. <code>https://dtu.ac.in</code>) if you'd like students to have a direct portal link.</span></div>
+            <div class="step"><span class="step-num">5</span><span class="step-text">Enter all <strong>Subjects</strong> — one per line (e.g. MATHEMATICS-1, PHYSICS, BASIC CIVIL ENGINEERING).</span></div>
+            <div class="step"><span class="step-num">6</span><span class="step-text">Click <strong>"Copy ChatGPT Prompt"</strong> → paste in ChatGPT with your class roster → copy the formatted result → paste it in the Students field.</span></div>
+            <div class="step"><span class="step-num">7</span><span class="step-text">Click <strong>Save & Continue</strong>. Your class ID (e.g. <code>29DTUCSE5</code>) is auto-generated.</span></div>
         </div>
         <div class="info-box tip">
             <span>💡</span>
@@ -372,6 +374,15 @@
             <span>⚠️</span>
             <span>If your attendance shows as <strong>"Pending CR Approval"</strong>, it means you were outside the classroom boundary or denied GPS access. Your CR will review and approve/reject it manually.</span>
         </div>
+        
+        <div class="steps-group" style="margin-top: 20px;">
+            <div class="steps-label">Student Attendance Tracker (track.html)</div>
+            <ul class="bullet-list">
+                <li><strong>🔑 Login:</strong> Students can log in to the Student Portal using their Class ID and Roll Number. No Firebase account is required.</li>
+                <li><strong>🌐 College Portal Link:</strong> If the CR configured a college website during setup, a <strong>🌐 College Portal</strong> button will appear on the dashboard. Clicking this redirects students to their college portal.</li>
+                <li><strong>📈 Track Attendance:</strong> Monitor overall attendance percentage, check attended vs. total lectures, configure target threshold warnings (defaults to 75%), and filter detailed logs.</li>
+            </ul>
+        </div>
     </div>
 
     <!-- 6. Requests -->
@@ -429,6 +440,21 @@
             <li>You can link both a <strong>Google account</strong> and a <strong>phone number</strong> for login flexibility.</li>
             <li>To add/edit/remove students, go to the <strong>Students</strong> tab.</li>
             <li>To add or rename subjects, click <strong>📚 Manage Subjects</strong>.</li>
+        </ul>
+    </div>
+
+    <!-- 9. Customer Support & AI Assistant -->
+    <div class="section" id="support">
+        <div class="section-header">
+            <span class="section-icon">🤖</span>
+            <div>
+                <div class="section-title">Customer Support & AI Assistant</div>
+            </div>
+        </div>
+        <ul class="bullet-list">
+            <li><strong>💬 Inline AI Assistant:</strong> A custom support chatbot widget is now embedded directly on the <strong>Contact Us</strong> page (<code>contact.html</code>). You can ask it questions about how to use the app, troubleshoot login issues, or clarify QR session lifecycles.</li>
+            <li><strong>📧 Email support:</strong> Clicking the Email card on the Contact page will instantly copy the support email (<code>sm3165599@gmail.com</code>) to your clipboard for quick and easy messaging.</li>
+            <li><strong>📱 Social Channels:</strong> Connect directly with the developer via the official Instagram and LinkedIn links provided on the contact page.</li>
         </ul>
     </div>
 
