@@ -4,33 +4,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ATTENDIFY</title>
+    <meta name="description" content="ATTENDIFY — Smart QR-based attendance system with geofencing, real-time tracking, and export tools for CRs and teachers.">
+    <title>ATTENDIFY — Smart Attendance System</title>
 
-    <!-- Leaflet Maps CSS & JS -->
+    <!-- Leaflet Maps CSS (non-blocking) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
     <!-- Preconnect for speed -->
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://firebase.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="dns-prefetch" href="https://www.gstatic.com">
     <link rel="dns-prefetch" href="https://firebase.googleapis.com">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
 
-    <link rel="icon" type="image/png" href="logo.png">
-    <link rel="shortcut icon" type="image/png" href="logo.png">
-    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="icon" type="image/webp" href="logo.webp">
+    <link rel="shortcut icon" type="image/webp" href="logo.webp">
+    <link rel="apple-touch-icon" href="logo-opt.png">
 
     <!-- PWA Manifest & Meta Tags -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#667eea">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-    <!-- Core Firebase (Async for speed) -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
 
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
@@ -57,7 +53,7 @@
                     <button class="theme-btn" onclick="toggleDarkMode()">🌙 Dark Mode</button>
                 </div>
                 <div class="header">
-                    <img src="logo.png" alt="ATTENDIFY Logo" class="logo" onclick="openLogoPopup()">
+                    <img src="logo.webp" alt="ATTENDIFY Logo" class="logo" onclick="openLogoPopup()" loading="lazy">
                     <h1>🎓 <span class="brand-text">ATTENDIFY</span></h1>
                     <p>Experience the future of attendance tracking</p>
                 </div>
@@ -219,7 +215,7 @@
                 </div>
 
                 <div class="header">
-                    <img src="logo.png" alt="ATTENDIFY Logo" class="logo" onclick="openLogoPopup()">
+                    <img src="logo.webp" alt="ATTENDIFY Logo" class="logo" onclick="openLogoPopup()" loading="lazy">
                     <h1>📱 <span class="brand-text">ATTENDIFY</span></h1>
                     <p id="class-info"></p>
                 </div>
@@ -569,7 +565,14 @@
     <!-- Toast Notifications Container -->
     <div id="toast-container" class="toast-container"></div>
 
+    <!-- Firebase Core (must load before app scripts) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
+
     <!-- Non-essential scripts deferred -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 

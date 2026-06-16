@@ -37,3 +37,7 @@ ui-debug.log*
 
 # Local Netlify folder
 .netlify
+
+# Force-track optimized logo assets (used instead of heavy logo.png)
+!logo.webp
+!logo-opt.png

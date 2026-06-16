@@ -1,13 +1,25 @@
 {
   "name": "Attendify",
   "short_name": "Attendify",
-  "description": "Smart Geofenced Attendance System",
+  "description": "Smart Geofenced QR Attendance System",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#121214",
   "theme_color": "#667eea",
   "orientation": "portrait-primary",
   "icons": [
+    {
+      "src": "logo.webp",
+      "sizes": "200x200",
+      "type": "image/webp",
+      "purpose": "any"
+    },
+    {
+      "src": "logo-opt.png",
+      "sizes": "200x200",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
     {
       "src": "logo.png",
       "sizes": "512x512",
