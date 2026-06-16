@@ -2171,63 +2171,26 @@ Now format this student list:
                 return;
             }
 
-            list.innerHTML = '<div style="text-align: center; padding: 20px; width: 100%;"><div class="spinner" style="width: 30px; height: 30px; border-width: 3px; border-top-color: var(--primary-color); margin: 0 auto;"></div></div>';
-
-            const classId = currentUser.username;
-            db.ref('student_pins/' + classId).once('value', (pinsSnapshot) => {
-                const pinsData = pinsSnapshot.val() || {};
-                
-                list.innerHTML = '';
-                currentUser.students.forEach((s) => {
-                    const encodedRoll = s.rollNo.replace(/[\/\.\#\$\[\]]/g, '_');
-                    const hasPin = pinsData[encodedRoll] ? true : false;
-                    
-                    const pinBadge = hasPin 
-                        ? `<span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: rgba(16, 185, 129, 0.15); color: #10b981; font-weight: 700; margin-left: 6px; display: inline-block;">PIN Set</span>`
-                        : `<span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; font-weight: 700; margin-left: 6px; display: inline-block;">No PIN</span>`;
-
-                    const resetBtn = hasPin
-                        ? `<button class="btn-small btn-secondary" onclick="resetStudentPin('${s.rollNo}')" style="background: var(--tab-bg); color: var(--text-color); border: 1px solid var(--border-color); padding: 6px 10px; margin: 2px;">Reset PIN</button>`
-                        : '';
-
-                    const item = document.createElement('div');
-                    item.className = 'list-item';
-                    item.innerHTML = `
-                        <div style="display:flex; align-items:center; gap:12px; flex:1;">
-                            <div class="drag-handle">⠿</div>
-                            <div class="list-item-info">
-                                <div class="list-item-name" style="display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">${s.name} ${pinBadge}</div>
-                                <div class="list-item-roll">${s.rollNo}</div>
-                            </div>
+            list.innerHTML = '';
+            currentUser.students.forEach((s) => {
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:12px; flex:1;">
+                        <div class="drag-handle">⠿</div>
+                        <div class="list-item-info">
+                            <div class="list-item-name" style="display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">${s.name}</div>
+                            <div class="list-item-roll">${s.rollNo}</div>
                         </div>
-                        <div class="list-item-actions" style="display: flex; gap: 4px; align-items: center; flex-wrap: wrap;">
-                            ${resetBtn}
-                            <button class="btn-small btn-primary" onclick="editStudent('${s.rollNo}')">Edit</button>
-                            <button class="btn-small btn-danger" onclick="deleteStudent('${s.rollNo}')">Delete</button>
-                        </div>
-                    `;
-                    setupDraggableItem(item, 'student');
-                    list.appendChild(item);
-                });
-            }).catch(err => {
-                showToast("❌ Failed to load student PIN status: " + err.message);
+                    </div>
+                    <div class="list-item-actions" style="display: flex; gap: 4px; align-items: center; flex-wrap: wrap;">
+                        <button class="btn-small btn-primary" onclick="editStudent('${s.rollNo}')">Edit</button>
+                        <button class="btn-small btn-danger" onclick="deleteStudent('${s.rollNo}')">Delete</button>
+                    </div>
+                `;
+                setupDraggableItem(item, 'student');
+                list.appendChild(item);
             });
-        }
-
-        function resetStudentPin(rollNo) {
-            if (!confirm(`Are you sure you want to reset the login PIN for Roll No: ${rollNo}?`)) return;
-            
-            const classId = currentUser.username;
-            const encodedRoll = rollNo.replace(/[\/\.\#\$\[\]]/g, '_');
-            
-            db.ref('student_pins/' + classId + '/' + encodedRoll).remove()
-                .then(() => {
-                    showToast(`✅ PIN reset successfully for ${rollNo}`);
-                    loadStudents(); // Reload the list
-                })
-                .catch(err => {
-                    showToast(`❌ Failed to reset PIN: ${err.message}`);
-                });
         }
 
         function renderSubjects() {

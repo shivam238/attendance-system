@@ -21,10 +21,6 @@
     "qr_sessions": {
       ".read": true,
       ".write": true
-    },
-    "student_pins": {
-      ".read": true,
-      ".write": true
     }
   }
 }

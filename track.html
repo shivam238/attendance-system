@@ -248,30 +248,22 @@
             color: var(--text-color);
         }
 
-        /* Pin input formatting */
-        .pin-input-container {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            max-width: 240px;
-            margin: 15px auto;
-        }
-
-        .pin-digit {
-            width: 48px;
-            height: 48px;
-            text-align: center;
-            font-size: 20px;
-            font-weight: 700;
-            border: 2px solid var(--input-border);
-            border-radius: 10px;
-            background: var(--card-bg);
+        /* Threshold input formatting */
+        .threshold-input {
+            width: 60px;
+            padding: 6px 8px;
+            border-radius: 8px;
+            background: var(--tab-bg);
+            border: 1px solid var(--border-color);
             color: var(--text-color);
+            font-weight: 700;
+            text-align: center;
+            transition: all 0.2s ease;
         }
 
-        .pin-digit:focus {
+        .threshold-input:focus {
             outline: none;
-            border-color: var(--primary-color);
+            border-color: var(--primary-color) !important;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
         }
 
@@ -338,11 +330,11 @@
             <p style="color: rgba(255, 255, 255, 0.85) !important; text-shadow: 0 1px 4px rgba(0,0,0,0.2); font-weight: 500;">Track your subject-wise attendance metrics instantly</p>
         </div>
 
-        <!-- AUTHENTICATION CARD (LOGIN / PIN) -->
+        <!-- AUTHENTICATION CARD (LOGIN) -->
         <div class="card login-card" id="portal-auth-card">
             <!-- Step 1: Enter Class and Roll No -->
             <div id="step-identify">
-                <h3 style="margin-bottom: 16px; text-align: center; color: var(--primary-color);">Enter Roll Number</h3>
+                <h3 style="margin-bottom: 16px; text-align: center; color: var(--primary-color);">Student Login</h3>
                 <div class="form-group">
                     <label for="portal-class-id">Class ID (CR's Username)</label>
                     <input type="text" id="portal-class-id" placeholder="e.g. 29DTUCSE5" autocomplete="off" style="text-transform: uppercase;">
@@ -352,43 +344,7 @@
                     <label for="portal-roll-no">Roll Number</label>
                     <input type="text" id="portal-roll-no" placeholder="e.g. 25/B09/001" autocomplete="off" style="text-transform: uppercase;">
                 </div>
-                <button class="btn btn-primary" onclick="checkRollNumber()">Next ➔</button>
-            </div>
-
-            <!-- Step 2: Enter PIN -->
-            <div id="step-enter-pin" style="display: none; text-align: center;">
-                <h3 style="margin-bottom: 8px; color: var(--primary-color);">🔒 Enter Access PIN</h3>
-                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Enter your 4-digit security PIN for <span id="pin-student-roll" style="font-weight:700;"></span></p>
-                
-                <div class="form-group">
-                    <input type="password" id="portal-pin" placeholder="••••" maxlength="4" style="font-size: 24px; text-align: center; letter-spacing: 12px; width: 160px; margin: 0 auto; display: block;" pattern="[0-9]*" inputmode="numeric">
-                </div>
-                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px;">
-                    ⚠️ If you forgot your PIN, please request your Class Representative (CR) to reset it.
-                </div>
-                <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-secondary" onclick="goBackToIdentify()" style="flex: 1; margin: 0;">Back</button>
-                    <button class="btn btn-success" onclick="verifyPIN()" style="flex: 2; margin: 0;">Verify & Login</button>
-                </div>
-            </div>
-
-            <!-- Step 3: Register PIN -->
-            <div id="step-register-pin" style="display: none; text-align: center;">
-                <h3 style="margin-bottom: 8px; color: #10b981;">🔒 Secure Your Portal</h3>
-                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">No PIN is set for <span id="register-student-roll" style="font-weight:700;"></span>. Create a 4-digit PIN to secure your attendance tracker.</p>
-                
-                <div class="form-group" style="margin-bottom: 12px;">
-                    <label style="text-align: left;">Choose 4-Digit PIN</label>
-                    <input type="password" id="portal-new-pin" placeholder="••••" maxlength="4" style="font-size: 20px; text-align: center; letter-spacing: 8px; width: 140px; margin: 0 auto; display: block;" pattern="[0-9]*" inputmode="numeric">
-                </div>
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label style="text-align: left;">Confirm PIN</label>
-                    <input type="password" id="portal-confirm-pin" placeholder="••••" maxlength="4" style="font-size: 20px; text-align: center; letter-spacing: 8px; width: 140px; margin: 0 auto; display: block;" pattern="[0-9]*" inputmode="numeric">
-                </div>
-                <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-secondary" onclick="goBackToIdentify()" style="flex: 1; margin: 0;">Back</button>
-                    <button class="btn btn-primary" onclick="registerPIN()" style="flex: 2; margin: 0;">Set PIN & Enter</button>
-                </div>
+                <button class="btn btn-primary" onclick="checkRollNumber()">Login ➔</button>
             </div>
             
             <div id="portal-auth-message" style="margin-top: 15px; text-align: center;"></div>
@@ -421,6 +377,12 @@
                     </div>
                 </div>
                 <p id="overall-summary-text" style="font-size: 14px; font-weight: 600; color: var(--text-color); margin-top: 10px;">Attended 0 of 0 total lectures</p>
+                
+                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; flex-wrap: wrap;">
+                    <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">Target Threshold:</span>
+                    <input type="number" id="attendance-threshold" class="threshold-input" value="75" min="0" max="100" onchange="updateThreshold()">
+                    <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">%</span>
+                </div>
             </div>
 
             <!-- Subject-wise stats cards -->
@@ -497,18 +459,8 @@
         let classUserData = null;
         let attendanceRecords = [];
         let pendingRequests = [];
-
-        // Simple client-side hash function salted with student details
-        function generatePINHash(pin, salt) {
-            const input = pin + "_" + salt;
-            let hash = 0;
-            for (let i = 0; i < input.length; i++) {
-                const char = input.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash; // Convert to 32bit integer
-            }
-            return "pin_" + Math.abs(hash);
-        }
+        let currentClassId = null;
+        let currentRollNo = null;
 
         function encodeFirebaseKey(str) {
             return str.replace(/[\/\.\#\$\[\]]/g, '_');
@@ -535,13 +487,20 @@
             if (savedSession) {
                 try {
                     const session = JSON.parse(savedSession);
-                    if (session && session.classId && session.rollNo && session.hashedPin) {
-                        autoLogin(session.classId, session.rollNo, session.hashedPin);
+                    if (session && session.classId && session.rollNo) {
+                        autoLogin(session.classId, session.rollNo);
                         return;
                     }
                 } catch(e) {
                     console.error("Failed to restore saved student session", e);
                 }
+            }
+
+            // Restore target threshold if saved
+            const savedThreshold = localStorage.getItem('attendance_threshold');
+            if (savedThreshold) {
+                const thresholdInput = document.getElementById('attendance-threshold');
+                if (thresholdInput) thresholdInput.value = savedThreshold;
             }
 
             // Hide loading screen since no auto-login occurred or it finished
@@ -594,115 +553,20 @@
 
                 currentStudent = student;
 
-                // Check if PIN is set in database
-                const encodedRoll = encodeFirebaseKey(rollNo);
-                db.ref('student_pins/' + classId + '/' + encodedRoll).once('value', (pinSnapshot) => {
-                    document.getElementById('loading-screen').classList.add('fade-out');
-                    
-                    if (pinSnapshot.exists()) {
-                        // PIN exists, ask to verify
-                        document.getElementById('step-identify').style.display = 'none';
-                        document.getElementById('step-enter-pin').style.display = 'block';
-                        document.getElementById('pin-student-roll').textContent = `${student.name} (${student.rollNo})`;
-                        document.getElementById('portal-pin').value = '';
-                        document.getElementById('portal-pin').focus();
-                    } else {
-                        // PIN does not exist, ask to register
-                        document.getElementById('step-identify').style.display = 'none';
-                        document.getElementById('step-register-pin').style.display = 'block';
-                        document.getElementById('register-student-roll').textContent = `${student.name} (${student.rollNo})`;
-                        document.getElementById('portal-new-pin').value = '';
-                        document.getElementById('portal-confirm-pin').value = '';
-                        document.getElementById('portal-new-pin').focus();
-                    }
-                });
-            }).catch(err => {
-                document.getElementById('loading-screen').classList.add('fade-out');
-                showAuthError("Database query failed: " + err.message);
-            });
-        }
-
-        function goBackToIdentify() {
-            clearAuthError();
-            document.getElementById('step-enter-pin').style.display = 'none';
-            document.getElementById('step-register-pin').style.display = 'none';
-            document.getElementById('step-identify').style.display = 'block';
-        }
-
-        function verifyPIN() {
-            const classId = document.getElementById('portal-class-id').value.trim().toUpperCase();
-            const rollNo = document.getElementById('portal-roll-no').value.trim().toUpperCase();
-            const pin = document.getElementById('portal-pin').value.trim();
-
-            if (pin.length !== 4 || isNaN(pin)) {
-                showAuthError("PIN must be a 4-digit number.");
-                return;
-            }
-
-            clearAuthError();
-            document.getElementById('loading-screen').classList.remove('fade-out');
-
-            const encodedRoll = encodeFirebaseKey(rollNo);
-            const hashedInput = generatePINHash(pin, classId + '_' + rollNo);
-
-            db.ref('student_pins/' + classId + '/' + encodedRoll).once('value', (snapshot) => {
-                if (snapshot.val() === hashedInput) {
-                    // Save session to LocalStorage
-                    localStorage.setItem('student_session', JSON.stringify({
-                        classId,
-                        rollNo,
-                        hashedPin: hashedInput
-                    }));
-
-                    fetchAndBuildDashboard(classId, rollNo);
-                } else {
-                    document.getElementById('loading-screen').classList.add('fade-out');
-                    showAuthError("Incorrect PIN. Please try again.");
-                }
-            }).catch(err => {
-                document.getElementById('loading-screen').classList.add('fade-out');
-                showAuthError("Database query failed: " + err.message);
-            });
-        }
-
-        function registerPIN() {
-            const classId = document.getElementById('portal-class-id').value.trim().toUpperCase();
-            const rollNo = document.getElementById('portal-roll-no').value.trim().toUpperCase();
-            const newPin = document.getElementById('portal-new-pin').value.trim();
-            const confirmPin = document.getElementById('portal-confirm-pin').value.trim();
-
-            if (newPin.length !== 4 || isNaN(newPin)) {
-                showAuthError("PIN must be a 4-digit number.");
-                return;
-            }
-
-            if (newPin !== confirmPin) {
-                showAuthError("PINs do not match. Please verify.");
-                return;
-            }
-
-            clearAuthError();
-            document.getElementById('loading-screen').classList.remove('fade-out');
-
-            const encodedRoll = encodeFirebaseKey(rollNo);
-            const hashedPin = generatePINHash(newPin, classId + '_' + rollNo);
-
-            db.ref('student_pins/' + classId + '/' + encodedRoll).set(hashedPin).then(() => {
                 // Save session to LocalStorage
                 localStorage.setItem('student_session', JSON.stringify({
                     classId,
-                    rollNo,
-                    hashedPin: hashedPin
+                    rollNo
                 }));
 
                 fetchAndBuildDashboard(classId, rollNo);
             }).catch(err => {
                 document.getElementById('loading-screen').classList.add('fade-out');
-                showAuthError("Failed to register PIN: " + err.message);
+                showAuthError("Database query failed: " + err.message);
             });
         }
 
-        function autoLogin(classId, rollNo, savedHash) {
+        function autoLogin(classId, rollNo) {
             // Check if class exists and verify student
             db.ref('users').orderByChild('username').equalTo(classId).once('value', (snapshot) => {
                 if (!snapshot.exists()) {
@@ -725,17 +589,8 @@
                 }
                 currentStudent = student;
 
-                const encodedRoll = encodeFirebaseKey(rollNo);
-                db.ref('student_pins/' + classId + '/' + encodedRoll).once('value', (pinSnapshot) => {
-                    if (pinSnapshot.exists() && pinSnapshot.val() === savedHash) {
-                        // Session validated, build dashboard
-                        fetchAndBuildDashboard(classId, rollNo);
-                    } else {
-                        // PIN changed or invalid session
-                        localStorage.removeItem('student_session');
-                        document.getElementById('loading-screen').classList.add('fade-out');
-                    }
-                });
+                // Session validated, build dashboard
+                fetchAndBuildDashboard(classId, rollNo);
             }).catch(err => {
                 console.error("Auto login query failed", err);
                 document.getElementById('loading-screen').classList.add('fade-out');
@@ -785,6 +640,9 @@
         }
 
         function buildDashboardUI(classId, rollNo) {
+            currentClassId = classId;
+            currentRollNo = rollNo;
+
             // Set header labels
             document.getElementById('dashboard-student-name').textContent = currentStudent.name;
             document.getElementById('dashboard-student-roll').textContent = `Roll No: ${currentStudent.rollNo}`;
@@ -867,6 +725,17 @@
             const gridContainer = document.getElementById('portal-subject-grid');
             gridContainer.innerHTML = '';
 
+            // Get target threshold (default to 75%)
+            let threshold = 75;
+            const thresholdInput = document.getElementById('attendance-threshold');
+            if (thresholdInput) {
+                const val = parseInt(thresholdInput.value);
+                if (!isNaN(val) && val >= 0 && val <= 100) {
+                    threshold = val;
+                }
+            }
+            const borderlineThreshold = Math.max(0, threshold - 20);
+
             subjects.forEach(sub => {
                 const stats = subjectStats[sub];
                 overallAttended += stats.attended;
@@ -877,10 +746,10 @@
                 
                 let statusClass = 'danger';
                 let statusLabel = 'Low Attendance';
-                if (percentage >= 75) {
+                if (percentage >= threshold) {
                     statusClass = 'safe';
-                    statusLabel = 'Safe (>= 75%)';
-                } else if (percentage >= 50) {
+                    statusLabel = `Safe (>= ${threshold}%)`;
+                } else if (percentage >= borderlineThreshold) {
                     statusClass = 'warning';
                     statusLabel = 'Borderline';
                 }
@@ -892,8 +761,8 @@
 
                 // Bar color
                 let barColor = '#ef4444'; // Red
-                if (percentage >= 75) barColor = '#10b981'; // Green
-                else if (percentage >= 50) barColor = '#f59e0b'; // Amber
+                if (percentage >= threshold) barColor = '#10b981'; // Green
+                else if (percentage >= borderlineThreshold) barColor = '#f59e0b'; // Amber
 
                 const card = document.createElement('div');
                 card.className = 'subject-card';
@@ -925,9 +794,9 @@
             circleBar.style.strokeDashoffset = circleBar ? circleOffset : 0;
 
             // Change gauge color based on percentage
-            if (overallPercentage >= 75) {
+            if (overallPercentage >= threshold) {
                 circleBar.style.stroke = '#10b981';
-            } else if (overallPercentage >= 50) {
+            } else if (overallPercentage >= borderlineThreshold) {
                 circleBar.style.stroke = '#f59e0b';
             } else {
                 circleBar.style.stroke = '#ef4444';
@@ -936,6 +805,27 @@
             // Save subject statistics globally to use for logs
             window.studentSubjectStats = subjectStats;
             renderDetailedLogs();
+        }
+
+        function updateThreshold() {
+            console.log("updateThreshold called");
+            const thresholdInput = document.getElementById('attendance-threshold');
+            if (!thresholdInput) return;
+
+            let val = parseInt(thresholdInput.value);
+            if (isNaN(val) || val < 0) val = 0;
+            if (val > 100) val = 100;
+            thresholdInput.value = val;
+
+            localStorage.setItem('attendance_threshold', val);
+            console.log("New threshold:", val);
+            console.log("currentClassId:", currentClassId, "currentRollNo:", currentRollNo);
+
+            if (currentClassId && currentRollNo) {
+                buildDashboardUI(currentClassId, currentRollNo);
+            } else {
+                console.warn("Cannot re-render: currentClassId or currentRollNo is null");
+            }
         }
 
         function renderDetailedLogs() {
@@ -1009,7 +899,9 @@
                 document.getElementById('portal-dashboard').style.display = 'none';
                 document.getElementById('portal-logout-btn').style.display = 'none';
                 document.getElementById('portal-auth-card').style.display = 'block';
-                goBackToIdentify();
+                
+                document.getElementById('portal-roll-no').value = '';
+                clearAuthError();
             }
         }
     </script>
