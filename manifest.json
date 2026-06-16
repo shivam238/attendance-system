@@ -1,0 +1,18 @@
+{
+  "name": "Attendify",
+  "short_name": "Attendify",
+  "description": "Smart Geofenced Attendance System",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#121214",
+  "theme_color": "#667eea",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

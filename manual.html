@@ -307,6 +307,16 @@
             <span>⚠️</span>
             <span>Each student can mark attendance <strong>only once per QR session</strong>. Duplicate submissions are automatically blocked.</span>
         </div>
+        
+        <div class="steps-group" style="margin-top: 20px;">
+            <div class="steps-label">QR Lifecycle & Security</div>
+            <ul class="bullet-list">
+                <li><strong>📺 Fullscreen Presentation:</strong> Click the Fullscreen button to project a large, dynamically scaled QR code with a distraction-free dark layout. Real-time student statistics (e.g. <code>Present: 15 / 60</code>) are displayed directly below the subject name and update live.</li>
+                <li><strong>⏱️ Timer Natural Expiry:</strong> When the 5-minute countdown reaches zero, the QR code disappears from the CR dashboard. However, students who already have the registration page open can still request <strong>"Late Attendance"</strong> (pending manual approval in your Requests tab).</li>
+                <li><strong>🛑 Manual Termination (✕ Clear):</strong> If you click <strong>"✕ Clear"</strong> or switch the selected subject, the QR session is instantly deleted from the database. Any student attempting to mark attendance after this will be blocked with an error (<code>❌ Invalid or expired session</code>) and cannot even request late attendance.</li>
+                <li><strong>🔄 Active Session Recovery:</strong> If the dashboard page is reloaded, refreshed, or closed accidentally while a QR code session is active, the app will automatically recover and restore the active QR code, its remaining countdown timer, live attendance counts, and fullscreen presentation state on load.</li>
+            </ul>
+        </div>
     </div>
 
     <!-- 4. Geofencing -->

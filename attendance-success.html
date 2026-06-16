@@ -225,6 +225,12 @@
             <button class="feedback-btn" onclick="openFeedback()">📝 Feedback</button>
         </div>
         
+        <div id="tracker-btn-container" style="margin-bottom: 24px; display: none;">
+            <a id="tracker-link" href="#" style="text-decoration: none; width: 100%;">
+                <button style="width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; text-transform: uppercase; letter-spacing: 0.5px;">📊 View Full Attendance</button>
+            </a>
+        </div>
+        
         <div class="note" id="status-note">
             ℹ️ <strong>Note:</strong> You can safely close this window now. Your attendance has been saved in the system.
         </div>
@@ -393,6 +399,17 @@
 
 function openFeedback() {
     window.location.href = 'feedback.html';
+}
+
+// Initialize Student tracker link if class parameter is present
+const classId = urlParams.get('class');
+if (classId) {
+    const trackerBtnContainer = document.getElementById('tracker-btn-container');
+    const trackerLink = document.getElementById('tracker-link');
+    if (trackerBtnContainer && trackerLink) {
+        trackerLink.href = `track.html?class=${encodeURIComponent(classId)}&roll=${encodeURIComponent(rollNo)}`;
+        trackerBtnContainer.style.display = 'block';
+    }
 }
 
     </script>

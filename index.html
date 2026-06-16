@@ -20,6 +20,12 @@
     <link rel="shortcut icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
 
+    <!-- PWA Manifest & Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <!-- Core Firebase (Async for speed) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -121,6 +127,16 @@
                     </div>
                 </div>
                 <div id="login-message"></div>
+
+                <!-- Student Portal Access Section -->
+                <div style="margin-top: 24px; border-top: 1px solid var(--border-color); padding-top: 20px; text-align: center;">
+                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; font-weight: 500;">Are you a Student? Track your subject-wise attendance statistics.</p>
+                    <a href="track.html?v=1.1" style="text-decoration: none;">
+                        <button class="btn" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border: none; height: 48px; border-radius: 12px; font-size: 15px; font-weight: 700; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25); margin-top: 0;">
+                            🔍 Open Student Portal
+                        </button>
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -257,9 +273,10 @@
                                             style="background: #fbbf24; color: #fff; border: none;">⏱️ +1 Min Extend</button>
                                     </div>
                                 </div>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                    <button class="btn btn-secondary" onclick="copyQRLink()" style="font-size: 11px;">📋 Copy</button>
-                                    <button class="btn btn-danger" onclick="resetQR()" style="font-size: 11px;">✕ Clear</button>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px;">
+                                    <button class="btn btn-secondary" onclick="copyQRLink()" style="font-size: 13px; padding: 12px 8px; margin: 0;">📋 Copy</button>
+                                    <button class="btn btn-primary" onclick="openFullscreenQR()" style="font-size: 13px; padding: 12px 8px; margin: 0; background: var(--primary-color);">📺 Fullscreen</button>
+                                    <button class="btn btn-danger" onclick="resetQR(true)" style="font-size: 13px; padding: 12px 8px; margin: 0;">✕ Clear</button>
                                 </div>
                             </div>
                         </div>
@@ -1211,7 +1228,7 @@ Now format this student list:
 
         function onSubjectChange() {
             currentSubject = document.getElementById('subject-select').value;
-            resetQR();
+            resetQR(false);
             updateAttendanceDisplay();
         }
 
@@ -1574,6 +1591,7 @@ Now format this student list:
         }
 
         let qrTimerInterval;
+        let fullscreenQRCodeInstance = null;
 
         function startQRTimer() {
             if (qrTimerInterval) clearInterval(qrTimerInterval);
@@ -1581,8 +1599,14 @@ Now format this student list:
                 const remaining = Math.max(0, Math.floor((qrExpireTime - Date.now()) / 1000));
                 const mins = Math.floor(remaining / 60);
                 const secs = remaining % 60;
-                document.getElementById('qr-timer').textContent =
-                    `Expires in ${mins}:${String(secs).padStart(2, '0')}`;
+                const timerText = `Expires in ${mins}:${String(secs).padStart(2, '0')}`;
+
+                document.getElementById('qr-timer').textContent = timerText;
+
+                const fsTimer = document.getElementById('fullscreen-qr-timer');
+                if (fsTimer) {
+                    fsTimer.textContent = timerText;
+                }
 
                 const extensionDiv = document.getElementById('timer-extension');
                 if (remaining <= 60 && remaining > 0) {
@@ -1593,9 +1617,65 @@ Now format this student list:
 
                 if (remaining <= 0) {
                     clearInterval(qrTimerInterval);
-                    resetQR();
+                    resetQR(false);
                 }
             }, 1000);
+        }
+
+        function openFullscreenQR() {
+            if (!currentQRCode) return;
+            document.getElementById('fullscreen-qr-overlay').classList.add('active');
+            document.getElementById('fullscreen-qr-subject').textContent = currentSubject;
+            
+            // Calculate optimal dynamic QR size based on actual viewport dimensions
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const minDimension = Math.min(viewportWidth, viewportHeight);
+            
+            // We want it to be as large as possible, leaving ~220px for labels, buttons and margins
+            let qrSize = Math.floor(minDimension - 220);
+            if (qrSize < 250) qrSize = 250;
+            if (qrSize > 650) qrSize = 650; // Cap at 650px to ensure it looks crisp and fits beautifully
+            
+            // Generate larger QR code inside the fullscreen modal
+            document.getElementById('fullscreen-qrcode').innerHTML = '';
+            fullscreenQRCodeInstance = new QRCode(document.getElementById('fullscreen-qrcode'), {
+                text: currentQRCode.url,
+                width: qrSize,
+                height: qrSize
+            });
+            
+            // Sync timer and stats immediately
+            const remaining = Math.max(0, Math.floor((qrExpireTime - Date.now()) / 1000));
+            const mins = Math.floor(remaining / 60);
+            const secs = remaining % 60;
+            document.getElementById('fullscreen-qr-timer').textContent = `Expires in ${mins}:${String(secs).padStart(2, '0')}`;
+            
+            const presentVal = document.getElementById('present-count').textContent;
+            const totalVal = document.getElementById('total-count').textContent;
+            document.getElementById('fullscreen-qr-stats').textContent = `Present: ${presentVal} / ${totalVal}`;
+        }
+
+        function closeFullscreenQR() {
+            document.getElementById('fullscreen-qr-overlay').classList.remove('active');
+        }
+
+        function copyQRLink() {
+            if (!currentQRCode) {
+                showToast('⚠️ No active QR code to copy!');
+                return;
+            }
+            navigator.clipboard.writeText(currentQRCode.url).then(() => {
+                showToast('📋 Link copied to clipboard!');
+            }).catch(err => {
+                const tempInput = document.createElement('input');
+                tempInput.value = currentQRCode.url;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                showToast('📋 Link copied!');
+            });
         }
 
         function extendTimer() {
@@ -1611,10 +1691,17 @@ Now format this student list:
             });
         }
 
-        function resetQR() {
+        function resetQR(isManual = false) {
+            if (isManual && currentQRCode) {
+                // Remove session from database immediately so students can no longer submit attendance
+                db.ref('qr_sessions/' + currentQRCode.code).remove().then(() => {
+                    showToast('🛑 QR Session revoked successfully.');
+                });
+            }
             document.getElementById('qr-section').style.display = 'none';
             document.getElementById('qrcode').innerHTML = '';
             currentQRCode = null;
+            closeFullscreenQR();
             if (window.currentQRListenerRef) {
                 window.currentQRListenerRef.off();
                 window.currentQRListenerRef = null;
@@ -1622,8 +1709,58 @@ Now format this student list:
         }
 
 
-
-
+        function checkForActiveQRSession() {
+            if (!currentSubject) return;
+            const today = new Date().toISOString().split('T')[0];
+            const code = `${currentUser.username}_${today}_${currentSubject}`;
+            
+            db.ref('qr_sessions/' + code).once('value', (snapshot) => {
+                const session = snapshot.val();
+                if (session && session.expiryTime > Date.now()) {
+                    const baseURL = window.location.origin + window.location.pathname;
+                    const url = `${baseURL}?code=${code}`;
+                    
+                    currentQRCode = { code, url, expiryTime: session.expiryTime };
+                    qrExpireTime = session.expiryTime;
+                    
+                    document.getElementById('qrcode').innerHTML = '';
+                    new QRCode(document.getElementById('qrcode'), {
+                        text: url,
+                        width: 200,
+                        height: 200
+                    });
+                    
+                    document.getElementById('qr-section').style.display = 'block';
+                    startQRTimer();
+                    
+                    if (window.currentQRListenerRef) {
+                        window.currentQRListenerRef.off();
+                    }
+                    const generationTime = session.generatedAt || Date.now();
+                    window.currentQRListenerRef = db.ref('attendance/' + code).orderByChild('timestamp').startAt(generationTime);
+                    window.currentQRListenerRef.on('child_added', (snapshot) => {
+                        const record = snapshot.val();
+                        if (record && record.name) {
+                            showToast(`✅ ${record.name} (${record.rollNo}) marked attendance!`);
+                        }
+                    });
+                    
+                    // If fullscreen overlay is open, refresh it
+                    const fsOverlay = document.getElementById('fullscreen-qr-overlay');
+                    if (fsOverlay && fsOverlay.classList.contains('active')) {
+                        openFullscreenQR();
+                    }
+                } else {
+                    document.getElementById('qr-section').style.display = 'none';
+                    document.getElementById('qrcode').innerHTML = '';
+                    currentQRCode = null;
+                    if (window.currentQRListenerRef) {
+                        window.currentQRListenerRef.off();
+                        window.currentQRListenerRef = null;
+                    }
+                }
+            });
+        }
 
         function updateAttendanceDisplay() {
             if (!currentSubject) {
@@ -1633,6 +1770,8 @@ Now format this student list:
                 document.getElementById('total-count').textContent = currentUser.students.length;
                 return;
             }
+
+            checkForActiveQRSession();
 
             const today = new Date().toISOString().split('T')[0];
             const key = `${currentUser.username}_${today}_${currentSubject}`;
@@ -1670,6 +1809,11 @@ Now format this student list:
                     listEl.innerHTML = html;
                     document.getElementById('present-count').textContent = records.length;
                     document.getElementById('total-count').textContent = currentUser.students.length;
+                    
+                    const fsStats = document.getElementById('fullscreen-qr-stats');
+                    if (fsStats) {
+                        fsStats.textContent = `Present: ${records.length} / ${currentUser.students.length}`;
+                    }
                 }
             });
         }
@@ -1729,7 +1873,8 @@ Now format this student list:
                     });
                 }
 
-                let redirectURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(requestData.requestTime)}`;
+                const classId = key.split('_')[0];
+                let redirectURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(requestData.requestTime)}&class=${encodeURIComponent(classId)}`;
                 
                 if (gpsDenied) {
                     redirectURL += `&gpsDenied=true`;
@@ -1754,13 +1899,14 @@ Now format this student list:
                     timestamp: currentTime
                 };
 
+                const classId = key.split('_')[0];
                 db.ref('attendance/' + key).push(attendanceData).then(() => {
                     // Log Analytics Event
                     logAnalyticsEvent("attendance_submitted", {
                         subject: subject,
                         status: "present"
                     });
-                    const successURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(attendanceData.time)}`;
+                    const successURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(attendanceData.time)}&class=${encodeURIComponent(classId)}`;
                     window.location.href = successURL;
                 });
             } else {
@@ -1781,7 +1927,8 @@ Now format this student list:
                         subject: subject,
                         status: "late_pending"
                     });
-                    const lateURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(requestData.requestTime)}&late=true&lateBy=${lateMinutes}`;
+                    const classId = key.split('_')[0];
+                    const lateURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(requestData.requestTime)}&late=true&lateBy=${lateMinutes}&class=${encodeURIComponent(classId)}`;
                     window.location.href = lateURL;
                 });
             }
@@ -1834,7 +1981,7 @@ Now format this student list:
                 db.ref('attendance/' + key).orderByChild('rollNo').equalTo(student.rollNo).once('value', (snapshot) => {
                     if (snapshot.exists()) {
                         // Redirect to already-marked page instead of showing error
-                        const alreadyURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&alreadyMarked=true`;
+                        const alreadyURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&alreadyMarked=true&class=${encodeURIComponent(username)}`;
                         window.location.href = alreadyURL;
                         return;
                     }
@@ -2024,26 +2171,63 @@ Now format this student list:
                 return;
             }
 
-            list.innerHTML = '';
-            currentUser.students.forEach((s) => {
-                const item = document.createElement('div');
-                item.className = 'list-item';
-                item.innerHTML = `
-                    <div style="display:flex; align-items:center; gap:12px; flex:1;">
-                        <div class="drag-handle">⠿</div>
-                        <div class="list-item-info">
-                            <div class="list-item-name">${s.name}</div>
-                            <div class="list-item-roll">${s.rollNo}</div>
+            list.innerHTML = '<div style="text-align: center; padding: 20px; width: 100%;"><div class="spinner" style="width: 30px; height: 30px; border-width: 3px; border-top-color: var(--primary-color); margin: 0 auto;"></div></div>';
+
+            const classId = currentUser.username;
+            db.ref('student_pins/' + classId).once('value', (pinsSnapshot) => {
+                const pinsData = pinsSnapshot.val() || {};
+                
+                list.innerHTML = '';
+                currentUser.students.forEach((s) => {
+                    const encodedRoll = s.rollNo.replace(/[\/\.\#\$\[\]]/g, '_');
+                    const hasPin = pinsData[encodedRoll] ? true : false;
+                    
+                    const pinBadge = hasPin 
+                        ? `<span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: rgba(16, 185, 129, 0.15); color: #10b981; font-weight: 700; margin-left: 6px; display: inline-block;">PIN Set</span>`
+                        : `<span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; font-weight: 700; margin-left: 6px; display: inline-block;">No PIN</span>`;
+
+                    const resetBtn = hasPin
+                        ? `<button class="btn-small btn-secondary" onclick="resetStudentPin('${s.rollNo}')" style="background: var(--tab-bg); color: var(--text-color); border: 1px solid var(--border-color); padding: 6px 10px; margin: 2px;">Reset PIN</button>`
+                        : '';
+
+                    const item = document.createElement('div');
+                    item.className = 'list-item';
+                    item.innerHTML = `
+                        <div style="display:flex; align-items:center; gap:12px; flex:1;">
+                            <div class="drag-handle">⠿</div>
+                            <div class="list-item-info">
+                                <div class="list-item-name" style="display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">${s.name} ${pinBadge}</div>
+                                <div class="list-item-roll">${s.rollNo}</div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="list-item-actions">
-                        <button class="btn-small btn-primary" onclick="editStudent('${s.rollNo}')">Edit</button>
-                        <button class="btn-small btn-danger" onclick="deleteStudent('${s.rollNo}')">Delete</button>
-                    </div>
-                `;
-                setupDraggableItem(item, 'student');
-                list.appendChild(item);
+                        <div class="list-item-actions" style="display: flex; gap: 4px; align-items: center; flex-wrap: wrap;">
+                            ${resetBtn}
+                            <button class="btn-small btn-primary" onclick="editStudent('${s.rollNo}')">Edit</button>
+                            <button class="btn-small btn-danger" onclick="deleteStudent('${s.rollNo}')">Delete</button>
+                        </div>
+                    `;
+                    setupDraggableItem(item, 'student');
+                    list.appendChild(item);
+                });
+            }).catch(err => {
+                showToast("❌ Failed to load student PIN status: " + err.message);
             });
+        }
+
+        function resetStudentPin(rollNo) {
+            if (!confirm(`Are you sure you want to reset the login PIN for Roll No: ${rollNo}?`)) return;
+            
+            const classId = currentUser.username;
+            const encodedRoll = rollNo.replace(/[\/\.\#\$\[\]]/g, '_');
+            
+            db.ref('student_pins/' + classId + '/' + encodedRoll).remove()
+                .then(() => {
+                    showToast(`✅ PIN reset successfully for ${rollNo}`);
+                    loadStudents(); // Reload the list
+                })
+                .catch(err => {
+                    showToast(`❌ Failed to reset PIN: ${err.message}`);
+                });
         }
 
         function renderSubjects() {
@@ -2394,6 +2578,27 @@ Now format this student list:
         </div>
     </div>
 
+    <!-- FULLSCREEN QR OVERLAY -->
+    <div id="fullscreen-qr-overlay" class="modal">
+        <div class="modal-content" style="width: 100vw; max-width: 100vw; height: 100vh; max-height: 100vh; border-radius: 0; border: none; background: #121214; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; position: relative; margin: 0; padding: 20px; box-sizing: border-box;">
+            <button onclick="closeFullscreenQR()" style="position: absolute; top: 20px; right: 20px; background: rgba(255, 255, 255, 0.08); border: none; font-size: 32px; cursor: pointer; color: #fff; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s;">&times;</button>
+            
+            <h2 id="fullscreen-qr-subject" style="margin: 0; font-size: 32px; color: #fff; font-weight: 800; text-align: center; width: 100%; word-wrap: break-word;">Subject</h2>
+            <div id="fullscreen-qr-stats" style="font-size: 18px; color: #a1a1aa; margin-top: 5px; font-weight: 600; text-align: center;">Present: 0 / 0</div>
+            
+            <div id="fullscreen-qrcode-container" style="background: #fff; padding: 20px; border-radius: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 48px rgba(0,0,0,0.4); margin: 10px 0;">
+                <div id="fullscreen-qrcode"></div>
+            </div>
+            
+            <div id="fullscreen-qr-timer" style="font-size: 24px; font-weight: 700; color: #fbbf24; margin-bottom: 5px;"></div>
+            
+            <div style="display: flex; gap: 15px; width: 100%; max-width: 400px; margin-top: 5px;">
+                <button class="btn btn-secondary" onclick="extendTimer()" style="flex: 1; background: #fbbf24; color: #fff; border: none; font-size: 15px; padding: 12px 0; margin: 0; font-weight: bold;">⏱️ +1 Min Extend</button>
+                <button class="btn btn-danger" onclick="closeFullscreenQR()" style="flex: 1; font-size: 15px; padding: 12px 0; margin: 0; font-weight: bold;">✕ Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MAP PICKER MODAL -->
     <div id="map-modal" class="modal">
         <div class="modal-content" style="max-width: 600px; width: 100%; max-height: 90vh; display: flex; flex-direction: column; padding: 20px; overflow: hidden; box-sizing: border-box;">
@@ -2457,7 +2662,19 @@ Now format this student list:
             Mahto.</span>
     </footer>
 
-
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then((reg) => {
+                        console.log('Service Worker registered successfully!', reg.scope);
+                    })
+                    .catch((err) => {
+                        console.error('Service Worker registration failed:', err);
+                    });
+            });
+        }
+    </script>
 </body>
-
 </html>
