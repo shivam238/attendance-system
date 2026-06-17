@@ -196,6 +196,20 @@
             .step-num { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
     </style>
+    <script>
+        function applyTheme() {
+            if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
+            const btn = document.getElementById('theme-toggle-btn');
+            if (btn) btn.textContent = document.body.classList.contains('dark-mode') ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+        function toggleDarkMode() {
+            const isDark = document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+            const btn = document.getElementById('theme-toggle-btn');
+            if (btn) btn.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+        document.addEventListener('DOMContentLoaded', applyTheme);
+    </script>
 </head>
 <body>
 <div class="page">
@@ -209,6 +223,7 @@
         <div style="margin-top: 16px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
             <a href="QR Attendance System - Complete User Manual.pdf" download style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.2); color: #fff; text-decoration: none; padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3);">⬇️ Download PDF</a>
             <a href="index.html" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.15); color: #fff; text-decoration: none; padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3);">← Back to App</a>
+            <button id="theme-toggle-btn" onclick="toggleDarkMode()" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer;">🌙 Dark Mode</button>
         </div>
     </div>
 
