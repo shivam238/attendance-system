@@ -215,8 +215,9 @@ export default function ChatWidget({
     }
 
     try {
-      // Map message structure to what server endpoint expects: list of model/user roles + attachment contexts
-      const apiMessages = newMessages.map(m => ({
+      // Map message structure to what server endpoint expects: list of model/user roles + attachment contexts.
+      // Only send the latest 10 messages to avoid hitting the backend MAX_MESSAGES limit.
+      const apiMessages = newMessages.slice(-10).map(m => ({
         role: m.role === "assistant" ? "assistant" : "user",
         content: m.content,
         attachment: m.attachment

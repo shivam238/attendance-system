@@ -562,10 +562,13 @@
             showTyping();
 
             try {
+                // Only send the latest 10 messages to avoid hitting the backend limit (MAX_MESSAGES = 12)
+                const apiMessages = conversationHistory.slice(-10);
+
                 const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages: conversationHistory })
+                    body: JSON.stringify({ messages: apiMessages })
                 });
 
                 if (!res.ok) throw new Error('Server error ' + res.status);
