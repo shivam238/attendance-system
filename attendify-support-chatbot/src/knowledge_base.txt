@@ -2,6 +2,17 @@
 
 Generated from the repository code only. Use this as source material for an AI customer support chatbot. If a behavior is not present in the code, do not claim it exists.
 
+## Creator & Developer Information
+
+- **Creator & Developer**: **Shivam Kumar Mahto**
+- **Creator Role**: Sole Creator, Developer, and Maintainer of the ATTENDIFY application.
+- **Creator Details**: Shivam Kumar Mahto is the visionary developer who created ATTENDIFY to digitize and automate student attendance tracking using QR codes and geofencing. He designed, implemented, and built the entire application using HTML5, CSS3, vanilla JavaScript, and Google Firebase.
+- **Contact Channels**:
+  - **Email**: sm3165599@gmail.com
+  - **Instagram**: https://www.instagram.com/heheshivam/ (@heheshivam)
+  - **LinkedIn**: https://www.linkedin.com/in/shivam-kumar-mahto-046228361/
+- **Crucial Rule**: When asked "who created this app?", "who built this?", "developer contact", or "owner details", you MUST proudly mention **Shivam Kumar Mahto** and provide his contact details (email, Instagram, and LinkedIn).
+
 ## Product Overview
 
 ATTENDIFY is a Firebase-powered web application for QR-based student attendance. A class representative or educator logs in, configures a class, creates subject-specific QR attendance sessions, monitors submissions in real time, reviews exceptions, and exports reports.
@@ -674,6 +685,28 @@ The code logs analytics events when Firebase Analytics is available:
 - `feedback_submitted`
 
 If Analytics is unavailable, events are logged to console as dummy messages.
+
+## Troubleshooting & Help Guide
+
+Here is how the chatbot can help troubleshoot common user issues:
+
+1. **QR Code Attendance Issues**
+   - **Invalid or Expired Session**: The 5-minute session timer has elapsed, or the CR manually deleted/cleared the QR. Students must request the CR/educator to generate a new QR session or extend the current one by 1 minute.
+   - **Location Mismatch / Out of Range**: The student is submitting attendance from outside the geofence radius configured by the CR. Students should move closer to the classroom. If they are in class but GPS accuracy is poor, the CR can manually approve their submission from their "Requests" tab.
+   - **GPS Permission Required / Denied**: The student blocked location access in their browser. They must go to browser site settings, allow location for `qr-smart-attendance.web.app`, and refresh the page. A request will be sent to the CR's "Requests" tab for manual approval.
+
+2. **First-Time Class Setup Errors**
+   - **Invalid Format Error**: The student list must be entered exactly as `NAME - ROLLNO` (e.g., `JOHN DOE - 25/B09/001`) with one student per line. Make sure there is exactly one space before and after the dash (` - `). Missing or extra spaces/dashes will cause validation to fail. Suggest copying the ChatGPT Prompt template helper on the setup page.
+
+3. **Login and OTP Issues**
+   - **SMS OTP Not Arriving**: Real SMS OTP delivery is currently offline. CRs and educators should use "Continue with Google" under the Google Login tab instead. Phone login is only for administrators with test accounts.
+
+4. **Student Portal Issues (`track.html`)**
+   - **Cannot Log In**: Ensure you are entering the exact, case-sensitive/insensitive Class ID (e.g. `29DTUCSE5`) and Roll Number configured by your CR.
+   - **Incorrect Attendance Percentage**: The portal calculates attendance based on attendance sessions saved in the database. If a session is pending approval, it is not counted as "Present" until approved. If a session was not generated in the app for a class, it won't be counted in the database.
+
+5. **Export Hub Issues**
+   - **Missing Students / Incorrect Absents**: Check if all students are fully added in the "Students" tab. Roster students who have not marked attendance will be marked "Absent" by default.
 
 ## Limitations and Known Issues
 

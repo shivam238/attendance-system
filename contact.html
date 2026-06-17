@@ -417,6 +417,156 @@
         .chat-send-btn:hover { opacity: 0.85; transform: scale(1.05); }
         .chat-send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
         .chat-send-btn svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+        /* Attachment styles */
+        .chat-attach-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            color: var(--text-muted);
+        }
+        .chat-attach-btn:hover {
+            background: var(--border);
+            color: var(--text);
+        }
+        .chat-attach-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+        .chat-attachment-preview {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+            position: relative;
+        }
+        .preview-thumbnail-container {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background: #fff;
+            flex-shrink: 0;
+        }
+        .preview-thumbnail-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .preview-details {
+            flex: 1;
+            min-width: 0;
+            text-align: left;
+        }
+        #preview-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .preview-status {
+            font-size: 10px;
+            color: var(--primary);
+            font-weight: 500;
+        }
+        .cancel-attachment-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            line-height: 1;
+        }
+        .cancel-attachment-btn:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+        .chat-bubble img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 10px;
+            margin-top: 8px;
+            cursor: pointer;
+            display: block;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        .chat-bubble img:hover {
+            transform: scale(1.02);
+        }
+        .chat-bubble-attachment-name {
+            font-size: 10px;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: inherit;
+            opacity: 0.8;
+            font-family: monospace;
+        }
+
+        /* Lightbox for Zoomed Images */
+        .lightbox-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 10001;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .lightbox-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .lightbox-image {
+            max-width: 90%;
+            max-height: 85vh;
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 24px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
     </style>
     <script>
         if(localStorage.getItem("darkMode") === "true") {
@@ -459,9 +609,28 @@
             <p style="text-align:center; color:var(--text-muted); margin-bottom:24px; font-size:15px;">Get instant answers to any question about ATTENDIFY — powered by AI.</p>
 
             <!-- Chat Widget -->
-            <div style="border:1px solid var(--border); border-radius:20px; overflow:hidden; display:flex; flex-direction:column; height:480px;">
+            <div style="border:1px solid var(--border); border-radius:20px; overflow:hidden; display:flex; flex-direction:column; height:480px; position: relative;">
                 <div id="chat-messages" class="chat-messages"></div>
+                
+                <!-- Pending Attachment Preview -->
+                <div id="chat-attachment-preview" class="chat-attachment-preview">
+                    <div class="preview-thumbnail-container">
+                        <img id="preview-thumbnail" src="" alt="Pending upload">
+                    </div>
+                    <div class="preview-details">
+                        <div id="preview-name">filename.jpg</div>
+                        <div class="preview-status">Pending Attachment</div>
+                    </div>
+                    <button id="cancel-attachment-btn" class="cancel-attachment-btn" title="Remove attachment">&times;</button>
+                </div>
+
                 <div class="chat-input-area">
+                    <input type="file" id="chat-file-input" accept="image/png, image/jpeg, image/webp" style="display: none;">
+                    <button class="chat-attach-btn" id="chat-attach-btn" title="Attach screenshot or photo">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                        </svg>
+                    </button>
                     <textarea
                         id="chat-input"
                         class="chat-input"
@@ -488,7 +657,12 @@
         </footer>
     </div>
 
-    
+    <!-- Zoomed Image Lightbox overlay -->
+    <div id="lightbox" class="lightbox-overlay">
+        <button class="lightbox-close" id="lightbox-close" aria-label="Close zoomed view">&times;</button>
+        <img class="lightbox-image" id="lightbox-image" src="" alt="Zoomed view">
+    </div>
+
     <script>
         document.getElementById('email-card').addEventListener('click', function(e) {
             e.preventDefault(); // Prevent default mailto behavior which causes system popups
@@ -523,17 +697,108 @@
         const sendBtn    = document.getElementById('chat-send-btn');
         let conversationHistory = [];
 
-        function appendBubble(role, text) {
+        // File upload and lightbox elements
+        const fileInput = document.getElementById('chat-file-input');
+        const attachBtn = document.getElementById('chat-attach-btn');
+        const attachmentPreview = document.getElementById('chat-attachment-preview');
+        const previewThumbnail = document.getElementById('preview-thumbnail');
+        const previewName = document.getElementById('preview-name');
+        const cancelAttachmentBtn = document.getElementById('cancel-attachment-btn');
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-image');
+        const lightboxClose = document.getElementById('lightbox-close');
+
+        let pendingAttachment = null;
+
+        // Trigger file select dialog
+        attachBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Handle file selection and convert to Base64
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Enforce size limit (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert("File size exceeds 5MB limit. Please upload a smaller image.");
+                fileInput.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                const resultStr = reader.result;
+                const commaIndex = resultStr.indexOf(",");
+                if (commaIndex !== -1) {
+                    const base64 = resultStr.substring(commaIndex + 1);
+                    pendingAttachment = {
+                        name: file.name,
+                        mimeType: file.type || 'image/png',
+                        base64: base64
+                    };
+                    
+                    // Show preview thumbnail and details
+                    previewThumbnail.src = resultStr;
+                    previewName.textContent = file.name;
+                    attachmentPreview.style.display = 'flex';
+                }
+            };
+            reader.readAsDataURL(file);
+            fileInput.value = ''; // Reset input to allow choosing the same file again
+        });
+
+        // Cancel pending attachment
+        cancelAttachmentBtn.addEventListener('click', () => {
+            pendingAttachment = null;
+            attachmentPreview.style.display = 'none';
+            previewThumbnail.src = '';
+            previewName.textContent = '';
+        });
+
+        // Setup Lightbox Event Listeners
+        lightboxClose.addEventListener('click', () => lightbox.classList.remove('open'));
+        lightbox.addEventListener('click', () => lightbox.classList.remove('open'));
+
+        function appendBubble(role, text, attachment = null) {
             const div = document.createElement('div');
             div.className = 'chat-bubble ' + (role === 'bot' ? 'bot' : 'user');
+            
+            // Format text (markdown-like bold conversion & line breaks)
             div.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+            
+            if (attachment) {
+                const imgContainer = document.createElement('div');
+                imgContainer.style.marginTop = '8px';
+                imgContainer.style.borderTop = role === 'bot' ? '1px solid var(--border)' : '1px solid rgba(255, 255, 255, 0.15)';
+                imgContainer.style.paddingTop = '8px';
+                
+                const img = document.createElement('img');
+                img.src = `data:${attachment.mimeType};base64,${attachment.base64}`;
+                img.alt = attachment.name;
+                img.style.cursor = 'pointer';
+                img.addEventListener('click', function() {
+                    lightboxImg.src = img.src;
+                    lightbox.classList.add('open');
+                });
+                
+                const nameLabel = document.createElement('div');
+                nameLabel.className = 'chat-bubble-attachment-name';
+                nameLabel.textContent = '📎 ' + attachment.name;
+                
+                imgContainer.appendChild(img);
+                imgContainer.appendChild(nameLabel);
+                div.appendChild(imgContainer);
+            }
+
             messagesEl.appendChild(div);
             messagesEl.scrollTop = messagesEl.scrollHeight;
             return div;
         }
 
         // Show welcome message on load
-        appendBubble('bot', '\uD83D\uDC4B Welcome to **ATTENDIFY Support!** I can help with QR attendance, Google sign-in, class setup, location issues, pending approvals, and more. Are you a **student** or a **CR/educator**?');
+        appendBubble('bot', '👋 Welcome to **ATTENDIFY Support!** I can help with QR attendance, Google sign-in, class setup, location issues, pending approvals, and more. Are you a **student** or a **CR/educator**?');
 
         function showTyping() {
             const el = document.createElement('div');
@@ -551,14 +816,26 @@
 
         async function sendMessage() {
             const text = chatInput.value.trim();
-            if (!text) return;
+            if (!text && !pendingAttachment) return;
 
             chatInput.value = '';
             chatInput.style.height = 'auto';
             sendBtn.disabled = true;
 
-            appendBubble('user', text);
-            conversationHistory.push({ role: 'user', content: text });
+            const userMsgContent = text || 'Uploaded image';
+            appendBubble('user', userMsgContent, pendingAttachment);
+            
+            const messageObject = { role: 'user', content: userMsgContent };
+            if (pendingAttachment) {
+                messageObject.attachment = pendingAttachment;
+                // Reset pending attachment state for UI
+                pendingAttachment = null;
+                attachmentPreview.style.display = 'none';
+                previewThumbnail.src = '';
+                previewName.textContent = '';
+            }
+            
+            conversationHistory.push(messageObject);
             showTyping();
 
             try {
