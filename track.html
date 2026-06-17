@@ -263,6 +263,118 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
         }
 
+        /* ===== CLASSROOM FEED STYLES ===== */
+        .classroom-section {
+            margin-top: 32px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 24px;
+        }
+
+        .classroom-connect-banner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 28px;
+            background: var(--tab-bg);
+            border: 2px dashed var(--border-color);
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .classroom-connect-banner p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .classroom-feed-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .classroom-feed-item {
+            background: var(--tab-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: var(--text-color);
+        }
+
+        .classroom-feed-item:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102,126,234,0.1);
+        }
+
+        .classroom-feed-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: rgba(102,126,234,0.1);
+        }
+
+        .classroom-feed-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .classroom-feed-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .classroom-feed-course {
+            font-size: 12px;
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .classroom-feed-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .classroom-due-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: rgba(239,68,68,0.1);
+            color: #ef4444;
+        }
+
+        .classroom-due-badge.soon {
+            background: rgba(245,158,11,0.12);
+            color: #f59e0b;
+        }
+
+        .classroom-due-badge.ok {
+            background: rgba(16,185,129,0.1);
+            color: #10b981;
+        }
+
         /* Print formatting */
         @media print {
             body {
@@ -414,6 +526,36 @@
                     <!-- Dynamic log items will go here -->
                 </div>
             </div>
+
+            <!-- GOOGLE CLASSROOM FEED SECTION -->
+            <div class="classroom-section" id="classroom-feed-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                    <h3 style="font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--primary-color); margin: 0;">🎓 Classroom Feed</h3>
+                    <div id="classroom-user-info" style="display: none; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted);">
+                        <span id="classroom-user-name"></span>
+                        <button onclick="disconnectClassroom()" style="font-size: 11px; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border-color); background: none; color: var(--text-muted); cursor: pointer;">Disconnect</button>
+                    </div>
+                </div>
+
+                <!-- Not connected state -->
+                <div class="classroom-connect-banner" id="classroom-connect-banner">
+                    <div style="font-size: 40px;">📚</div>
+                    <strong style="font-size: 15px; color: var(--text-color);">View Assignments & Announcements</strong>
+                    <p>Connect your Google account to see your Classroom assignments, due dates, and announcements directly here.</p>
+                    <button onclick="connectStudentClassroom()" class="btn btn-primary" style="margin: 0; padding: 12px 28px; display: inline-flex; align-items: center; gap: 8px; width: auto;">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
+                        Connect Google Classroom
+                    </button>
+                </div>
+
+                <!-- Loading state -->
+                <div id="classroom-feed-loading" style="display:none; text-align: center; padding: 30px; color: var(--text-muted);">🔄 Loading your Classroom feed...</div>
+
+                <!-- Feed list -->
+                <div class="classroom-feed-list" id="classroom-feed-list"></div>
+
+                <div id="classroom-feed-message" style="margin-top: 10px;"></div>
+            </div>
         </div>
     </div>
 
@@ -426,6 +568,173 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
     <script src="assets/js/firebase-config.js"></script>
     <script src="assets/js/ui.js?v=10"></script>
+    <script>
+        // ===== GOOGLE CLASSROOM STUDENT FEED =====
+        let studentClassroomToken = null;
+
+        function connectStudentClassroom() {
+            const msgDiv = document.getElementById('classroom-feed-message');
+            msgDiv.innerHTML = '<div class="message">🔄 Connecting to Google...</div>';
+
+            const provider = new firebase.auth.GoogleAuthProvider();
+            provider.addScope('https://www.googleapis.com/auth/classroom.courses.readonly');
+            provider.addScope('https://www.googleapis.com/auth/classroom.coursework.me.readonly');
+            provider.addScope('https://www.googleapis.com/auth/classroom.announcements.readonly');
+
+            // Use signInWithPopup — this works for unauthenticated users too
+            firebase.auth().signInWithPopup(provider).then((result) => {
+                studentClassroomToken = result.credential.accessToken;
+                const displayName = result.user.displayName || result.user.email;
+
+                document.getElementById('classroom-connect-banner').style.display = 'none';
+                document.getElementById('classroom-user-info').style.display = 'flex';
+                document.getElementById('classroom-user-name').textContent = '✅ ' + displayName;
+                msgDiv.innerHTML = '';
+
+                loadStudentClassroomFeed();
+            }).catch((err) => {
+                console.error('Classroom connect error:', err);
+                msgDiv.innerHTML = '<div class="message error">❌ ' + err.message + '</div>';
+            });
+        }
+
+        function disconnectClassroom() {
+            studentClassroomToken = null;
+            document.getElementById('classroom-connect-banner').style.display = 'flex';
+            document.getElementById('classroom-user-info').style.display = 'none';
+            document.getElementById('classroom-feed-list').innerHTML = '';
+            document.getElementById('classroom-feed-message').innerHTML = '';
+        }
+
+        function loadStudentClassroomFeed() {
+            const feedList = document.getElementById('classroom-feed-list');
+            const loading = document.getElementById('classroom-feed-loading');
+            const msgDiv = document.getElementById('classroom-feed-message');
+
+            feedList.innerHTML = '';
+            loading.style.display = 'block';
+            msgDiv.innerHTML = '';
+
+            // Fetch all active courses
+            fetch('https://classroom.googleapis.com/v1/courses?courseStates=ACTIVE&pageSize=20', {
+                headers: { 'Authorization': 'Bearer ' + studentClassroomToken }
+            })
+            .then(r => {
+                if (!r.ok) throw new Error('Classroom API error ' + r.status + ': Make sure Google Classroom API is enabled in your Cloud Console.');
+                return r.json();
+            })
+            .then(data => {
+                const courses = data.courses || [];
+                if (courses.length === 0) {
+                    loading.style.display = 'none';
+                    msgDiv.innerHTML = '<div class="message">⚠️ No active Classroom courses found for your account.</div>';
+                    return;
+                }
+
+                // For each course, fetch coursework and announcements in parallel
+                const promises = courses.flatMap(course => [
+                    fetch(`https://classroom.googleapis.com/v1/courses/${course.id}/courseWork?orderBy=dueDate+desc&pageSize=10`, {
+                        headers: { 'Authorization': 'Bearer ' + studentClassroomToken }
+                    }).then(r => r.json()).then(d => ({ type: 'work', course, items: d.courseWork || [] })).catch(() => ({ type: 'work', course, items: [] })),
+
+                    fetch(`https://classroom.googleapis.com/v1/courses/${course.id}/announcements?orderBy=updateTime+desc&pageSize=5`, {
+                        headers: { 'Authorization': 'Bearer ' + studentClassroomToken }
+                    }).then(r => r.json()).then(d => ({ type: 'announce', course, items: d.announcements || [] })).catch(() => ({ type: 'announce', course, items: [] }))
+                ]);
+
+                Promise.all(promises).then(results => {
+                    loading.style.display = 'none';
+
+                    // Build unified sorted feed
+                    let feedItems = [];
+
+                    results.forEach(result => {
+                        result.items.forEach(item => {
+                            feedItems.push({ ...item, _type: result.type, _course: result.course });
+                        });
+                    });
+
+                    // Sort by creation/update time desc
+                    feedItems.sort((a, b) => {
+                        const aTime = a.creationTime || a.updateTime || '';
+                        const bTime = b.creationTime || b.updateTime || '';
+                        return bTime.localeCompare(aTime);
+                    });
+
+                    if (feedItems.length === 0) {
+                        msgDiv.innerHTML = '<div class="message">📭 No assignments or announcements found.</div>';
+                        return;
+                    }
+
+                    feedItems.slice(0, 30).forEach(item => {
+                        const el = buildFeedItemElement(item);
+                        feedList.appendChild(el);
+                    });
+                });
+            })
+            .catch(err => {
+                loading.style.display = 'none';
+                console.error('Classroom feed error:', err);
+                msgDiv.innerHTML = '<div class="message error">❌ ' + err.message + '</div>';
+            });
+        }
+
+        function buildFeedItemElement(item) {
+            const el = document.createElement('a');
+            el.className = 'classroom-feed-item';
+            el.href = item.alternateLink || '#';
+            el.target = '_blank';
+            el.rel = 'noopener noreferrer';
+
+            let icon = '📢';
+            let typeLabel = 'Announcement';
+            let dueBadge = '';
+
+            if (item._type === 'work') {
+                const workType = item.workType || '';
+                if (workType === 'ASSIGNMENT') { icon = '📝'; typeLabel = 'Assignment'; }
+                else if (workType === 'QUIZ') { icon = '📋'; typeLabel = 'Quiz'; }
+                else if (workType === 'QUESTION') { icon = '❓'; typeLabel = 'Question'; }
+                else { icon = '📌'; typeLabel = 'Coursework'; }
+
+                // Due date badge
+                if (item.dueDate) {
+                    const { year, month, day } = item.dueDate;
+                    const due = new Date(year, month - 1, day);
+                    const now = new Date();
+                    const diff = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
+                    const dueStr = due.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+                    let badgeClass = 'ok';
+                    let dueText = `Due: ${dueStr}`;
+                    if (diff < 0) { badgeClass = ''; dueText = `Overdue: ${dueStr}`; }
+                    else if (diff <= 2) { badgeClass = 'soon'; dueText = `Due soon: ${dueStr}`; }
+
+                    dueBadge = `<span class="classroom-due-badge ${badgeClass}">${dueText}</span>`;
+                }
+            }
+
+            const title = item.title || item.text?.slice(0, 80) || 'Untitled';
+            const courseName = item._course.name || '';
+            const points = item.maxPoints ? ` · ${item.maxPoints} pts` : '';
+            const created = item.creationTime ? new Date(item.creationTime).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '';
+
+            el.innerHTML = `
+                <div class="classroom-feed-icon">${icon}</div>
+                <div class="classroom-feed-content">
+                    <div class="classroom-feed-course">${escapeHtml(courseName)} · ${typeLabel}</div>
+                    <div class="classroom-feed-title">${escapeHtml(title)}</div>
+                    <div class="classroom-feed-meta">
+                        ${created ? `<span>📅 ${created}</span>` : ''}
+                        ${points ? `<span>🎯 ${item.maxPoints} pts</span>` : ''}
+                        ${dueBadge}
+                    </div>
+                </div>
+            `;
+            return el;
+        }
+        // ===== END CLASSROOM FEED =====
+    </script>
     <script>
         // Theme Utilities
         function toggleDarkMode() {
