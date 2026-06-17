@@ -506,9 +506,16 @@
                 <!-- STUDENTS TAB -->
                 <div id="students-tab" class="tab">
                     <div
-                        style="display: flex; justify-content: flex-start; align-items: center; margin-bottom: 24px; gap: 20px;">
-                        <h3 style="font-weight: 700; font-size: 20px;">Student List</h3>
+                        style="display: flex; justify-content: flex-start; align-items: center; margin-bottom: 24px; gap: 12px; flex-wrap: wrap;">
+                        <h3 style="font-weight: 700; font-size: 20px; margin-right: 8px;">Student List</h3>
                         <button class="btn-small btn-success" onclick="openAddStudentModal()" style="padding: 10px 20px;">+ Add Student</button>
+                        <button class="btn-small btn-primary" onclick="openClassroomModal()" style="padding: 10px 20px; display: inline-flex; align-items: center; gap: 8px;">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                                <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/>
+                            </svg>
+                            Classroom Import
+                        </button>
                     </div>
                     <div id="students-list" class="student-list"></div>
                 </div>
@@ -603,6 +610,62 @@
             <button class="btn btn-success" onclick="saveStudent()">💾 Save</button>
             <button class="btn btn-danger" onclick="closeAddStudentModal()">Cancel</button>
             <div id="add-student-message"></div>
+        </div>
+    </div>
+
+    <!-- GOOGLE CLASSROOM IMPORT MODAL -->
+    <div id="classroom-modal" class="modal">
+        <div class="modal-content" style="max-width: 600px; width: 90%;">
+            <span class="modal-close" onclick="closeClassroomModal()">&times;</span>
+            <h2 class="modal-header">Import from Google Classroom</h2>
+            
+            <div id="classroom-auth-section" style="text-align: center; padding: 20px 0;">
+                <p style="margin-bottom: 20px; color: var(--text-muted);">Connect your Google Classroom account to import student rosters directly.</p>
+                <button class="btn btn-primary" onclick="connectGoogleClassroom()" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                        <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/>
+                    </svg>
+                    Authorize Google Classroom
+                </button>
+            </div>
+
+            <div id="classroom-courses-section" style="display: none;">
+                <p style="margin-bottom: 12px; color: var(--text-muted);">Select a course from your Google Classroom:</p>
+                <div class="form-group">
+                    <select id="classroom-courses-select" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                        <option value="">-- Select a Class --</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" id="btn-fetch-roster" onclick="fetchClassroomRoster()">Fetch Students</button>
+            </div>
+
+            <div id="classroom-roster-section" style="display: none; margin-top: 20px;">
+                <h3 style="font-size: 15px; margin-bottom: 10px; font-weight: 600;">Import Preview</h3>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Verify and edit the Roll Numbers for the students. Roll Numbers are required for ATTENDIFY.</p>
+                
+                <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+                        <thead>
+                            <tr style="background: rgba(255,255,255,0.05); border-bottom: 1px solid var(--border);">
+                                <th style="padding: 8px 12px; font-weight: 600;">Name</th>
+                                <th style="padding: 8px 12px; font-weight: 600;">Email</th>
+                                <th style="padding: 8px 12px; font-weight: 600;">Roll Number</th>
+                            </tr>
+                        </thead>
+                        <tbody id="classroom-roster-table-body">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-success" onclick="confirmClassroomImport()" style="flex: 1;">Confirm Import</button>
+                    <button class="btn btn-danger" onclick="closeClassroomModal()">Cancel</button>
+                </div>
+            </div>
+            
+            <div id="classroom-message" style="margin-top: 15px;"></div>
         </div>
     </div>
 
@@ -1111,9 +1174,236 @@ Now format this student list:
             }
         };
 
+        // --- GOOGLE CLASSROOM INTEGRATION ---
+        let googleClassroomAccessToken = null;
 
+        function openClassroomModal() {
+            document.getElementById('classroom-modal').classList.add('active');
+            document.getElementById('classroom-auth-section').style.display = 'block';
+            document.getElementById('classroom-courses-section').style.display = 'none';
+            document.getElementById('classroom-roster-section').style.display = 'none';
+            document.getElementById('classroom-message').innerHTML = '';
+        }
 
+        function closeClassroomModal() {
+            document.getElementById('classroom-modal').classList.remove('active');
+        }
 
+        function connectGoogleClassroom() {
+            const msgDiv = document.getElementById('classroom-message');
+            msgDiv.innerHTML = '<div class="message">🔄 Connecting Google Classroom...</div>';
+
+            const provider = new firebase.auth.GoogleAuthProvider();
+            provider.addScope('https://www.googleapis.com/auth/classroom.courses.readonly');
+            provider.addScope('https://www.googleapis.com/auth/classroom.rosters.readonly');
+            provider.setCustomParameters({
+                prompt: 'consent'
+            });
+
+            const user = auth.currentUser;
+            if (!user) {
+                msgDiv.innerHTML = '<div class="message error">❌ Not logged in!</div>';
+                return;
+            }
+
+            const isGoogleLinked = user.providerData.some(p => p.providerId === 'google.com');
+
+            let authPromise;
+            if (isGoogleLinked) {
+                authPromise = user.reauthenticateWithPopup(provider);
+            } else {
+                authPromise = user.linkWithPopup(provider);
+            }
+
+            authPromise.then((result) => {
+                googleClassroomAccessToken = result.credential.accessToken;
+                msgDiv.innerHTML = '<div class="message success">✅ Authorized! Fetching courses...</div>';
+                loadClassroomCourses();
+            }).catch((error) => {
+                console.error("Google Classroom auth error:", error);
+                if (error.code === 'auth/credential-already-in-use' || error.code === 'auth/provider-already-linked') {
+                    msgDiv.innerHTML = '<div class="message">🔄 Fetching authorized Classroom session...</div>';
+                    auth.signInWithPopup(provider).then((result) => {
+                        googleClassroomAccessToken = result.credential.accessToken;
+                        msgDiv.innerHTML = '<div class="message success">✅ Authorized! Fetching courses...</div>';
+                        loadClassroomCourses();
+                    }).catch(err2 => {
+                        msgDiv.innerHTML = '<div class="message error">❌ Authorization failed: ' + err2.message + '</div>';
+                    });
+                } else {
+                    msgDiv.innerHTML = '<div class="message error">❌ Authorization failed: ' + error.message + '</div>';
+                }
+            });
+        }
+
+        function loadClassroomCourses() {
+            const msgDiv = document.getElementById('classroom-message');
+            fetch('https://classroom.googleapis.com/v1/courses?courseStates=ACTIVE', {
+                headers: {
+                    'Authorization': `Bearer ${googleClassroomAccessToken}`
+                }
+            })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('Classroom API responded with status: ' + res.status);
+                }
+                return res.json();
+            })
+            .then(data => {
+                const select = document.getElementById('classroom-courses-select');
+                select.innerHTML = '<option value="">-- Select a Class --</option>';
+                
+                if (!data.courses || data.courses.length === 0) {
+                    msgDiv.innerHTML = '<div class="message warning">⚠️ No active courses found in Google Classroom.</div>';
+                    return;
+                }
+
+                data.courses.forEach(course => {
+                    const opt = document.createElement('option');
+                    opt.value = course.id;
+                    opt.textContent = `${course.name} (${course.section || 'No section'})`;
+                    select.appendChild(opt);
+                });
+
+                document.getElementById('classroom-auth-section').style.display = 'none';
+                document.getElementById('classroom-courses-section').style.display = 'block';
+                msgDiv.innerHTML = '';
+            })
+            .catch(err => {
+                console.error("Error loading courses:", err);
+                msgDiv.innerHTML = '<div class="message error">❌ Failed to load courses: ' + err.message + '<br><br>💡 Note: Make sure the Google Classroom API is enabled in your Google Cloud Console.</div>';
+            });
+        }
+
+        let importedStudents = [];
+
+        function fetchClassroomRoster() {
+            const courseId = document.getElementById('classroom-courses-select').value;
+            const msgDiv = document.getElementById('classroom-message');
+            
+            if (!courseId) {
+                msgDiv.innerHTML = '<div class="message error">❌ Please select a course.</div>';
+                return;
+            }
+
+            msgDiv.innerHTML = '<div class="message">🔄 Fetching student roster...</div>';
+
+            fetch(`https://classroom.googleapis.com/v1/courses/${courseId}/students`, {
+                headers: {
+                    'Authorization': `Bearer ${googleClassroomAccessToken}`
+                }
+            })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('Classroom API error: ' + res.status);
+                }
+                return res.json();
+            })
+            .then(data => {
+                const tbody = document.getElementById('classroom-roster-table-body');
+                tbody.innerHTML = '';
+                importedStudents = [];
+
+                if (!data.students || data.students.length === 0) {
+                    msgDiv.innerHTML = '<div class="message warning">⚠️ No students found in this course.</div>';
+                    return;
+                }
+
+                data.students.forEach((student, index) => {
+                    const name = student.profile.name.fullName;
+                    const email = student.profile.emailAddress;
+                    const rollNo = email.split('@')[0].toUpperCase();
+
+                    importedStudents.push({ name, email, rollNo });
+
+                    const row = document.createElement('tr');
+                    row.style.borderBottom = '1px solid var(--border-color)';
+                    row.innerHTML = `
+                        <td style="padding: 10px 12px; color: var(--text-color); font-weight: 500;">${name}</td>
+                        <td style="padding: 10px 12px; color: var(--text-muted);">${email}</td>
+                        <td style="padding: 10px 12px;">
+                            <input type="text" id="roster-roll-${index}" value="${rollNo}" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); width: 150px; font-weight: 600;">
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                document.getElementById('classroom-courses-section').style.display = 'none';
+                document.getElementById('classroom-roster-section').style.display = 'block';
+                msgDiv.innerHTML = '';
+            })
+            .catch(err => {
+                console.error("Error fetching roster:", err);
+                msgDiv.innerHTML = '<div class="message error">❌ Failed to fetch roster: ' + err.message + '</div>';
+            });
+        }
+
+        function confirmClassroomImport() {
+            const msgDiv = document.getElementById('classroom-message');
+            
+            const finalStudents = [];
+            const rollNoSet = new Set();
+            let hasDuplicate = false;
+            let hasEmpty = false;
+
+            for (let i = 0; i < importedStudents.length; i++) {
+                const rollInput = document.getElementById(`roster-roll-${i}`);
+                const finalRoll = rollInput.value.trim().toUpperCase();
+                
+                if (!finalRoll) {
+                    hasEmpty = true;
+                    break;
+                }
+                if (rollNoSet.has(finalRoll)) {
+                    hasDuplicate = true;
+                    break;
+                }
+
+                rollNoSet.add(finalRoll);
+                finalStudents.push({
+                    name: importedStudents[i].name,
+                    rollNo: finalRoll
+                });
+            }
+
+            if (hasEmpty) {
+                msgDiv.innerHTML = '<div class="message error">❌ Roll Number cannot be empty!</div>';
+                return;
+            }
+            if (hasDuplicate) {
+                msgDiv.innerHTML = '<div class="message error">❌ Duplicate Roll Numbers detected! Each student must have a unique Roll Number.</div>';
+                return;
+            }
+
+            const append = confirm(`Import ${finalStudents.length} students?\n\nClick OK to add them to your class. Existing roll numbers will be skipped/updated.`);
+            
+            if (!append) return;
+
+            if (!currentUser.students) {
+                currentUser.students = [];
+            }
+
+            finalStudents.forEach(newStu => {
+                const existingIndex = currentUser.students.findIndex(s => s.rollNo === newStu.rollNo);
+                if (existingIndex !== -1) {
+                    currentUser.students[existingIndex].name = newStu.name;
+                } else {
+                    currentUser.students.push(newStu);
+                }
+            });
+
+            db.ref('users/' + currentUser.uid + '/students').set(currentUser.students).then(() => {
+                localStorage.setItem('user_profile_' + currentUser.uid, JSON.stringify(currentUser));
+                msgDiv.innerHTML = '<div class="message success">✅ Successfully imported students!</div>';
+                setTimeout(() => {
+                    closeClassroomModal();
+                    loadStudents();
+                }, 1500);
+            }).catch(err => {
+                console.error("Error saving imported roster:", err);
+                msgDiv.innerHTML = '<div class="message error">❌ Failed to save roster: ' + err.message + '</div>';
+            });
+        }
 
         function initializeApp() {
             document.getElementById('class-info').textContent =
