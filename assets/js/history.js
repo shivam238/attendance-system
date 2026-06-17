@@ -1,5 +1,19 @@
 // History management for ATTENDIFY
 
+function historyEscapeHtml(value) {
+    if (typeof escapeHtml === 'function') {
+        return escapeHtml(value);
+    }
+
+    return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[char]));
+}
+
 function renderHistory() {
     const container = document.getElementById('history-content');
     if (!container) return;
@@ -31,22 +45,22 @@ function renderHistory() {
 
         let html = '';
         Object.entries(grouped).forEach(([subject, entries]) => {
-            html += `<h3 class="history-subject-header">${subject}</h3>`;
+            html += `<h3 class="history-subject-header">${historyEscapeHtml(subject)}</h3>`;
 
             entries.sort((a, b) => b.date.localeCompare(a.date));
 
             entries.forEach(entry => {
                 let studentsHtml = entry.students.map(s => `
                     <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color); font-size: 13px;">
-                        <div><strong style="color: var(--text-color);">${s.name}</strong> <br> <span style="color: var(--text-muted); font-size: 12px;">Roll: ${s.rollNo}</span></div>
-                        <div style="color: #10b981; font-weight: 500;">${typeof formatTime === 'function' ? formatTime(s.time) : s.time}</div>
+                        <div><strong style="color: var(--text-color);">${historyEscapeHtml(s.name)}</strong> <br> <span style="color: var(--text-muted); font-size: 12px;">Roll: ${historyEscapeHtml(s.rollNo)}</span></div>
+                        <div style="color: #10b981; font-weight: 500;">${historyEscapeHtml(typeof formatTime === 'function' ? formatTime(s.time) : s.time)}</div>
                     </div>
                 `).join('');
 
                 html += `
                     <details style="cursor: pointer; background: var(--card-bg); border: 1px solid var(--border-color); padding: 12px; border-radius: 12px; margin-bottom: 8px; box-shadow: var(--shadow); transition: all 0.2s;">
                         <summary style="display: flex; justify-content: space-between; font-weight: 600; outline: none; list-style: none; color: var(--text-color);">
-                            <span>📅 ${entry.date}</span>
+                            <span>📅 ${historyEscapeHtml(entry.date)}</span>
                             <span style="color: var(--primary-color); font-size: 13px;">👥 ${entry.count} Present ▾</span>
                         </summary>
                         <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color);">

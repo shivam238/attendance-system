@@ -82,11 +82,48 @@ function getGeminiClient(): GoogleGenAI {
   return aiInstance;
 }
 
+const MAX_MESSAGES = 12;
+const MAX_TEXT_CHARS = 2000;
+const MAX_ATTACHMENT_BASE64_CHARS = 1_500_000;
+const ALLOWED_ATTACHMENT_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
+
+function validateMessages(messages: any[]): string | null {
+  if (messages.length === 0 || messages.length > MAX_MESSAGES) {
+    return `Please send between 1 and ${MAX_MESSAGES} messages.`;
+  }
+
+  for (const msg of messages) {
+    if (!msg || typeof msg !== "object") {
+      return "Each message must be an object.";
+    }
+
+    if (msg.content !== undefined && typeof msg.content !== "string") {
+      return "Message content must be text.";
+    }
+
+    if ((msg.content || "").length > MAX_TEXT_CHARS) {
+      return `Each message must be ${MAX_TEXT_CHARS} characters or fewer.`;
+    }
+
+    if (msg.attachment) {
+      const { mimeType, base64 } = msg.attachment;
+      if (!ALLOWED_ATTACHMENT_TYPES.has(mimeType) || typeof base64 !== "string") {
+        return "Attachments must be PNG, JPEG, or WebP images.";
+      }
+      if (base64.length > MAX_ATTACHMENT_BASE64_CHARS) {
+        return "Attachment is too large.";
+      }
+    }
+  }
+
+  return null;
+}
+
 async function startServer() {
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;
 
-  app.use(express.json());
+  app.use(express.json({ limit: "2mb" }));
 
   // Health check endpoint
   app.get("/api/health", (req, res) => {
@@ -99,6 +136,11 @@ async function startServer() {
       const { messages } = req.body;
       if (!messages || !Array.isArray(messages)) {
         res.status(400).json({ error: "Missing or invalid 'messages' field in request body." });
+        return;
+      }
+      const validationError = validateMessages(messages);
+      if (validationError) {
+        res.status(400).json({ error: validationError });
         return;
       }
 

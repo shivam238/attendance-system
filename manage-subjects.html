@@ -76,10 +76,20 @@
         const auth = firebase.auth();
         let currentUserData = null;
 
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[char]));
+        }
+
         function showMessage(msg, type = 'success') {
             const msgDiv = document.getElementById('add-message');
             if (msgDiv) {
-                msgDiv.innerHTML = `<div class="message ${type}">${msg}</div>`;
+                msgDiv.innerHTML = `<div class="message ${escapeHtml(type)}">${escapeHtml(msg)}</div>`;
                 setTimeout(() => { if (msgDiv) msgDiv.innerHTML = ''; }, 3000);
             }
         }
@@ -183,7 +193,7 @@
                 item.innerHTML = `
                     <div style="display:flex; align-items:center; gap:12px; flex:1;">
                         <div class="drag-handle" style="cursor:grab; opacity:0.6;">⠿</div>
-                        <div class="subject-name">${sub}</div>
+                        <div class="subject-name">${escapeHtml(sub)}</div>
                     </div>
                     <div class="subject-actions">
                         <button class="btn btn-small btn-primary" onclick="renameSubject(${index})" style="width:40px;height:40px;padding:0;display:flex;align-items:center;justify-content:center;">✏️</button>

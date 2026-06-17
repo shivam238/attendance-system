@@ -58,26 +58,64 @@ Uncertainty rule:
 - If the answer cannot be determined from available sources, explicitly say so and ask a short clarifying question or recommend checking the official Contact page instead of guessing. Never invent features, policies, workflows, limitations, or fixes.
 `;
 
+// Singleton client — recreated only if the API key rotates between deploys
 let aiInstance = null;
+let cachedApiKey = null;
 function getGeminiClient(apiKey) {
-  if (!aiInstance) {
+  if (!aiInstance || cachedApiKey !== apiKey) {
     aiInstance = new GoogleGenAI({
-      apiKey: apiKey,
+      apiKey,
       httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        }
+        headers: { "User-Agent": "aistudio-build" }
       }
     });
+    cachedApiKey = apiKey;
   }
   return aiInstance;
 }
 
 const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": process.env.ATTENDIFY_ALLOWED_ORIGIN || "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type"
 };
+
+const MAX_MESSAGES = 12;
+const MAX_TEXT_CHARS = 2000;
+const MAX_ATTACHMENT_BASE64_CHARS = 1500000;
+const ALLOWED_ATTACHMENT_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
+
+function validateMessages(messages) {
+  if (messages.length === 0 || messages.length > MAX_MESSAGES) {
+    return `Please send between 1 and ${MAX_MESSAGES} messages.`;
+  }
+
+  for (const msg of messages) {
+    if (!msg || typeof msg !== "object") {
+      return "Each message must be an object.";
+    }
+
+    if (msg.content !== undefined && typeof msg.content !== "string") {
+      return "Message content must be text.";
+    }
+
+    if ((msg.content || "").length > MAX_TEXT_CHARS) {
+      return `Each message must be ${MAX_TEXT_CHARS} characters or fewer.`;
+    }
+
+    if (msg.attachment) {
+      const { mimeType, base64 } = msg.attachment;
+      if (!ALLOWED_ATTACHMENT_TYPES.has(mimeType) || typeof base64 !== "string") {
+        return "Attachments must be PNG, JPEG, or WebP images.";
+      }
+      if (base64.length > MAX_ATTACHMENT_BASE64_CHARS) {
+        return "Attachment is too large.";
+      }
+    }
+  }
+
+  return null;
+}
 
 export async function handler(event, context) {
   // Handle CORS preflight
@@ -95,11 +133,33 @@ export async function handler(event, context) {
   }
 
   try {
-    const { messages } = JSON.parse(event.body);
+    // Parse body with explicit error for malformed JSON
+    let parsed;
+    try {
+      parsed = JSON.parse(event.body || "{}");
+    } catch {
+      return {
+        statusCode: 400,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({ error: "Invalid JSON in request body." })
+      };
+    }
+
+    const { messages } = parsed;
     if (!messages || !Array.isArray(messages)) {
       return {
         statusCode: 400,
+        headers: CORS_HEADERS,
         body: JSON.stringify({ error: "Missing or invalid 'messages' field in request body." })
+      };
+    }
+
+    const validationError = validateMessages(messages);
+    if (validationError) {
+      return {
+        statusCode: 400,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({ error: validationError })
       };
     }
 
@@ -117,7 +177,7 @@ export async function handler(event, context) {
 
     const client = getGeminiClient(apiKey);
 
-    // Prepare contents structure
+    // Build Gemini contents array
     const contents = messages.map((msg) => {
       const role = msg.role === "assistant" || msg.role === "model" ? "model" : "user";
       const parts = [];
@@ -126,7 +186,8 @@ export async function handler(event, context) {
         parts.push({ text: msg.content });
       }
 
-      if (msg.attachment && msg.attachment.mimeType && msg.attachment.base64) {
+      // Optional chaining — safe if attachment is missing or partial
+      if (msg.attachment?.mimeType && msg.attachment?.base64) {
         parts.push({
           inlineData: {
             mimeType: msg.attachment.mimeType,
@@ -142,19 +203,22 @@ export async function handler(event, context) {
       return { role, parts };
     });
 
-    // Generate content
+    // Generate response
+    // thinkingBudget: 0 disables extended thinking on gemini-2.5-flash,
+    // reducing typical latency from 10–30 s down to 1–3 s for support queries.
     const response = await client.models.generateContent({
       model: "gemini-2.5-flash",
-      contents: contents,
+      contents,
       config: {
-        systemInstruction: systemInstruction,
+        systemInstruction,
         temperature: 0.2,
+        thinkingConfig: { thinkingBudget: 0 }
       }
     });
 
     const replyText = response.text || "";
 
-    // Format response in SSE event-stream format so frontend stays 100% compatible
+    // SSE envelope — frontend ChatWidget reads this format
     const responseBody = `data: ${JSON.stringify({ text: replyText })}\n\ndata: [DONE]\n\n`;
 
     return {
@@ -169,14 +233,15 @@ export async function handler(event, context) {
     };
 
   } catch (err) {
+    // Log full error server-side; never expose raw err.message to the client
     console.error("Netlify function error:", err);
     return {
       statusCode: 500,
       headers: CORS_HEADERS,
       body: JSON.stringify({
         error: "Server Error",
-        message: err.message || "An exception occurred."
+        message: "An internal error occurred. Please try again later."
       })
     };
   }
-};
+}

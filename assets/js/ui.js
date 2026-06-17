@@ -230,7 +230,9 @@ function showToast(message, duration = 3000) {
     
     const toast = document.createElement('div');
     toast.className = 'toast';
-    toast.innerHTML = `<span>${message}</span>`;
+    const text = document.createElement('span');
+    text.textContent = message;
+    toast.appendChild(text);
     
     container.appendChild(toast);
     

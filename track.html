@@ -425,7 +425,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
     <script src="assets/js/firebase-config.js"></script>
-    <script src="assets/js/ui.js"></script>
+    <script src="assets/js/ui.js?v=10"></script>
     <script>
         // Theme Utilities
         function toggleDarkMode() {
@@ -467,6 +467,16 @@
         let pendingRequests = [];
         let currentClassId = null;
         let currentRollNo = null;
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[char]));
+        }
 
         function encodeFirebaseKey(str) {
             return str.replace(/[\/\.\#\$\[\]]/g, '_');
@@ -785,7 +795,7 @@
                 card.className = 'subject-card';
                 card.innerHTML = `
                     <div>
-                        <div class="subject-name">${sub}</div>
+                        <div class="subject-name">${escapeHtml(sub)}</div>
                         <div class="subject-stats">
                             <span class="subject-count">${stats.attended} / ${stats.total} classes</span>
                             <span class="subject-pct">${stats.total > 0 ? pctString : '0.0'}%</span>
@@ -892,10 +902,10 @@
                 item.className = 'log-item';
                 item.innerHTML = `
                     <div class="log-item-details">
-                        <span class="log-item-subject">${log.subject}</span>
-                        <span class="log-item-date">📅 ${log.date}</span>
+                        <span class="log-item-subject">${escapeHtml(log.subject)}</span>
+                        <span class="log-item-date">📅 ${escapeHtml(log.date)}</span>
                     </div>
-                    <span class="status-pill ${statusClass}">${log.status}</span>
+                    <span class="status-pill ${statusClass}">${escapeHtml(log.status)}</span>
                 `;
                 logList.appendChild(item);
             });

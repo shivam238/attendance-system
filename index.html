@@ -23,7 +23,8 @@
 
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
-    <link rel="apple-touch-icon" href="logo-opt.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="preload" as="image" href="logo.webp" type="image/webp">
 
     <!-- PWA Manifest & Meta Tags -->
     <link rel="manifest" href="manifest.json">
@@ -31,7 +32,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <link rel="stylesheet" href="assets/css/style.css?v=8">
+    <link rel="stylesheet" href="assets/css/style.css?v=9">
 </head>
 
 <body>
@@ -44,7 +45,7 @@
     <main id="landing-page" class="landing-page" aria-label="ATTENDIFY landing page">
         <nav class="landing-nav">
             <a href="#" class="landing-logo" aria-label="ATTENDIFY home">
-                <img src="logo.webp" alt="" aria-hidden="true">
+                <img src="logo.webp" alt="" aria-hidden="true" width="200" height="200">
                 <span><strong>ATTEND</strong>IFY</span>
             </a>
             <div class="landing-links" aria-label="Landing navigation">
@@ -212,7 +213,7 @@
                     <button class="theme-btn" onclick="toggleDarkMode()">🌙 Dark Mode</button>
                 </div>
                 <div class="header">
-                    <img src="logo.webp" alt="ATTENDIFY Logo" class="logo" onclick="openLogoPopup()" loading="lazy">
+                    <img src="logo.webp" alt="ATTENDIFY Logo" class="logo" onclick="openLogoPopup()" loading="lazy" width="200" height="200">
                     <h1>🎓 <span class="brand-text">ATTENDIFY</span></h1>
                     <p>Experience the future of attendance tracking</p>
                 </div>
@@ -234,7 +235,7 @@
                     <button class="btn btn-google" onclick="signInWithGoogle()"
                         style="height: 56px; border-radius: 12px; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                         <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google"
-                            class="google-icon">
+                            class="google-icon" width="18" height="18">
                         Continue with Google
                     </button>
 
@@ -374,7 +375,7 @@
                 </div>
 
                 <div class="header">
-                    <img src="logo.webp" alt="ATTENDIFY Logo" class="logo" onclick="openLogoPopup()" loading="lazy">
+                    <img src="logo.webp" alt="ATTENDIFY Logo" class="logo" onclick="openLogoPopup()" loading="lazy" width="200" height="200">
                     <h1>📱 <span class="brand-text">ATTENDIFY</span></h1>
                     <p id="class-info"></p>
                 </div>
@@ -671,7 +672,7 @@
             <!-- Google Linking Form -->
             <div id="google-linking-form" style="display: none; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
                 <button class="btn btn-google" onclick="linkGoogleAccount()" style="height: 46px; border-radius: 10px; font-size: 14px; margin: 0; width: 100%;">
-                    <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" class="google-icon" style="width: 16px; height: 16px;">
+                    <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" class="google-icon" width="16" height="16" style="width: 16px; height: 16px;">
                     Link Google Account
                 </button>
                 <div id="link-google-message"></div>
@@ -717,7 +718,7 @@
                 </div>
             </div>
             <!-- Embedded Manual -->
-            <iframe src="manual.html" style="flex: 1; width: 100%; border: none; background: #fff;" title="ATTENDIFY User Manual"></iframe>
+            <iframe src="manual.html" loading="lazy" style="flex: 1; width: 100%; border: none; background: #fff;" title="ATTENDIFY User Manual"></iframe>
         </div>
     </div>
 
@@ -733,14 +734,13 @@
     <!-- Non-essential scripts deferred -->
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <!-- Core Logic Scripts -->
     <script src="assets/js/firebase-config.js"></script>
     <script src="assets/js/auth.js"></script>
-    <script src="assets/js/ui.js?v=8"></script>
-    <script src="assets/js/history.js"></script>
-    <script src="assets/js/export.js"></script>
+    <script src="assets/js/ui.js?v=10"></script>
+    <script src="assets/js/history.js?v=10"></script>
+    <script src="assets/js/export.js?v=10"></script>
 
     <script>
         let currentUser = null;
@@ -749,6 +749,28 @@
         let qrExpireTime = null;
         let editingStudent = null;
         let activeListeners = {}; // Track active listeners to prevent leaks
+
+        function getLocalDateKey(date = new Date()) {
+            return date.toLocaleDateString('en-CA');
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[char]));
+        }
+
+        function escapeAttribute(value) {
+            return escapeHtml(value).replace(/`/g, '&#96;');
+        }
+
+        function buildInlineCall(name, args) {
+            return escapeAttribute(`${name}(${args.map(arg => JSON.stringify(String(arg ?? ''))).join(', ')})`);
+        }
 
 
 
@@ -1116,7 +1138,7 @@ Now format this student list:
 
         function renderRequests() {
             const container = document.getElementById('requests-container');
-            const today = new Date().toISOString().split('T')[0];
+            const today = getLocalDateKey();
 
             db.ref('requests').orderByKey().startAt(currentUser.username).endAt(currentUser.username + '\uf8ff').once('value', (snapshot) => {
                 const data = snapshot.val();
@@ -1155,7 +1177,7 @@ Now format this student list:
                     Object.entries(grouped).forEach(([subject, requests]) => {
                         html += `
                             <div class="subject-group-header">
-                                <span>📚 ${subject}</span>
+                                <span>📚 ${escapeHtml(subject)}</span>
                                 <span class="badge">${requests.length} pending</span>
                             </div>`;
 
@@ -1164,7 +1186,7 @@ Now format this student list:
                             let borderLeftColor = '#f59e0b'; // orange for late
 
                             if (request.outOfRange) {
-                                statusBadge = `<div style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-bottom: 4px; display: inline-block;">📍 Out of Range (${request.distance}m)</div>`;
+                                statusBadge = `<div style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-bottom: 4px; display: inline-block;">📍 Out of Range (${escapeHtml(request.distance)}m)</div>`;
                                 borderLeftColor = '#ef4444'; // red for out of range
                             } else if (request.gpsDenied) {
                                 statusBadge = `<div style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-bottom: 4px; display: inline-block;">⚠️ GPS Denied</div>`;
@@ -1172,7 +1194,7 @@ Now format this student list:
                             }
 
                             if (request.lateBy && request.lateBy > 0) {
-                                statusBadge += `<div style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-block; margin-left: 4px;">🕒 ${request.lateBy} min late</div>`;
+                                statusBadge += `<div style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-block; margin-left: 4px;">🕒 ${escapeHtml(request.lateBy)} min late</div>`;
                             } else if (!request.outOfRange && !request.gpsDenied) {
                                 statusBadge = `<div style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-block;">🕒 Review Required</div>`;
                             }
@@ -1180,18 +1202,18 @@ Now format this student list:
                             html += `
                                 <div style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 16px; margin-bottom: 12px; box-shadow: var(--shadow); border-left: 4px solid ${borderLeftColor};">
                                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
-                                        <div style="font-weight: 700; font-size: 15px; color: var(--text-color);">${request.name}</div>
+                                        <div style="font-weight: 700; font-size: 15px; color: var(--text-color);">${escapeHtml(request.name)}</div>
                                         <div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
                                             ${statusBadge}
                                         </div>
                                     </div>
-                                    <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 4px;"><strong>Roll No:</strong> ${request.rollNo}</div>
-                                    <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px;"><strong>Requested at:</strong> ${request.requestTime}</div>
+                                    <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 4px;"><strong>Roll No:</strong> ${escapeHtml(request.rollNo)}</div>
+                                    <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px;"><strong>Requested at:</strong> ${escapeHtml(request.requestTime)}</div>
                                     <div style="display: flex; gap: 8px;">
-                                        <button style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: #10b981; color: white; font-weight: 600; cursor: pointer; transition: 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'" onclick="approveRequest('${request.key}', '${request.reqId}', '${request.rollNo}', '${request.name}', '${subject}')">
+                                        <button style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: #10b981; color: white; font-weight: 600; cursor: pointer; transition: 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'" onclick="${buildInlineCall('approveRequest', [request.key, request.reqId, request.rollNo, request.name, subject])}">
                                             ✅ Approve
                                         </button>
-                                        <button style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: #ef4444; color: white; font-weight: 600; cursor: pointer; transition: 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'" onclick="rejectRequest('${request.key}', '${request.reqId}')">
+                                        <button style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: #ef4444; color: white; font-weight: 600; cursor: pointer; transition: 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'" onclick="${buildInlineCall('rejectRequest', [request.key, request.reqId])}">
                                             ❌ Reject
                                         </button>
                                     </div>
@@ -1273,7 +1295,7 @@ Now format this student list:
         let todayGroupedData = {}; // Global store for today's data
 
         function renderTodayTab() {
-            const today = new Date().toISOString().split('T')[0];
+            const today = getLocalDateKey();
             const displayDate = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             document.getElementById('today-date-display').textContent = displayDate;
 
@@ -1305,7 +1327,7 @@ Now format this student list:
 
                         html += `
                             <div class="subject-group-header">
-                                <span>📚 ${subject}</span>
+                                <span>📚 ${escapeHtml(subject)}</span>
                                 <span style="font-size: 12px; opacity: 0.8;">${todayGroupedData[subject].length} present</span>
                             </div>`;
 
@@ -1314,9 +1336,9 @@ Now format this student list:
                             html += `
                                 <div class="list-item" style="border-left: 4px solid var(--primary-color);">
                                     <div class="list-item-info">
-                                        <div class="list-item-name">${r.name}</div>
-                                        <div class="list-item-roll">${r.rollNo}</div>
-                                        <div class="list-item-time">${formatTime(r.time)}</div>
+                                        <div class="list-item-name">${escapeHtml(r.name)}</div>
+                                        <div class="list-item-roll">${escapeHtml(r.rollNo)}</div>
+                                        <div class="list-item-time">${escapeHtml(formatTime(r.time))}</div>
                                     </div>
                                 </div>`;
                         });
@@ -1374,17 +1396,17 @@ Now format this student list:
                 html += `
                     <div style="margin-bottom: 24px;">
                         <h3 style="color: var(--primary-color); border-bottom: 1px solid var(--input-border); padding-bottom: 10px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
-                            <span>📚 ${subject}</span>
+                            <span>📚 ${escapeHtml(subject)}</span>
                             <span style="font-size: 13px; font-weight: 500; opacity: 0.8;">${students.length} Students</span>
                         </h3>
                         <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
                             ${students.map(s => `
                                 <div style="background: var(--tab-bg); padding: 14px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--input-border);">
                                     <div>
-                                        <div style="font-weight: 600; color: var(--text-color); font-size: 15px;">${s.name}</div>
-                                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">${s.rollNo}</div>
+                                        <div style="font-weight: 600; color: var(--text-color); font-size: 15px;">${escapeHtml(s.name)}</div>
+                                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">${escapeHtml(s.rollNo)}</div>
                                     </div>
-                                    <div style="font-size: 12px; font-weight: 700; color: var(--primary-color); background: rgba(129, 140, 248, 0.1); padding: 6px 10px; border-radius: 10px;">${s.time}</div>
+                                    <div style="font-size: 12px; font-weight: 700; color: var(--primary-color); background: rgba(129, 140, 248, 0.1); padding: 6px 10px; border-radius: 10px;">${escapeHtml(s.time)}</div>
                                 </div>
                             `).join('')}
                         </div>
@@ -1647,7 +1669,7 @@ Now format this student list:
                 const state = addr.state || '';
                 const label = [shortName, city, state].filter(Boolean).join(', ') || result.display_name;
 
-                item.innerHTML = `<strong style="color: var(--text-color);">📍 ${label}</strong><br><span style="color: var(--text-muted); font-size: 11px;">${result.display_name}</span>`;
+                item.innerHTML = `<strong style="color: var(--text-color);">📍 ${escapeHtml(label)}</strong><br><span style="color: var(--text-muted); font-size: 11px;">${escapeHtml(result.display_name)}</span>`;
 
                 item.onmouseover = () => item.style.background = 'rgba(99,102,241,0.1)';
                 item.onmouseout = () => item.style.background = 'transparent';
@@ -1704,7 +1726,7 @@ Now format this student list:
         });
 
         function proceedWithQRGeneration(locationData) {
-            const today = new Date().toISOString().split('T')[0];
+            const today = getLocalDateKey();
             const code = `${currentUser.username}_${today}_${currentSubject}`;
             const expiryTime = Date.now() + (5 * 60 * 1000); // 5 minutes
 
@@ -1882,7 +1904,7 @@ Now format this student list:
 
         function checkForActiveQRSession() {
             if (!currentSubject) return;
-            const today = new Date().toISOString().split('T')[0];
+            const today = getLocalDateKey();
             const code = `${currentUser.username}_${today}_${currentSubject}`;
             
             db.ref('qr_sessions/' + code).once('value', (snapshot) => {
@@ -1944,7 +1966,7 @@ Now format this student list:
 
             checkForActiveQRSession();
 
-            const today = new Date().toISOString().split('T')[0];
+            const today = getLocalDateKey();
             const key = `${currentUser.username}_${today}_${currentSubject}`;
             const attendanceRef = db.ref('attendance/' + key);
 
@@ -1964,12 +1986,12 @@ Now format this student list:
                     html = records.map(r => `
                         <div class="list-item" style="margin-bottom: 8px;">
                             <div class="list-item-info">
-                                <div class="list-item-name">${r.name}</div>
-                                <div class="list-item-roll">${r.rollNo}</div>
-                                <div class="list-item-time">${formatTime(r.time)}</div>
+                                <div class="list-item-name">${escapeHtml(r.name)}</div>
+                                <div class="list-item-roll">${escapeHtml(r.rollNo)}</div>
+                                <div class="list-item-time">${escapeHtml(formatTime(r.time))}</div>
                             </div>
                             <div class="list-item-actions">
-                                <button class="btn-small btn-danger" onclick="deleteAttendance('${key}', '${r.rollNo}')">Delete</button>
+                                <button class="btn-small btn-danger" onclick="${buildInlineCall('deleteAttendance', [key, r.rollNo])}">Delete</button>
                             </div>
                         </div>
                     `).join('');
@@ -2484,18 +2506,20 @@ Now format this student list:
             document.getElementById('add-student-message').innerHTML = '';
         }
 
-        function downloadTodayAttendance() {
+        async function downloadTodayAttendance() {
             if (!currentSubject) {
                 alert('⚠️ Please select a subject first');
                 return;
             }
 
-            if (typeof XLSX === 'undefined') {
-                alert('❌ Excel library not loaded');
+            try {
+                await loadXlsxLibrary();
+            } catch (error) {
+                alert('❌ Excel library could not load');
                 return;
             }
 
-            const today = new Date().toISOString().split('T')[0];
+            const today = getLocalDateKey();
             const key = `${currentUser.username}_${today}_${currentSubject}`;
 
             db.ref('attendance/' + key).once('value', (snapshot) => {

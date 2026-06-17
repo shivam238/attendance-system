@@ -9,18 +9,31 @@
     },
     "attendance": {
       ".read": true,
-      ".write": true,
       "$session_id": {
-         ".indexOn": ["rollNo"]
+        ".write": "auth != null && !newData.exists()",
+        ".indexOn": ["rollNo", "timestamp"],
+        "$record_id": {
+          ".write": "auth != null || !data.exists()",
+          ".validate": "!newData.exists() || (newData.hasChildren(['name', 'rollNo', 'time', 'timestamp']) && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 100 && newData.child('rollNo').isString() && newData.child('rollNo').val().length > 0 && newData.child('rollNo').val().length <= 40 && newData.child('time').isString() && newData.child('time').val().length > 0 && newData.child('time').val().length <= 20 && newData.child('timestamp').isNumber())"
+        }
       }
     },
     "requests": {
       ".read": true,
-      ".write": true
+      "$session_id": {
+        ".write": "auth != null && !newData.exists()",
+        "$request_id": {
+          ".write": "auth != null || !data.exists()",
+          ".validate": "!newData.exists() || (newData.hasChildren(['name', 'rollNo', 'subject', 'requestTime', 'timestamp', 'status']) && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 100 && newData.child('rollNo').isString() && newData.child('rollNo').val().length > 0 && newData.child('rollNo').val().length <= 40 && newData.child('subject').isString() && newData.child('subject').val().length > 0 && newData.child('subject').val().length <= 80 && newData.child('requestTime').isString() && newData.child('requestTime').val().length > 0 && newData.child('requestTime').val().length <= 20 && newData.child('timestamp').isNumber() && newData.child('status').isString())"
+        }
+      }
     },
     "qr_sessions": {
       ".read": true,
-      ".write": true
+      "$session_id": {
+        ".write": "auth != null",
+        ".validate": "!newData.exists() || (newData.hasChildren(['generatedAt', 'expiryTime', 'subject', 'username']) && newData.child('generatedAt').isNumber() && newData.child('expiryTime').isNumber() && newData.child('subject').isString() && newData.child('subject').val().length > 0 && newData.child('subject').val().length <= 80 && newData.child('username').isString() && newData.child('username').val().length > 0 && newData.child('username').val().length <= 120)"
+      }
     }
   }
 }

@@ -5,6 +5,56 @@
 let selectedLayout = 'today';
 let exportFormat = 'list'; // 'list' or 'matrix'
 let exportAttendanceData = null;
+let xlsxLoadPromise = null;
+
+function getLocalDateKey(date = new Date()) {
+    return date.toLocaleDateString('en-CA');
+}
+
+function parseLocalDateKey(value) {
+    const [year, month, day] = String(value || '').split('-').map(Number);
+    if (!year || !month || !day) return null;
+    return new Date(year, month - 1, day);
+}
+
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[char]));
+}
+
+function escapeAttribute(value) {
+    return escapeHtml(value).replace(/`/g, '&#96;');
+}
+
+function buildInlineCall(name, args) {
+    return escapeAttribute(`${name}(${args.map(arg => JSON.stringify(String(arg ?? ''))).join(', ')})`);
+}
+
+function loadXlsxLibrary() {
+    if (typeof XLSX !== 'undefined') {
+        return Promise.resolve();
+    }
+
+    if (xlsxLoadPromise) {
+        return xlsxLoadPromise;
+    }
+
+    xlsxLoadPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+        script.async = true;
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('Excel library failed to load'));
+        document.head.appendChild(script);
+    });
+
+    return xlsxLoadPromise;
+}
 
 // Universal Time Formatter: Normalizes any time string (12h/24h) to user preference
 function formatTime(timeStr, format) {
@@ -38,7 +88,7 @@ function openExportModal() {
     document.getElementById('export-modal').classList.add('active');
     loadExportData();
     // Reset filters
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateKey();
     document.getElementById('export-date-from').value = today;
     document.getElementById('export-date-to').value = today;
     setExportLayout('today', document.getElementById('layout-today'));
@@ -86,11 +136,10 @@ function populateSubjectDropdown() {
     }
 
     subjects.forEach(sub => {
-        const id = `sub-${sub.replace(/\s+/g, '-')}`;
         list.innerHTML += `
             <label style="display:flex; align-items:center; gap:8px; font-size:12px; cursor:pointer;">
-                <input type="checkbox" class="export-subject-checkbox" value="${sub}" checked onchange="updateExportPreview()">
-                ${sub}
+                <input type="checkbox" class="export-subject-checkbox" value="${escapeAttribute(sub)}" checked onchange="updateExportPreview()">
+                ${escapeHtml(sub)}
             </label>
         `;
     });
@@ -149,7 +198,7 @@ function processAttendanceData() {
     const studentSearch = document.getElementById('export-student-search').value.toLowerCase();
     
     // Use Local Date instead of ISO (Avoid timezone shifts)
-    const today = new Date().toLocaleDateString('en-CA'); 
+    const today = getLocalDateKey();
 
     const recordsList = [];
 
@@ -256,13 +305,16 @@ function renderListPreview(el, data) {
     html += '</tr></thead><tbody>';
 
     data.slice(0, 15).forEach((r, i) => {
+        const markPresentCall = buildInlineCall('quickMarkPresent', [r.rollNo, r.name, r.date, r.subject]);
+        const markAbsentCall = buildInlineCall('quickMarkAbsent', [r.rollNo, r.name, r.date, r.subject]);
+
         html += `<tr style="border-bottom:1px solid var(--border-color);">`;
         if (inclSno) html += `<td style="padding:8px;">${i+1}</td>`;
-        html += `<td style="padding:8px;font-weight:600;">${r.name}</td>`;
-        if (inclRoll) html += `<td style="padding:8px;">${r.rollNo}</td>`;
-        if (inclDate) html += `<td style="padding:8px;">${r.date}</td>`;
-        if (inclSubject) html += `<td style="padding:8px;">${r.subject}</td>`;
-        if (inclStatus) html += `<td style="padding:8px;color:${r.status === 'Present' ? '#10b981' : '#ef4444'}">${r.status}</td>`;
+        html += `<td style="padding:8px;font-weight:600;">${escapeHtml(r.name)}</td>`;
+        if (inclRoll) html += `<td style="padding:8px;">${escapeHtml(r.rollNo)}</td>`;
+        if (inclDate) html += `<td style="padding:8px;">${escapeHtml(r.date)}</td>`;
+        if (inclSubject) html += `<td style="padding:8px;">${escapeHtml(r.subject)}</td>`;
+        if (inclStatus) html += `<td style="padding:8px;color:${r.status === 'Present' ? '#10b981' : '#ef4444'}">${escapeHtml(r.status)}</td>`;
         
         // Time cell with Quick-Actions
         if (inclTime) {
@@ -270,14 +322,14 @@ function renderListPreview(el, data) {
             if (r.status === 'Absent') {
                 timeHtml = `<div style="display:flex;align-items:center;gap:6px;">
                     <span>-</span>
-                    <button onclick="quickMarkPresent('${r.rollNo}', '${r.name}', '${r.date}', '${r.subject}')" 
+                    <button onclick="${markPresentCall}" 
                             style="background:#10b981;color:#fff;border:none;width:18px;height:18px;border-radius:4px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;" 
                             title="Mark Present">+</button>
                 </div>`;
             } else {
                 timeHtml = `<div style="display:flex;align-items:center;gap:6px;">
-                    <span>${r.time}</span>
-                    <button onclick="quickMarkAbsent('${r.rollNo}', '${r.name}', '${r.date}', '${r.subject}')" 
+                    <span>${escapeHtml(r.time)}</span>
+                    <button onclick="${markAbsentCall}" 
                             style="background:#ef4444;color:#fff;border:none;width:18px;height:18px;border-radius:4px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;" 
                             title="Mark Absent">-</button>
                 </div>`;
@@ -337,10 +389,11 @@ function renderMatrixPreview(el, data) {
     // Generate all dates in range
     let dates = [];
     if (selectedLayout === 'range' || selectedLayout === 'student') {
-        let current = new Date(fromDate);
-        const end = new Date(toDate);
+        let current = parseLocalDateKey(fromDate);
+        const end = parseLocalDateKey(toDate);
+        if (!current || !end) return;
         while (current <= end) {
-            dates.push(current.toISOString().split('T')[0]);
+            dates.push(getLocalDateKey(current));
             current.setDate(current.getDate() + 1);
         }
     } else {
@@ -367,8 +420,8 @@ function renderMatrixPreview(el, data) {
     students.slice(0, 15).forEach((student, i) => {
         html += `<tr style="border-bottom:1px solid var(--border-color);">`;
         if (inclSno) html += `<td style="padding:6px;text-align:center;border-right:1px solid var(--border-color);opacity:0.6;">${i+1}</td>`;
-        html += `<td style="padding:6px;font-weight:700;border-right:1px solid var(--border-color);">${student.name}</td>`;
-        if (inclRoll) html += `<td style="padding:6px;border-right:1px solid var(--border-color);opacity:0.7;">${student.rollNo}</td>`;
+        html += `<td style="padding:6px;font-weight:700;border-right:1px solid var(--border-color);">${escapeHtml(student.name)}</td>`;
+        if (inclRoll) html += `<td style="padding:6px;border-right:1px solid var(--border-color);opacity:0.7;">${escapeHtml(student.rollNo)}</td>`;
         
         dates.forEach(date => {
             const record = data.find(r => r.rollNo === student.rollNo && r.date === date);
@@ -379,7 +432,7 @@ function renderMatrixPreview(el, data) {
             if (cellType === 'full') displayVal = isPresent ? 'Present' : 'Absent';
 
             html += `<td style="padding:6px;text-align:center;border-right:1px solid var(--border-color);color:${color};font-weight:800;background:${isPresent ? 'rgba(16, 185, 129, 0.02)' : 'transparent'}">
-                ${displayVal}
+                ${escapeHtml(displayVal)}
             </td>`;
         });
         html += '</tr>';
@@ -390,10 +443,18 @@ function renderMatrixPreview(el, data) {
     el.innerHTML = html;
 }
 
-function downloadExport() {
+async function downloadExport() {
     const data = processAttendanceData();
     if (data.length === 0) {
         showToast('⚠️ No data to export');
+        return;
+    }
+
+    try {
+        showToast('Preparing Excel export...');
+        await loadXlsxLibrary();
+    } catch (error) {
+        showToast('❌ Excel library could not load');
         return;
     }
 
@@ -408,10 +469,11 @@ function downloadExport() {
         
         let dates = [];
         if (selectedLayout === 'range' || selectedLayout === 'student') {
-            let current = new Date(fromDate);
-            const end = new Date(toDate);
+            let current = parseLocalDateKey(fromDate);
+            const end = parseLocalDateKey(toDate);
+            if (!current || !end) return;
             while (current <= end) {
-                dates.push(current.toISOString().split('T')[0]);
+                dates.push(getLocalDateKey(current));
                 current.setDate(current.getDate() + 1);
             }
         } else {
@@ -454,7 +516,7 @@ function downloadExport() {
         XLSX.utils.book_append_sheet(wb, ws, "Attendance_List");
     }
 
-    const fileName = `Attendance_${exportFormat}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    const fileName = `Attendance_${exportFormat}_${getLocalDateKey()}.xlsx`;
     XLSX.writeFile(wb, fileName);
     
     // Log Analytics Event
