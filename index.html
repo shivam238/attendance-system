@@ -645,15 +645,15 @@
 
             <div id="classroom-roster-section" style="display: none; margin-top: 20px;">
                 <h3 style="font-size: 15px; margin-bottom: 10px; font-weight: 600;">Import Preview</h3>
-                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Verify and edit the Roll Numbers for the students. Roll Numbers are required for ATTENDIFY.</p>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Fill in Roll Numbers for each student — these are required by ATTENDIFY.</p>
                 
-                <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px;">
+                <div style="max-height: 230px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 16px;">
                     <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
                         <thead>
-                            <tr style="background: rgba(255,255,255,0.05); border-bottom: 1px solid var(--border);">
-                                <th style="padding: 8px 12px; font-weight: 600;">#</th>
-                                <th style="padding: 8px 12px; font-weight: 600;">Name</th>
-                                <th style="padding: 8px 12px; font-weight: 600;">Roll Number <span style="color:#ef4444; font-size:10px;">* required</span></th>
+                            <tr style="background: rgba(255,255,255,0.07); border-bottom: 1px solid var(--border-color); position: sticky; top: 0;">
+                                <th style="padding: 8px 12px; font-weight: 700;">#</th>
+                                <th style="padding: 8px 12px; font-weight: 700;">Name</th>
+                                <th style="padding: 8px 12px; font-weight: 700;">Roll No <span style="color:#ef4444; font-size:10px;">*</span></th>
                             </tr>
                         </thead>
                         <tbody id="classroom-roster-table-body">
@@ -662,13 +662,17 @@
                     </table>
                 </div>
 
-                <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-success" onclick="confirmClassroomImport()" style="flex: 1;">Confirm Import</button>
-                    <button class="btn btn-danger" onclick="closeClassroomModal()">Cancel</button>
-                </div>
+                <div id="classroom-message" style="margin-bottom: 12px;"></div>
+
+                <button onclick="confirmClassroomImport()" style="width: 100%; padding: 14px; border-radius: 12px; border: none; cursor: pointer; font-weight: 800; font-size: 15px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; letter-spacing: 0.3px; box-shadow: 0 4px 15px rgba(16,185,129,0.4); transition: all 0.2s; margin-bottom: 10px;">
+                    ✅ Confirm Import
+                </button>
+                <button onclick="closeClassroomModal()" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color); background: transparent; color: var(--text-muted); cursor: pointer; font-size: 13px; font-weight: 600;">
+                    Cancel
+                </button>
             </div>
-            
-            <div id="classroom-message" style="margin-top: 15px;"></div>
+
+            <div id="classroom-message-top" style="margin-top: 10px; display: none;"></div>
         </div>
     </div>
 
