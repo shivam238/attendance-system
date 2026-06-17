@@ -1,0 +1,31 @@
+Create a highly detailed, professional, and user-friendly feedback and performance analytics form for "ATTENDIFY" (a smart QR-based attendance tracking web application). The form should include the exact questions and structures below:
+
+1. User Demographics & Adoption Tracking:
+- "Your Full Name" (Short Answer, Optional)
+- "What is your College/University name?" (Short Answer - required to track adoption locations)
+- "What is your Branch/Department & Semester?" (Short Answer - e.g., CSE 4th Sem)
+- "What is your role in ATTENDIFY?" (Multiple Choice: Student, Class Representative (CR), Teacher/Educator)
+- "How often do you use the app?" (Multiple Choice: Every day, 2-3 times a week, Once a week, Rarely)
+
+2. Core Functionality & Location/GPS Analytics:
+- "How smooth is the QR Code scanning process?" (Linear Scale: 1 = Very slow/fails often, 5 = Instant/excellent)
+- "Have you ever faced a GPS/Geofencing location mismatch error while marking attendance?" (Multiple Choice: Yes, No, Sometimes)
+- "How accurate is the location detection for you?" (Linear Scale: 1 = Very inaccurate/buggy, 5 = Highly accurate)
+
+3. Technical & Browser Compatibility:
+- "Which browser do you primarily use to access ATTENDIFY?" (Multiple Choice: Google Chrome, Safari, Firefox, Opera, In-app browser like Instagram/WhatsApp, Other)
+- "What OS/Device are you using?" (Multiple Choice: Android, iOS/iPhone, Windows, macOS, Linux)
+- "Have you ever experienced session expiration issues where you had to log in again repeatedly?" (Multiple Choice: Yes, No, Occasionally)
+
+4. Security & Bypass Detection:
+- "Are you aware of students attempting to bypass geofencing (e.g., using fake GPS apps or sharing QR screenshots)?" (Multiple Choice: Yes, No, Heard about it)
+- "Does the 5-minute default QR code expiry window give you enough time to mark attendance?" (Multiple Choice: Yes, need more time, No, it expires too quickly, Perfect amount of time)
+
+5. Offline & User Manual:
+- "Did you read the complete User Manual or Guideline page before using the app?" (Multiple Choice: Yes, read the whole thing, Skimmed through it, No, didn't need to, Didn't know it existed)
+- "How helpful is the offline/caching support when network connectivity is poor?" (Linear Scale: 1 = Not helpful/doesn't work, 5 = Extremely helpful/works offline)
+
+6. Bugs & General Comments:
+- "Describe any specific bugs or errors you encountered (please mention device/browser name if possible)." (Paragraph)
+- "What features or improvements would you like to see in the next update?" (Paragraph)
+- "Overall satisfaction rating for ATTENDIFY:" (Linear Scale: 1 = Very unsatisfied, 5 = Highly satisfied)

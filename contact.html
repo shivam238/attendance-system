@@ -599,6 +599,81 @@
             border-color: var(--primary);
             color: var(--primary);
         }
+
+        /* Chat Container & Header */
+        .chat-container {
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 480px;
+            position: relative;
+            background: var(--card-bg);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .chat-container.fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+            border: none;
+            z-index: 10000;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .chat-header-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .chat-header-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+            display: inline-block;
+        }
+
+        .chat-fullscreen-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .chat-fullscreen-btn:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .chat-fullscreen-btn svg {
+            width: 18px;
+            height: 18px;
+        }
     </style>
     <script>
         if(localStorage.getItem("darkMode") === "true") {
@@ -641,7 +716,18 @@
             <p style="text-align:center; color:var(--text-muted); margin-bottom:24px; font-size:15px;">Get instant answers to any question about ATTENDIFY — powered by AI.</p>
 
             <!-- Chat Widget -->
-            <div style="border:1px solid var(--border); border-radius:20px; overflow:hidden; display:flex; flex-direction:column; height:480px; position: relative;">
+            <div id="chat-container" class="chat-container">
+                <div class="chat-header">
+                    <div class="chat-header-title">
+                        <span class="chat-header-dot"></span>
+                        ATTENDIFY AI Support
+                    </div>
+                    <button id="chat-fullscreen-btn" class="chat-fullscreen-btn" title="Toggle Fullscreen" type="button">
+                        <svg id="fullscreen-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                        </svg>
+                    </button>
+                </div>
                 <div id="chat-messages" class="chat-messages"></div>
                 
                 <!-- Suggestion Chips -->
@@ -691,6 +777,7 @@
                 <a href="about.html">About</a>
                 <a href="manual.html" target="_blank">📖 Manual</a>
                 <a href="contact.html">Contact</a>
+                <a href="feedback.html">Feedback</a>
                 <a href="privacy-policy.html">Privacy Policy</a>
                 <a href="terms.html">Terms &amp; Conditions</a>
             </div>
@@ -732,10 +819,13 @@
         });
 
         // --- Inline AI Chat Widget ---
-        const API_URL = 'https://attendify-support-chatbot.netlify.app/.netlify/functions/chat';
+        const API_URL = 'https://attendify-support-worker.sm3165599.workers.dev';
+        const chatContainer = document.getElementById('chat-container');
         const messagesEl = document.getElementById('chat-messages');
         const chatInput  = document.getElementById('chat-input');
         const sendBtn    = document.getElementById('chat-send-btn');
+        const fullscreenBtn = document.getElementById('chat-fullscreen-btn');
+        const fullscreenIcon = document.getElementById('fullscreen-icon');
         let conversationHistory = [];
 
         // File upload and lightbox elements
@@ -796,6 +886,22 @@
             attachmentPreview.style.display = 'none';
             previewThumbnail.src = '';
             previewName.textContent = '';
+        });
+
+        // Toggle Fullscreen Chat
+        fullscreenBtn.addEventListener('click', () => {
+            const isFullscreen = chatContainer.classList.toggle('fullscreen');
+            if (isFullscreen) {
+                // Change icon to minimize (shrink)
+                fullscreenIcon.innerHTML = `<path d="M4 14h6v6m10-6h-6v6M4 10h6V4m10 6h-6V4" />`;
+                fullscreenBtn.title = "Exit Fullscreen";
+                document.body.style.overflow = 'hidden'; // Disable page scrolling
+            } else {
+                // Change icon to maximize (expand)
+                fullscreenIcon.innerHTML = `<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />`;
+                fullscreenBtn.title = "Toggle Fullscreen";
+                document.body.style.overflow = ''; // Re-enable page scrolling
+            }
         });
 
         // Setup Lightbox Event Listeners

@@ -1,0 +1,8 @@
+{
+  "name": "attendify-support-worker",
+  "version": "1.0.0",
+  "type": "module",
+  "devDependencies": {
+    "wrangler": "^4.101.0"
+  }
+}
