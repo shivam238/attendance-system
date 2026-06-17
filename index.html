@@ -1285,36 +1285,51 @@ Now format this student list:
         function fetchClassroomRoster() {
             const courseId = document.getElementById('classroom-courses-select').value;
             const msgDiv = document.getElementById('classroom-message');
-            
+
             if (!courseId) {
                 msgDiv.innerHTML = '<div class="message error">❌ Please select a course.</div>';
                 return;
             }
 
-            msgDiv.innerHTML = '<div class="message">🔄 Fetching student roster...</div>';
+            msgDiv.innerHTML = '<div class="message">🔄 Fetching all students... (this may take a moment)</div>';
 
-            fetch(`https://classroom.googleapis.com/v1/courses/${courseId}/students`, {
-                headers: {
-                    'Authorization': `Bearer ${googleClassroomAccessToken}`
-                }
-            })
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error('Classroom API error: ' + res.status);
-                }
-                return res.json();
-            })
-            .then(data => {
+            // Recursively fetch all pages of students
+            function fetchPage(pageToken, allStudents) {
+                let url = `https://classroom.googleapis.com/v1/courses/${courseId}/students?pageSize=200`;
+                if (pageToken) url += `&pageToken=${pageToken}`;
+
+                return fetch(url, {
+                    headers: { 'Authorization': `Bearer ${googleClassroomAccessToken}` }
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('Classroom API error: ' + res.status);
+                    return res.json();
+                })
+                .then(data => {
+                    const batch = data.students || [];
+                    const combined = allStudents.concat(batch);
+
+                    msgDiv.innerHTML = `<div class="message">🔄 Loading... ${combined.length} students fetched so far</div>`;
+
+                    if (data.nextPageToken) {
+                        return fetchPage(data.nextPageToken, combined);
+                    }
+                    return combined;
+                });
+            }
+
+            fetchPage(null, [])
+            .then(allStudents => {
                 const tbody = document.getElementById('classroom-roster-table-body');
                 tbody.innerHTML = '';
                 importedStudents = [];
 
-                if (!data.students || data.students.length === 0) {
+                if (allStudents.length === 0) {
                     msgDiv.innerHTML = '<div class="message warning">⚠️ No students found in this course.</div>';
                     return;
                 }
 
-                data.students.forEach((student, index) => {
+                allStudents.forEach((student, index) => {
                     const name = (student.profile && student.profile.name && student.profile.name.fullName)
                         ? student.profile.name.fullName
                         : `Student ${index + 1}`;
@@ -1324,10 +1339,10 @@ Now format this student list:
                     const row = document.createElement('tr');
                     row.style.borderBottom = '1px solid var(--border-color)';
                     row.innerHTML = `
-                        <td style="padding: 10px 12px; color: var(--text-muted); font-size: 12px; font-weight: 600;">${index + 1}</td>
-                        <td style="padding: 10px 12px; color: var(--text-color); font-weight: 600;">${name}</td>
-                        <td style="padding: 10px 12px;">
-                            <input type="text" id="roster-roll-${index}" value="" placeholder="e.g. 25/B09/${String(index+1).padStart(3,'0')}" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); width: 160px; font-weight: 600;">
+                        <td style="padding: 8px 12px; color: var(--text-muted); font-size: 12px; font-weight: 600;">${index + 1}</td>
+                        <td style="padding: 8px 12px; color: var(--text-color); font-weight: 600;">${name}</td>
+                        <td style="padding: 8px 12px;">
+                            <input type="text" id="roster-roll-${index}" value="" placeholder="e.g. 25/B09/${String(index+1).padStart(3,'0')}" style="padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); width: 155px; font-weight: 600;">
                         </td>
                     `;
                     tbody.appendChild(row);
@@ -1335,7 +1350,7 @@ Now format this student list:
 
                 document.getElementById('classroom-courses-section').style.display = 'none';
                 document.getElementById('classroom-roster-section').style.display = 'block';
-                msgDiv.innerHTML = '';
+                msgDiv.innerHTML = `<div class="message success">✅ ${allStudents.length} students loaded. Fill in their Roll Numbers below.</div>`;
             })
             .catch(err => {
                 console.error("Error fetching roster:", err);
