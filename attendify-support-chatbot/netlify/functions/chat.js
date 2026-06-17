@@ -58,22 +58,81 @@ Uncertainty rule:
 - If the answer cannot be determined from available sources, explicitly say so and ask a short clarifying question or recommend checking the official Contact page instead of guessing. Never invent features, policies, workflows, limitations, or fixes.
 `;
 
-// Singleton client — recreated only if the API key rotates between deploys
+// ---------------------------------------------------------------------------
+// Gemini singleton — recreated only if the API key rotates between deploys
+// ---------------------------------------------------------------------------
 let aiInstance = null;
 let cachedApiKey = null;
 function getGeminiClient(apiKey) {
   if (!aiInstance || cachedApiKey !== apiKey) {
     aiInstance = new GoogleGenAI({
       apiKey,
-      httpOptions: {
-        headers: { "User-Agent": "aistudio-build" }
-      }
+      httpOptions: { headers: { "User-Agent": "aistudio-build" } }
     });
     cachedApiKey = apiKey;
   }
   return aiInstance;
 }
 
+// ---------------------------------------------------------------------------
+// Error classifier — is this a rate-limit / quota exhaustion error?
+// ---------------------------------------------------------------------------
+function isRateLimitOrQuotaError(err) {
+  const msg = (err?.message || "").toLowerCase();
+  const status = err?.status ?? err?.statusCode ?? err?.httpStatus;
+  return (
+    status === 429 ||
+    msg.includes("resource_exhausted") ||
+    msg.includes("quota") ||
+    msg.includes("rate limit") ||
+    msg.includes("too many requests") ||
+    msg.includes("ratequotaexceeded")
+  );
+}
+
+// ---------------------------------------------------------------------------
+// OpenRouter fallback — OpenAI-compatible REST endpoint
+// Model: meta-llama/llama-3.1-8b-instruct:free (free tier, fast, ~8B)
+// Image attachments are silently dropped (text-only fallback).
+// ---------------------------------------------------------------------------
+async function callOpenRouter(openRouterKey, messages) {
+  const openAiMessages = [
+    { role: "system", content: systemInstruction },
+    ...messages.map((msg) => ({
+      role: msg.role === "assistant" || msg.role === "model" ? "assistant" : "user",
+      // Attachments are not forwarded to the text-only fallback model
+      content: msg.content || "(image attached — description unavailable in fallback mode)"
+    }))
+  ];
+
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${openRouterKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://qr-smart-attendance.web.app",
+      "X-Title": "ATTENDIFY Support"
+    },
+    body: JSON.stringify({
+      model: "meta-llama/llama-3.1-8b-instruct:free",
+      messages: openAiMessages,
+      temperature: 0.2,
+      max_tokens: 1024
+    })
+  });
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData?.error?.message || `OpenRouter responded with ${res.status}`);
+  }
+
+  const data = await res.json();
+  return data?.choices?.[0]?.message?.content || "";
+}
+
+// ---------------------------------------------------------------------------
+// Shared constants
+// ---------------------------------------------------------------------------
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": process.env.ATTENDIFY_ALLOWED_ORIGIN || "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -94,15 +153,12 @@ function validateMessages(messages) {
     if (!msg || typeof msg !== "object") {
       return "Each message must be an object.";
     }
-
     if (msg.content !== undefined && typeof msg.content !== "string") {
       return "Message content must be text.";
     }
-
     if ((msg.content || "").length > MAX_TEXT_CHARS) {
       return `Each message must be ${MAX_TEXT_CHARS} characters or fewer.`;
     }
-
     if (msg.attachment) {
       const { mimeType, base64 } = msg.attachment;
       if (!ALLOWED_ATTACHMENT_TYPES.has(mimeType) || typeof base64 !== "string") {
@@ -117,13 +173,15 @@ function validateMessages(messages) {
   return null;
 }
 
+// ---------------------------------------------------------------------------
+// Handler
+// ---------------------------------------------------------------------------
 export async function handler(event, context) {
-  // Handle CORS preflight
+  // CORS preflight
   if (event.httpMethod === "OPTIONS") {
     return { statusCode: 204, headers: CORS_HEADERS, body: "" };
   }
 
-  // Only allow POST
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
@@ -133,7 +191,7 @@ export async function handler(event, context) {
   }
 
   try {
-    // Parse body with explicit error for malformed JSON
+    // Safe JSON parse
     let parsed;
     try {
       parsed = JSON.parse(event.body || "{}");
@@ -163,62 +221,86 @@ export async function handler(event, context) {
       };
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
+    const geminiKey = process.env.GEMINI_API_KEY;
+    const openRouterKey = process.env.OPENROUTER_API_KEY;
+
+    if (!geminiKey) {
       return {
         statusCode: 500,
         headers: CORS_HEADERS,
         body: JSON.stringify({
           error: "API Key Missing",
-          message: "GEMINI_API_KEY environment variable is required but not configured on Netlify."
+          message: "GEMINI_API_KEY is not configured on Netlify."
         })
       };
     }
 
-    const client = getGeminiClient(apiKey);
+    // -------------------------------------------------------------------
+    // PRIMARY: Gemini 2.5 Flash (thinking disabled for speed)
+    // -------------------------------------------------------------------
+    let replyText = "";
+    let usedFallback = false;
 
-    // Build Gemini contents array
-    const contents = messages.map((msg) => {
-      const role = msg.role === "assistant" || msg.role === "model" ? "model" : "user";
-      const parts = [];
+    try {
+      const client = getGeminiClient(geminiKey);
 
-      if (msg.content) {
-        parts.push({ text: msg.content });
+      const contents = messages.map((msg) => {
+        const role = msg.role === "assistant" || msg.role === "model" ? "model" : "user";
+        const parts = [];
+
+        if (msg.content) parts.push({ text: msg.content });
+
+        if (msg.attachment?.mimeType && msg.attachment?.base64) {
+          parts.push({
+            inlineData: {
+              mimeType: msg.attachment.mimeType,
+              data: msg.attachment.base64
+            }
+          });
+        }
+
+        if (parts.length === 0) parts.push({ text: "" });
+        return { role, parts };
+      });
+
+      const response = await client.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents,
+        config: {
+          systemInstruction,
+          temperature: 0.2,
+          thinkingConfig: { thinkingBudget: 0 } // disable extended thinking → much faster
+        }
+      });
+
+      replyText = response.text || "";
+
+    } catch (geminiErr) {
+      // -------------------------------------------------------------------
+      // FALLBACK: OpenRouter (when Gemini fails or quota is exceeded)
+      // -------------------------------------------------------------------
+      const isQuota = isRateLimitOrQuotaError(geminiErr);
+      console.warn(
+        isQuota
+          ? "Gemini quota/rate-limit hit — switching to OpenRouter fallback."
+          : "Gemini error — switching to OpenRouter fallback.",
+        geminiErr?.message || geminiErr
+      );
+
+      if (!openRouterKey) {
+        // No fallback key configured — surface a clear error
+        console.error("OPENROUTER_API_KEY is not configured. Cannot use fallback.");
+        throw geminiErr; // re-throw to be caught by outer handler
       }
 
-      // Optional chaining — safe if attachment is missing or partial
-      if (msg.attachment?.mimeType && msg.attachment?.base64) {
-        parts.push({
-          inlineData: {
-            mimeType: msg.attachment.mimeType,
-            data: msg.attachment.base64
-          }
-        });
-      }
+      replyText = await callOpenRouter(openRouterKey, messages);
+      usedFallback = true;
+    }
 
-      if (parts.length === 0) {
-        parts.push({ text: "" });
-      }
+    // Log which provider was used (visible in Netlify function logs)
+    console.log(`Response generated via ${usedFallback ? "OpenRouter (fallback)" : "Gemini (primary)"}.`);
 
-      return { role, parts };
-    });
-
-    // Generate response
-    // thinkingBudget: 0 disables extended thinking on gemini-2.5-flash,
-    // reducing typical latency from 10–30 s down to 1–3 s for support queries.
-    const response = await client.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents,
-      config: {
-        systemInstruction,
-        temperature: 0.2,
-        thinkingConfig: { thinkingBudget: 0 }
-      }
-    });
-
-    const replyText = response.text || "";
-
-    // SSE envelope — frontend ChatWidget reads this format
+    // SSE envelope — ChatWidget reads this format
     const responseBody = `data: ${JSON.stringify({ text: replyText })}\n\ndata: [DONE]\n\n`;
 
     return {
@@ -233,7 +315,6 @@ export async function handler(event, context) {
     };
 
   } catch (err) {
-    // Log full error server-side; never expose raw err.message to the client
     console.error("Netlify function error:", err);
     return {
       statusCode: 500,

@@ -64,12 +64,13 @@ Uncertainty rule:
 `;
 
 let aiInstance: GoogleGenAI | null = null;
+let cachedApiKey: string | null = null;
 function getGeminiClient(): GoogleGenAI {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY environment variable is not defined. Please add it to your AI Studio Secrets panel.");
   }
-  if (!aiInstance) {
+  if (!aiInstance || cachedApiKey !== apiKey) {
     aiInstance = new GoogleGenAI({
       apiKey: apiKey,
       httpOptions: {
@@ -78,8 +79,56 @@ function getGeminiClient(): GoogleGenAI {
         }
       }
     });
+    cachedApiKey = apiKey;
   }
   return aiInstance;
+}
+
+function isRateLimitOrQuotaError(err: any): boolean {
+  const msg = (err?.message || "").toLowerCase();
+  const status = err?.status ?? err?.statusCode ?? err?.httpStatus;
+  return (
+    status === 429 ||
+    msg.includes("resource_exhausted") ||
+    msg.includes("quota") ||
+    msg.includes("rate limit") ||
+    msg.includes("too many requests") ||
+    msg.includes("ratequotaexceeded")
+  );
+}
+
+async function callOpenRouter(openRouterKey: string, messages: any[]): Promise<string> {
+  const openAiMessages = [
+    { role: "system", content: systemInstruction },
+    ...messages.map((msg: any) => ({
+      role: msg.role === "assistant" || msg.role === "model" ? "assistant" : "user",
+      content: msg.content || "(image attached — description unavailable in fallback mode)"
+    }))
+  ];
+
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${openRouterKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://qr-smart-attendance.web.app",
+      "X-Title": "ATTENDIFY Support"
+    },
+    body: JSON.stringify({
+      model: "meta-llama/llama-3.1-8b-instruct:free",
+      messages: openAiMessages,
+      temperature: 0.2,
+      max_tokens: 1024
+    })
+  });
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData?.error?.message || `OpenRouter responded with ${res.status}`);
+  }
+
+  const data = await res.json();
+  return data?.choices?.[0]?.message?.content || "";
 }
 
 const MAX_MESSAGES = 12;
@@ -145,19 +194,18 @@ async function startServer() {
       }
 
       // Check if API key is present
-      let client: GoogleGenAI;
-      try {
-        client = getGeminiClient();
-      } catch (keyError: any) {
+      const geminiKey = process.env.GEMINI_API_KEY;
+      const openRouterKey = process.env.OPENROUTER_API_KEY;
+
+      if (!geminiKey) {
         res.status(500).json({
           error: "API Key Missing",
-          message: keyError.message || "GEMINI_API_KEY is required but not configured."
+          message: "GEMINI_API_KEY is required but not configured."
         });
         return;
       }
 
       // Prepare conversation history for Google Gemini Developer API
-      // Standard message object format: { role: "user" | "model", parts: [...] }
       const contents = messages.map((msg: any) => {
         const role = msg.role === "assistant" || msg.role === "model" ? "model" : "user";
         const parts: any[] = [];
@@ -169,31 +217,17 @@ async function startServer() {
         if (msg.attachment && msg.attachment.mimeType && msg.attachment.base64) {
           parts.push({
             inlineData: {
-              mimeType: msg.attachment.mimeType, // e.g. "image/png"
-              data: msg.attachment.base64       // raw base64 string
+              mimeType: msg.attachment.mimeType,
+              data: msg.attachment.base64
             }
           });
         }
 
-        // Avoid empty parts
         if (parts.length === 0) {
           parts.push({ text: "" });
         }
 
-        return {
-          role,
-          parts
-        };
-      });
-
-      // Call Gemini 3.5 Flash with Streaming (generateContentStream)
-      const responseStream = await client.models.generateContentStream({
-        model: "gemini-2.5-flash",
-        contents: contents,
-        config: {
-          systemInstruction: systemInstruction,
-          temperature: 0.2, // Lower temperature to maximize accuracy and logic grounding
-        }
+        return { role, parts };
       });
 
       // Set headers for SSE (Server-Sent Events)
@@ -201,20 +235,62 @@ async function startServer() {
       res.setHeader("Cache-Control", "no-cache");
       res.setHeader("Connection", "keep-alive");
 
-      for await (const chunk of responseStream) {
-        if (chunk.text) {
-          res.write(`data: ${JSON.stringify({ text: chunk.text })}\n\n`);
+      let usedFallback = false;
+
+      try {
+        const client = getGeminiClient();
+
+        // Call Gemini 3.5 Flash with Streaming (generateContentStream)
+        const responseStream = await client.models.generateContentStream({
+          model: "gemini-2.5-flash",
+          contents: contents,
+          config: {
+            systemInstruction: systemInstruction,
+            temperature: 0.2,
+            thinkingConfig: { thinkingBudget: 0 }
+          }
+        });
+
+        for await (const chunk of responseStream) {
+          if (chunk.text) {
+            res.write(`data: ${JSON.stringify({ text: chunk.text })}\n\n`);
+          }
         }
+
+      } catch (geminiErr: any) {
+        const isQuota = isRateLimitOrQuotaError(geminiErr);
+        console.warn(
+          isQuota
+            ? "Gemini quota/rate-limit hit — switching to OpenRouter fallback."
+            : "Gemini error — switching to OpenRouter fallback.",
+          geminiErr?.message || geminiErr
+        );
+
+        if (!openRouterKey) {
+          console.error("OPENROUTER_API_KEY is not configured. Cannot use fallback.");
+          throw geminiErr;
+        }
+
+        const replyText = await callOpenRouter(openRouterKey, messages);
+        usedFallback = true;
+
+        res.write(`data: ${JSON.stringify({ text: replyText })}\n\n`);
       }
+
+      console.log(`[Local Server] Response generated via ${usedFallback ? "OpenRouter (fallback)" : "Gemini (primary)"}.`);
 
       res.write("data: [DONE]\n\n");
       res.end();
     } catch (err: any) {
       console.error("Gemini API server route error:", err);
-      res.status(500).json({
-        error: "Server Error",
-        message: err.message || "An exception occurred while processing your support query."
-      });
+      if (!res.headersSent) {
+        res.status(500).json({
+          error: "Server Error",
+          message: "An internal error occurred while processing your support query."
+        });
+      } else {
+        res.end();
+      }
     }
   });
 
