@@ -651,9 +651,9 @@
                     <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
                         <thead>
                             <tr style="background: rgba(255,255,255,0.05); border-bottom: 1px solid var(--border);">
+                                <th style="padding: 8px 12px; font-weight: 600;">#</th>
                                 <th style="padding: 8px 12px; font-weight: 600;">Name</th>
-                                <th style="padding: 8px 12px; font-weight: 600;">Email</th>
-                                <th style="padding: 8px 12px; font-weight: 600;">Roll Number</th>
+                                <th style="padding: 8px 12px; font-weight: 600;">Roll Number <span style="color:#ef4444; font-size:10px;">* required</span></th>
                             </tr>
                         </thead>
                         <tbody id="classroom-roster-table-body">
@@ -1315,19 +1315,19 @@ Now format this student list:
                 }
 
                 data.students.forEach((student, index) => {
-                    const name = (student.profile && student.profile.name && student.profile.name.fullName) ? student.profile.name.fullName : "Unnamed Student";
-                    const email = (student.profile && student.profile.emailAddress) ? student.profile.emailAddress : `${student.userId || (student.profile && student.profile.id) || 'student_' + index}@domain.com`;
-                    const rollNo = email.split('@')[0].toUpperCase();
+                    const name = (student.profile && student.profile.name && student.profile.name.fullName)
+                        ? student.profile.name.fullName
+                        : `Student ${index + 1}`;
 
-                    importedStudents.push({ name, email, rollNo });
+                    importedStudents.push({ name, rollNo: '' });
 
                     const row = document.createElement('tr');
                     row.style.borderBottom = '1px solid var(--border-color)';
                     row.innerHTML = `
-                        <td style="padding: 10px 12px; color: var(--text-color); font-weight: 500;">${name}</td>
-                        <td style="padding: 10px 12px; color: var(--text-muted);">${email}</td>
+                        <td style="padding: 10px 12px; color: var(--text-muted); font-size: 12px; font-weight: 600;">${index + 1}</td>
+                        <td style="padding: 10px 12px; color: var(--text-color); font-weight: 600;">${name}</td>
                         <td style="padding: 10px 12px;">
-                            <input type="text" id="roster-roll-${index}" value="${rollNo}" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); width: 150px; font-weight: 600;">
+                            <input type="text" id="roster-roll-${index}" value="" placeholder="e.g. 25/B09/${String(index+1).padStart(3,'0')}" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); width: 160px; font-weight: 600;">
                         </td>
                     `;
                     tbody.appendChild(row);
