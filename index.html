@@ -1315,8 +1315,8 @@ Now format this student list:
                 }
 
                 data.students.forEach((student, index) => {
-                    const name = student.profile.name.fullName;
-                    const email = student.profile.emailAddress;
+                    const name = (student.profile && student.profile.name && student.profile.name.fullName) ? student.profile.name.fullName : "Unnamed Student";
+                    const email = (student.profile && student.profile.emailAddress) ? student.profile.emailAddress : `${student.userId || (student.profile && student.profile.id) || 'student_' + index}@domain.com`;
                     const rollNo = email.split('@')[0].toUpperCase();
 
                     importedStudents.push({ name, email, rollNo });
