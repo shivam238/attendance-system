@@ -1185,13 +1185,49 @@ Now format this student list:
         let googleClassroomAccessToken = null;
         let isClassroomSetupMode = false;
 
+        // Restore token from localStorage on script load
+        (function restoreClassroomToken() {
+            const saved = localStorage.getItem('classroom_token');
+            const expiry = localStorage.getItem('classroom_token_expiry');
+            if (saved && expiry && Date.now() < parseInt(expiry)) {
+                googleClassroomAccessToken = saved;
+                console.log('✅ Classroom token restored from localStorage');
+            } else {
+                localStorage.removeItem('classroom_token');
+                localStorage.removeItem('classroom_token_expiry');
+            }
+        })();
+
+        function saveClassroomToken(token) {
+            googleClassroomAccessToken = token;
+            // Store token with 55-min expiry (Google tokens last ~60 min)
+            const expiry = Date.now() + 55 * 60 * 1000;
+            localStorage.setItem('classroom_token', token);
+            localStorage.setItem('classroom_token_expiry', expiry.toString());
+        }
+
+        function clearClassroomToken() {
+            googleClassroomAccessToken = null;
+            localStorage.removeItem('classroom_token');
+            localStorage.removeItem('classroom_token_expiry');
+        }
+
         function openClassroomModal(isSetup = false) {
             isClassroomSetupMode = isSetup;
             document.getElementById('classroom-modal').classList.add('active');
-            document.getElementById('classroom-auth-section').style.display = 'block';
-            document.getElementById('classroom-courses-section').style.display = 'none';
-            document.getElementById('classroom-roster-section').style.display = 'none';
             document.getElementById('classroom-message').innerHTML = '';
+            document.getElementById('classroom-roster-section').style.display = 'none';
+
+            // If we already have a valid token, skip auth and go straight to courses
+            if (googleClassroomAccessToken) {
+                document.getElementById('classroom-auth-section').style.display = 'none';
+                document.getElementById('classroom-courses-section').style.display = 'none';
+                document.getElementById('classroom-message').innerHTML = '<div class="message">🔄 Restoring your Classroom session...</div>';
+                loadClassroomCourses();
+            } else {
+                document.getElementById('classroom-auth-section').style.display = 'block';
+                document.getElementById('classroom-courses-section').style.display = 'none';
+            }
         }
 
         function closeClassroomModal() {
@@ -1205,9 +1241,7 @@ Now format this student list:
             const provider = new firebase.auth.GoogleAuthProvider();
             provider.addScope('https://www.googleapis.com/auth/classroom.courses.readonly');
             provider.addScope('https://www.googleapis.com/auth/classroom.rosters.readonly');
-            provider.setCustomParameters({
-                prompt: 'consent'
-            });
+            provider.setCustomParameters({ prompt: 'consent' });
 
             const user = auth.currentUser;
             if (!user) {
@@ -1225,7 +1259,7 @@ Now format this student list:
             }
 
             authPromise.then((result) => {
-                googleClassroomAccessToken = result.credential.accessToken;
+                saveClassroomToken(result.credential.accessToken);
                 msgDiv.innerHTML = '<div class="message success">✅ Authorized! Fetching courses...</div>';
                 loadClassroomCourses();
             }).catch((error) => {
@@ -1233,7 +1267,7 @@ Now format this student list:
                 if (error.code === 'auth/credential-already-in-use' || error.code === 'auth/provider-already-linked') {
                     msgDiv.innerHTML = '<div class="message">🔄 Fetching authorized Classroom session...</div>';
                     auth.signInWithPopup(provider).then((result) => {
-                        googleClassroomAccessToken = result.credential.accessToken;
+                        saveClassroomToken(result.credential.accessToken);
                         msgDiv.innerHTML = '<div class="message success">✅ Authorized! Fetching courses...</div>';
                         loadClassroomCourses();
                     }).catch(err2 => {
@@ -1253,12 +1287,21 @@ Now format this student list:
                 }
             })
             .then(res => {
+                if (res.status === 401) {
+                    // Token expired — clear it and ask user to reconnect
+                    clearClassroomToken();
+                    msgDiv.innerHTML = '<div class="message warning">⚠️ Session expired. Please authorize again.</div>';
+                    document.getElementById('classroom-auth-section').style.display = 'block';
+                    document.getElementById('classroom-courses-section').style.display = 'none';
+                    return null;
+                }
                 if (!res.ok) {
                     throw new Error('Classroom API responded with status: ' + res.status);
                 }
                 return res.json();
             })
             .then(data => {
+                if (!data) return; // null returned from 401 handler
                 const select = document.getElementById('classroom-courses-select');
                 select.innerHTML = '<option value="">-- Select a Class --</option>';
                 
