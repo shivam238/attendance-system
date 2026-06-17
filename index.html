@@ -344,7 +344,10 @@
                     <label>Students (format: Name - Roll Number, one per line)</label>
                     <textarea id="setup-students" rows="6"
                         placeholder="JOHN DOE - 25/B09/001&#10;JANE SMITH - 25/B09/002&#10;AMIT KUMAR - 25/B09/003"></textarea>
-                    <button class="copy-prompt-btn" onclick="copyStudentPrompt()">📋 Copy ChatGPT Prompt</button>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="copy-prompt-btn" onclick="copyStudentPrompt()" style="margin-top: 12px;">📋 Copy ChatGPT Prompt</button>
+                        <button class="copy-prompt-btn" onclick="openClassroomModal(true)" style="background: #4f46e5; margin-top: 12px;">🎓 Google Classroom Import</button>
+                    </div>
                 </div>
                 <div class="info-text">ℹ️ Student format: NAME - ROLLNO (one per line)<br><br>💡 Click "Copy ChatGPT
                     Prompt" button, paste in ChatGPT with your student list, then copy result here!</div>
@@ -1176,8 +1179,10 @@ Now format this student list:
 
         // --- GOOGLE CLASSROOM INTEGRATION ---
         let googleClassroomAccessToken = null;
+        let isClassroomSetupMode = false;
 
-        function openClassroomModal() {
+        function openClassroomModal(isSetup = false) {
+            isClassroomSetupMode = isSetup;
             document.getElementById('classroom-modal').classList.add('active');
             document.getElementById('classroom-auth-section').style.display = 'block';
             document.getElementById('classroom-courses-section').style.display = 'none';
@@ -1372,6 +1377,17 @@ Now format this student list:
             }
             if (hasDuplicate) {
                 msgDiv.innerHTML = '<div class="message error">❌ Duplicate Roll Numbers detected! Each student must have a unique Roll Number.</div>';
+                return;
+            }
+
+            if (isClassroomSetupMode) {
+                const formatted = finalStudents.map(s => `${s.name} - ${s.rollNo}`).join('\n');
+                document.getElementById('setup-students').value = formatted;
+                
+                msgDiv.innerHTML = '<div class="message success">✅ Classroom roster imported into setup form!</div>';
+                setTimeout(() => {
+                    closeClassroomModal();
+                }, 1500);
                 return;
             }
 
