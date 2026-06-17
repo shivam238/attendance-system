@@ -114,7 +114,7 @@ async function callOpenRouter(openRouterKey, messages) {
       "X-Title": "ATTENDIFY Support"
     },
     body: JSON.stringify({
-      model: "meta-llama/llama-3.1-8b-instruct:free",
+      model: "openrouter/free",
       messages: openAiMessages,
       temperature: 0.2,
       max_tokens: 1024

@@ -567,6 +567,38 @@
         .lightbox-close:hover {
             background: rgba(255, 255, 255, 0.25);
         }
+
+        /* Suggestion chips style */
+        .chat-suggestions {
+            display: flex;
+            gap: 8px;
+            padding: 10px 16px;
+            overflow-x: auto;
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+            scrollbar-width: none; /* Hide scrollbar Firefox */
+            flex-shrink: 0;
+        }
+        .chat-suggestions::-webkit-scrollbar {
+            display: none; /* Hide scrollbar Chrome/Safari/Opera */
+        }
+        .suggestion-chip {
+            background: var(--border);
+            color: var(--text);
+            border: 1px solid transparent;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        .suggestion-chip:hover {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
     </style>
     <script>
         if(localStorage.getItem("darkMode") === "true") {
@@ -612,6 +644,15 @@
             <div style="border:1px solid var(--border); border-radius:20px; overflow:hidden; display:flex; flex-direction:column; height:480px; position: relative;">
                 <div id="chat-messages" class="chat-messages"></div>
                 
+                <!-- Suggestion Chips -->
+                <div id="chat-suggestions" class="chat-suggestions">
+                    <button class="suggestion-chip">Who created ATTENDIFY? 🤔</button>
+                    <button class="suggestion-chip">GPS / Location mismatch 📍</button>
+                    <button class="suggestion-chip">Google sign-in issue 🔑</button>
+                    <button class="suggestion-chip">How to setup a Class? 🏫</button>
+                    <button class="suggestion-chip">SMS OTP not arriving 📱</button>
+                </div>
+
                 <!-- Pending Attachment Preview -->
                 <div id="chat-attachment-preview" class="chat-attachment-preview">
                     <div class="preview-thumbnail-container">
@@ -818,6 +859,12 @@
             const text = chatInput.value.trim();
             if (!text && !pendingAttachment) return;
 
+            // Hide suggestions container on first send
+            const suggestionsEl = document.getElementById('chat-suggestions');
+            if (suggestionsEl) {
+                suggestionsEl.style.display = 'none';
+            }
+
             chatInput.value = '';
             chatInput.style.height = 'auto';
             sendBtn.disabled = true;
@@ -894,6 +941,17 @@
         }
 
         sendBtn.addEventListener('click', sendMessage);
+
+        // Bind suggestion chips click handler
+        document.querySelectorAll('.suggestion-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                let text = this.textContent.trim();
+                // Strip emojis from query
+                text = text.replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '').trim();
+                chatInput.value = text;
+                sendMessage();
+            });
+        });
 
         chatInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
