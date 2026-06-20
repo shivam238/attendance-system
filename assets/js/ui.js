@@ -9,7 +9,10 @@ function showScreen(screenId) {
         if (landingPage) {
             landingPage.classList.toggle('is-hidden', screenId !== 'login-screen');
             if (screenId === 'login-screen') {
+                landingPage.classList.remove('login-locked'); // Reset lock on showing login screen
                 scheduleLandingReveal();
+                // Bind scroll listener when landing page is shown
+                window.addEventListener('scroll', handleLandingScroll, { passive: true });
             }
         }
         window.scrollTo(0, 0);
@@ -21,8 +24,31 @@ function scrollToLogin(event) {
     closeLandingMenu();
     const loginScreen = document.getElementById('login-screen');
     if (loginScreen) {
-        const targetTop = loginScreen.getBoundingClientRect().top + window.scrollY - 84;
+        // Scroll to the login screen, offset by 90px to account for the nav bar (which remains visible)
+        const targetTop = loginScreen.getBoundingClientRect().top + window.scrollY - 90;
         window.scrollTo({ top: Math.max(targetTop, 0), behavior: 'smooth' });
+    }
+}
+
+function handleLandingScroll() {
+    const landingPage = document.getElementById('landing-page');
+    if (!landingPage || landingPage.classList.contains('is-hidden') || landingPage.classList.contains('login-locked')) {
+        return;
+    }
+
+    const loginScreen = document.getElementById('login-screen');
+    if (!loginScreen || !loginScreen.classList.contains('active')) {
+        return;
+    }
+
+    const loginRect = loginScreen.getBoundingClientRect();
+    
+    // Check if the top of the login screen reached the 90px threshold (nav bar height + gap)
+    // or if the user has scrolled to the bottom of the document
+    if (loginRect.top <= 90 || (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 10)) {
+        window.removeEventListener('scroll', handleLandingScroll);
+        landingPage.classList.add('login-locked');
+        window.scrollTo(0, 0);
     }
 }
 
@@ -33,9 +59,31 @@ function scrollToLandingSection(event, sectionId) {
     const section = document.getElementById(sectionId);
     if (!section) return;
 
+    const landingPage = document.getElementById('landing-page');
+    if (landingPage && landingPage.classList.contains('login-locked')) {
+        // Remove scroll listener temporarily to prevent locking during the transition
+        window.removeEventListener('scroll', handleLandingScroll);
+        
+        // Remove the locked class to render the landing sections again
+        landingPage.classList.remove('login-locked');
+        
+        // Instantly adjust scroll position to the new position of the login screen to prevent jump
+        const loginScreen = document.getElementById('login-screen');
+        if (loginScreen) {
+            const loginTop = loginScreen.getBoundingClientRect().top + window.scrollY;
+            window.scrollTo(0, loginTop);
+        }
+    }
+
+    // Scroll smoothly to the target section (offsetting for the fixed nav bar)
     const targetTop = section.getBoundingClientRect().top + window.scrollY - 78;
     window.scrollTo({ top: Math.max(targetTop, 0), behavior: 'smooth' });
     window.history.replaceState(null, '', `#${sectionId}`);
+
+    // Re-bind the scroll listener once we are away from the login screen (after a tiny timeout)
+    setTimeout(() => {
+        window.addEventListener('scroll', handleLandingScroll, { passive: true });
+    }, 100);
 
     setTimeout(() => replayLandingSectionReveal(section), 260);
     setTimeout(() => replayLandingSectionReveal(section), 620);
@@ -92,6 +140,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     prepareLandingReveal();
     scheduleLandingReveal();
+    
+    // Bind scroll listener on initial page load
+    window.addEventListener('scroll', handleLandingScroll, { passive: true });
 });
 
 let landingRevealItems = [];

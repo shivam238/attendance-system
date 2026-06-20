@@ -1,11 +1,11 @@
-const CACHE_NAME = 'attendify-cache-v18';
+const CACHE_NAME = 'attendify-cache-v24';
 const ASSETS = [
     './',
     './index.html',
-    './assets/css/style.css?v=9',
+    './assets/css/style.css?v=10',
     './assets/css/subjects.css',
     './assets/js/auth.js',
-    './assets/js/ui.js?v=10',
+    './assets/js/ui.js?v=12',
     './assets/js/history.js?v=10',
     './assets/js/firebase-config.js',
     './assets/js/export.js?v=10',

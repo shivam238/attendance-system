@@ -108,6 +108,19 @@
             display: none;
         }
 
+        .landing-page.login-locked .landing-hero,
+        .landing-page.login-locked #landing-how,
+        .landing-page.login-locked #landing-features,
+        .landing-page.login-locked #landing-roles,
+        .landing-page.login-locked .landing-finale {
+            display: none !important;
+        }
+
+        .landing-page.login-locked ~ .container {
+            margin-top: 90px !important;
+            transition: none !important;
+        }
+
         .landing-page * {
             box-sizing: border-box;
         }

@@ -32,7 +32,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <link rel="stylesheet" href="assets/css/style.css?v=9">
+    <link rel="stylesheet" href="assets/css/style.css?v=10">
 </head>
 
 <body>
@@ -464,10 +464,14 @@
                                 <div id="attendance-list" style="max-height: 200px; overflow-y: auto; overflow-x: hidden;"></div>
                             </div>
 
-                            <div style="margin-top: 16px;">
+                            <div style="margin-top: 16px; display: flex; gap: 8px;">
                                 <button onclick="openExportModal()" class="btn btn-primary"
-                                    style="width: 100%; padding: 14px; border-radius: 12px; font-weight: 700; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
+                                    style="flex: 1; padding: 14px; border-radius: 12px; font-weight: 700; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
                                     📊 EXPORT HUB
+                                </button>
+                                <button onclick="openMeetImportModal()" class="btn btn-secondary"
+                                    style="flex: 1; padding: 14px; border-radius: 12px; font-weight: 700; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border: none; color: white; cursor: pointer;">
+                                    🟢 MEET IMPORT
                                 </button>
                             </div>
                         </div>
@@ -676,6 +680,47 @@
         </div>
     </div>
 
+    <!-- GOOGLE MEET ATTENDANCE IMPORT MODAL -->
+    <div id="meet-import-modal" class="modal">
+        <div class="modal-content" style="max-width: 650px; width: 90%;">
+            <span class="modal-close" onclick="closeMeetImportModal()">&times;</span>
+            <h2 class="modal-header">Import from Google Meet</h2>
+            
+            <!-- Paste Section -->
+            <div id="meet-paste-section">
+                <p style="margin-bottom: 12px; color: var(--text-muted); font-size: 13px; line-height: 1.4;">
+                    1. Go to Google Meet ➔ Click the <strong>People</strong> icon.<br>
+                    2. Select all participant names and copy them (Ctrl+A ➔ Ctrl+C).<br>
+                    3. Paste the list in the box below and click <strong>Process List</strong>.
+                </p>
+                <div class="form-group">
+                    <textarea id="meet-paste-textarea" rows="8" style="width: 100%; font-family: monospace; font-size: 13px; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);" 
+                        placeholder="Paste list here... e.g.&#10;Amit Kumar&#10;Sunita Devi&#10;John Doe (12)&#10;Amit Kumar (another one)"></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="processMeetList()" style="width: 100%; padding: 12px; border-radius: 10px;">
+                    ⚡ Process & Match Names
+                </button>
+            </div>
+
+            <!-- Preview / Conflict Resolution Section -->
+            <div id="meet-preview-section" style="display: none; margin-top: 15px;">
+                <h3 style="font-size: 15px; margin-bottom: 8px; font-weight: 600;">Participant Matching & Preview</h3>
+                <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; margin-bottom: 16px; background: var(--bg-color);">
+                    <div id="meet-match-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                </div>
+
+                <div id="meet-import-message"></div>
+
+                <button onclick="saveMeetAttendance()" style="width: 100%; padding: 14px; border-radius: 12px; border: none; cursor: pointer; font-weight: 800; font-size: 15px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; letter-spacing: 0.3px; box-shadow: 0 4px 15px rgba(16,185,129,0.4); transition: all 0.2s; margin-bottom: 10px;">
+                    ✅ Save Checked Attendance
+                </button>
+                <button onclick="backToMeetPaste()" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color); background: transparent; color: var(--text-muted); cursor: pointer; font-size: 13px; font-weight: 600;">
+                    Back
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- PROFILE/SETTINGS MODAL -->
     <div id="profile-modal" class="modal">
         <div class="modal-content">
@@ -808,7 +853,7 @@
     <!-- Core Logic Scripts -->
     <script src="assets/js/firebase-config.js"></script>
     <script src="assets/js/auth.js"></script>
-    <script src="assets/js/ui.js?v=10"></script>
+    <script src="assets/js/ui.js?v=12"></script>
     <script src="assets/js/history.js?v=10"></script>
     <script src="assets/js/export.js?v=10"></script>
 
@@ -1253,13 +1298,17 @@ Now format this student list:
 
             let authPromise;
             if (isGoogleLinked) {
-                authPromise = user.reauthenticateWithPopup(provider);
+                authPromise = auth.signInWithPopup(provider);
             } else {
                 authPromise = user.linkWithPopup(provider);
             }
 
             authPromise.then((result) => {
-                saveClassroomToken(result.credential.accessToken);
+                const token = (result && result.credential) ? result.credential.accessToken : null;
+                if (!token) {
+                    throw new Error("Could not retrieve Google access token from credentials.");
+                }
+                saveClassroomToken(token);
                 msgDiv.innerHTML = '<div class="message success">✅ Authorized! Fetching courses...</div>';
                 loadClassroomCourses();
             }).catch((error) => {
@@ -1267,7 +1316,11 @@ Now format this student list:
                 if (error.code === 'auth/credential-already-in-use' || error.code === 'auth/provider-already-linked') {
                     msgDiv.innerHTML = '<div class="message">🔄 Fetching authorized Classroom session...</div>';
                     auth.signInWithPopup(provider).then((result) => {
-                        saveClassroomToken(result.credential.accessToken);
+                        const token = (result && result.credential) ? result.credential.accessToken : null;
+                        if (!token) {
+                            throw new Error("Could not retrieve Google access token.");
+                        }
+                        saveClassroomToken(token);
                         msgDiv.innerHTML = '<div class="message success">✅ Authorized! Fetching courses...</div>';
                         loadClassroomCourses();
                     }).catch(err2 => {
@@ -1484,6 +1537,7 @@ Now format this student list:
         }
 
         function initializeApp() {
+            requestNotificationPermission();
             document.getElementById('class-info').textContent =
                 `Passout ${20}${currentUser.year} - ${currentUser.college} ${currentUser.branch} Section ${currentUser.section}`;
 
@@ -1567,8 +1621,17 @@ Now format this student list:
                                 statusBadge = `<div style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-block;">🕒 Review Required</div>`;
                             }
 
+                            if (request.suspicious) {
+                                statusBadge += `<div style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-block; margin-left: 4px;">⚠️ Suspicious: ${escapeHtml(request.suspiciousReason)}</div>`;
+                                borderLeftColor = '#ef4444';
+                            }
+
+                            const containerStyle = request.suspicious 
+                                ? `background: rgba(239, 68, 68, 0.02); border: 1.5px dashed #ef4444; padding: 16px; border-radius: 16px; margin-bottom: 12px; box-shadow: var(--shadow); border-left: 4px solid ${borderLeftColor};`
+                                : `background: var(--card-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 16px; margin-bottom: 12px; box-shadow: var(--shadow); border-left: 4px solid ${borderLeftColor};`;
+
                             html += `
-                                <div style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 16px; margin-bottom: 12px; box-shadow: var(--shadow); border-left: 4px solid ${borderLeftColor};">
+                                <div style="${containerStyle}">
                                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
                                         <div style="font-weight: 700; font-size: 15px; color: var(--text-color);">${escapeHtml(request.name)}</div>
                                         <div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
@@ -2115,9 +2178,7 @@ Now format this student list:
 
             window.currentQRListenerRef.on('child_added', (snapshot) => {
                 const record = snapshot.val();
-                if (record && record.name) {
-                    showToast(`✅ ${record.name} (${record.rollNo}) marked attendance!`);
-                }
+                handleAttendanceReceived(record);
             });
 
             // Save expiry and location to Firebase
@@ -2301,9 +2362,7 @@ Now format this student list:
                     window.currentQRListenerRef = db.ref('attendance/' + code).orderByChild('timestamp').startAt(generationTime);
                     window.currentQRListenerRef.on('child_added', (snapshot) => {
                         const record = snapshot.val();
-                        if (record && record.name) {
-                            showToast(`✅ ${record.name} (${record.rollNo}) marked attendance!`);
-                        }
+                        handleAttendanceReceived(record);
                     });
                     
                     // If fullscreen overlay is open, refresh it
@@ -2351,18 +2410,27 @@ Now format this student list:
                 if (records.length === 0) {
                     html = '<div class="empty-state"><div class="empty-icon">⏳</div><div>No attendance yet</div></div>';
                 } else {
-                    html = records.map(r => `
-                        <div class="list-item" style="margin-bottom: 8px;">
-                            <div class="list-item-info">
-                                <div class="list-item-name">${escapeHtml(r.name)}</div>
-                                <div class="list-item-roll">${escapeHtml(r.rollNo)}</div>
-                                <div class="list-item-time">${escapeHtml(formatTime(r.time))}</div>
+                    html = records.map(r => {
+                        const isSuspicious = r.suspicious === true;
+                        const suspiciousStyle = isSuspicious 
+                            ? 'border: 1.5px dashed #ef4444; background: rgba(239, 68, 68, 0.04);' 
+                            : '';
+                        const suspiciousBadge = isSuspicious 
+                            ? `<span class="status-pill danger" style="font-size: 10px; margin-top: 4px; padding: 2px 6px; display: inline-block;">⚠️ Suspicious: ${escapeHtml(r.suspiciousReason || 'Proxy Device')}</span>` 
+                            : '';
+                        return `
+                            <div class="list-item" style="margin-bottom: 8px; ${suspiciousStyle}">
+                                <div class="list-item-info">
+                                    <div class="list-item-name">${escapeHtml(r.name)}</div>
+                                    <div class="list-item-roll">${escapeHtml(r.rollNo)} ${suspiciousBadge}</div>
+                                    <div class="list-item-time">${escapeHtml(formatTime(r.time))}</div>
+                                </div>
+                                <div class="list-item-actions">
+                                    <button class="btn-small btn-danger" onclick="${buildInlineCall('deleteAttendance', [key, r.rollNo])}">Delete</button>
+                                </div>
                             </div>
-                            <div class="list-item-actions">
-                                <button class="btn-small btn-danger" onclick="${buildInlineCall('deleteAttendance', [key, r.rollNo])}">Delete</button>
-                            </div>
-                        </div>
-                    `).join('');
+                        `;
+                    }).join('');
                 }
 
                 const listEl = document.getElementById('attendance-list');
@@ -2387,6 +2455,369 @@ Now format this student list:
             }
         }
 
+        function requestNotificationPermission() {
+            if ('Notification' in window) {
+                if (Notification.permission === 'default') {
+                    Notification.requestPermission();
+                }
+            }
+        }
+
+        function playNotificationSound(type = 'success') {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+                
+                if (type === 'warning') {
+                    // Alert warning chime (lower, double tone)
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(220, ctx.currentTime); // A3
+                    osc.frequency.exponentialRampToValueAtTime(110, ctx.currentTime + 0.4); // A2
+                    
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+                    
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.4);
+                } else {
+                    // Success chime (high pitch, double tone)
+                    const playTone = (freq, start, duration) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, start);
+                        gain.gain.setValueAtTime(0.08, start);
+                        gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(start);
+                        osc.stop(start + duration);
+                    };
+                    playTone(880, ctx.currentTime, 0.12); // A5
+                    playTone(1320, ctx.currentTime + 0.08, 0.18); // E6
+                }
+            } catch (e) {
+                console.warn("Audio Context block", e);
+            }
+        }
+
+        function handleAttendanceReceived(record) {
+            if (!record || !record.name) return;
+            
+            const isSuspicious = record.suspicious === true;
+            const message = isSuspicious 
+                ? `⚠️ PROXY DETECTED: ${record.name} (${record.rollNo}) flagged! (${record.suspiciousReason})`
+                : `✅ ${record.name} (${record.rollNo}) marked attendance!`;
+            
+            showToast(message);
+            
+            // Send Native Push / Desktop notification
+            if ('Notification' in window && Notification.permission === 'granted') {
+                const title = isSuspicious ? '⚠️ Suspicious Attendance!' : '✅ Attendance Marked';
+                const body = isSuspicious 
+                    ? `${record.name} (${record.rollNo}) marked attendance from a shared device. Reason: ${record.suspiciousReason}`
+                    : `${record.name} (${record.rollNo}) marked present for ${currentSubject || 'Class'}.`;
+                
+                try {
+                    const notification = new Notification(title, {
+                        body: body,
+                        icon: 'logo-opt.png',
+                        tag: 'attendify-attendance',
+                        renotify: true
+                    });
+                    
+                    notification.onclick = function() {
+                        window.focus();
+                        notification.close();
+                    };
+                } catch (e) {
+                    console.error("Notification creation failed:", e);
+                }
+            }
+            
+            playNotificationSound(isSuspicious ? 'warning' : 'success');
+        }
+
+        function openMeetImportModal() {
+            if (!currentSubject) {
+                alert('⚠️ Please select a subject first.');
+                return;
+            }
+            document.getElementById('meet-paste-textarea').value = '';
+            document.getElementById('meet-paste-section').style.display = 'block';
+            document.getElementById('meet-preview-section').style.display = 'none';
+            document.getElementById('meet-import-modal').classList.add('active');
+        }
+
+        function closeMeetImportModal() {
+            document.getElementById('meet-import-modal').classList.remove('active');
+        }
+
+        function backToMeetPaste() {
+            document.getElementById('meet-paste-section').style.display = 'block';
+            document.getElementById('meet-preview-section').style.display = 'none';
+        }
+
+        function processMeetList() {
+            const text = document.getElementById('meet-paste-textarea').value.trim();
+            if (!text) {
+                alert('⚠️ Please paste the participant list first.');
+                return;
+            }
+            
+            const lines = text.split('\n');
+            const participants = [];
+            const seen = new Set();
+            
+            lines.forEach(line => {
+                let name = line.trim();
+                name = name.replace(/\(presentation\)/i, '')
+                           .replace(/\(you\)/i, '')
+                           .replace(/\(organizer\)/i, '')
+                           .trim();
+                
+                if (!name || name.match(/^(people|participants|\d+|time|meeting details|presentation|you)$/i)) return;
+                if (name.length < 3) return;
+                
+                const nameUpper = name.toUpperCase();
+                if (!seen.has(nameUpper)) {
+                    seen.add(nameUpper);
+                    participants.push(name);
+                }
+            });
+            
+            if (participants.length === 0) {
+                alert('⚠️ No valid participant names found. Make sure you copied names from the Google Meet panel.');
+                return;
+            }
+            
+            const matchContainer = document.getElementById('meet-match-list');
+            matchContainer.innerHTML = '';
+            
+            let aliases = {};
+            try {
+                aliases = JSON.parse(localStorage.getItem('meet_aliases_' + currentUser.uid) || '{}');
+            } catch (e) {}
+            
+            participants.forEach((pName, index) => {
+                const pNameUpper = pName.toUpperCase();
+                let matchedStudent = null;
+                
+                if (aliases[pNameUpper]) {
+                    matchedStudent = currentUser.students.find(s => s.rollNo.toUpperCase() === aliases[pNameUpper].toUpperCase());
+                }
+                
+                if (matchedStudent) {
+                    const item = document.createElement('div');
+                    item.className = 'match-item';
+                    item.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 8px; border-bottom: 1px dashed var(--border-color);';
+                    item.innerHTML = `
+                        <div>
+                            <span style="font-weight: 600; font-size: 14px; color: var(--text-color);">${escapeHtml(pName)}</span>
+                            <span style="font-size: 12px; color: #10b981; margin-left: 8px;">➔ Linked to: ${escapeHtml(matchedStudent.name)} (${escapeHtml(matchedStudent.rollNo)})</span>
+                        </div>
+                        <div>
+                            <input type="checkbox" class="meet-present-chk" data-roll="${escapeHtml(matchedStudent.rollNo)}" checked>
+                        </div>
+                    `;
+                    matchContainer.appendChild(item);
+                    return;
+                }
+                
+                const numbers = pName.match(/\d+/g) || [];
+                let numberMatchedStudents = [];
+                let exactMatches = [];
+                let partialMatches = [];
+                
+                currentUser.students.forEach(s => {
+                    const sNameUpper = s.name.toUpperCase();
+                    const sRollUpper = s.rollNo.toUpperCase();
+                    
+                    if (sNameUpper === pNameUpper) {
+                        exactMatches.push(s);
+                    } else {
+                        const partsP = pNameUpper.split(/\s+/);
+                        const partsS = sNameUpper.split(/\s+/);
+                        const isFuzzy = partsP.some(p => partsS.includes(p)) || sNameUpper.includes(pNameUpper) || pNameUpper.includes(sNameUpper);
+                        if (isFuzzy) {
+                            partialMatches.push(s);
+                        }
+                    }
+                    
+                    if (numbers.length > 0) {
+                        numbers.forEach(num => {
+                            if (sRollUpper.endsWith(num) || sRollUpper.includes(num)) {
+                                if (!numberMatchedStudents.includes(s)) {
+                                    numberMatchedStudents.push(s);
+                                }
+                            }
+                        });
+                    }
+                });
+                
+                let finalMatches = [];
+                if (exactMatches.length > 0) {
+                    finalMatches = exactMatches;
+                } else if (numberMatchedStudents.length === 1 && partialMatches.includes(numberMatchedStudents[0])) {
+                    finalMatches = [numberMatchedStudents[0]];
+                } else if (partialMatches.length > 0) {
+                    finalMatches = partialMatches;
+                }
+                
+                const item = document.createElement('div');
+                item.className = 'match-item';
+                
+                if (finalMatches.length === 1) {
+                    const student = finalMatches[0];
+                    item.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 8px; border-bottom: 1px dashed var(--border-color);';
+                    item.innerHTML = `
+                        <div>
+                            <span style="font-weight: 600; font-size: 14px; color: var(--text-color);">${escapeHtml(pName)}</span>
+                            <span style="font-size: 12px; color: #10b981; margin-left: 8px;">➔ Auto-matched: ${escapeHtml(student.name)} (${escapeHtml(student.rollNo)})</span>
+                        </div>
+                        <div>
+                            <input type="checkbox" class="meet-present-chk" data-roll="${escapeHtml(student.rollNo)}" checked>
+                        </div>
+                    `;
+                } else if (finalMatches.length > 1) {
+                    item.style.cssText = 'padding: 10px; border-bottom: 1px dashed var(--border-color); background: rgba(245, 158, 11, 0.04); border-left: 4px solid #f59e0b;';
+                    item.innerHTML = `
+                        <div style="font-weight: 600; font-size: 14px; color: var(--text-color); margin-bottom: 6px;">
+                            ⚠️ ${escapeHtml(pName)} <span style="font-size: 12px; color: #f59e0b; font-weight: normal; margin-left: 6px;">(Multiple Students Found)</span>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 6px; padding-left: 8px;">
+                            ${finalMatches.map(s => `
+                                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; color: var(--text-color);">
+                                    <input type="checkbox" class="meet-present-chk" data-roll="${escapeHtml(s.rollNo)}">
+                                    ${escapeHtml(s.name)} (Roll: ${escapeHtml(s.rollNo)})
+                                </label>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    item.id = `meet-unmatched-${index}`;
+                    item.style.cssText = 'padding: 10px; border-bottom: 1px dashed var(--border-color); background: rgba(239, 68, 68, 0.02); border-left: 4px solid #ef4444;';
+                    item.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                            <div>
+                                <span style="font-weight: 600; font-size: 14px; color: var(--text-color);">${escapeHtml(pName)}</span>
+                                <span style="font-size: 12px; color: #ef4444; margin-left: 8px;">➔ Unmatched</span>
+                            </div>
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <select class="meet-roster-select" style="padding: 6px; border-radius: 8px; font-size: 12px; background: var(--tab-bg); color: var(--text-color); border: 1px solid var(--border-color);">
+                                    <option value="">-- Link to Student --</option>
+                                    ${currentUser.students.map(s => `<option value="${escapeHtml(s.rollNo)}">${escapeHtml(s.name)} (${escapeHtml(s.rollNo)})</option>`).join('')}
+                                </select>
+                                <button class="btn-small btn-success" onclick="linkMeetAlias('${escapeHtml(pName)}', this, ${index})" style="padding: 6px 12px; font-size: 11px;">Link</button>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                matchContainer.appendChild(item);
+            });
+            
+            document.getElementById('meet-paste-section').style.display = 'none';
+            document.getElementById('meet-preview-section').style.display = 'block';
+        }
+
+        function linkMeetAlias(pName, buttonEl, index) {
+            const selectEl = buttonEl.previousElementSibling;
+            const rollNo = selectEl.value;
+            
+            if (!rollNo) {
+                alert('⚠️ Please select a student to link first.');
+                return;
+            }
+            
+            const student = currentUser.students.find(s => s.rollNo === rollNo);
+            if (!student) return;
+            
+            let aliases = {};
+            try {
+                aliases = JSON.parse(localStorage.getItem('meet_aliases_' + currentUser.uid) || '{}');
+            } catch (e) {}
+            
+            aliases[pName.toUpperCase()] = rollNo;
+            localStorage.setItem('meet_aliases_' + currentUser.uid, JSON.stringify(aliases));
+            
+            const parentDiv = document.getElementById(`meet-unmatched-${index}`);
+            if (parentDiv) {
+                parentDiv.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 8px; border-bottom: 1px dashed var(--border-color); background: transparent; border-left: none;';
+                parentDiv.innerHTML = `
+                    <div>
+                        <span style="font-weight: 600; font-size: 14px; color: var(--text-color);">${escapeHtml(pName)}</span>
+                        <span style="font-size: 12px; color: #10b981; margin-left: 8px;">➔ Linked: ${escapeHtml(student.name)} (${escapeHtml(student.rollNo)})</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" class="meet-present-chk" data-roll="${escapeHtml(student.rollNo)}" checked>
+                    </div>
+                `;
+            }
+            
+            showToast(`🔗 Linked "${pName}" to ${student.name}!`);
+        }
+
+        function saveMeetAttendance() {
+            const chks = document.querySelectorAll('.meet-present-chk:checked');
+            if (chks.length === 0) {
+                alert('⚠️ No students selected to mark present.');
+                return;
+            }
+            
+            const key = `${currentUser.username}_${getLocalDateKey()}_${currentSubject}`;
+            const ref = db.ref('attendance/' + key);
+            
+            ref.once('value', (snapshot) => {
+                const existing = {};
+                if (snapshot.exists()) {
+                    snapshot.forEach(child => {
+                        const rec = child.val();
+                        if (rec && rec.rollNo) {
+                            existing[rec.rollNo.toUpperCase()] = true;
+                        }
+                    });
+                }
+                
+                const promises = [];
+                let addedCount = 0;
+                
+                chks.forEach(chk => {
+                    const rollNo = chk.getAttribute('data-roll');
+                    const student = currentUser.students.find(s => s.rollNo.toUpperCase() === rollNo.toUpperCase());
+                    
+                    if (student && !existing[rollNo.toUpperCase()]) {
+                        const attendanceData = {
+                            rollNo: student.rollNo,
+                            name: student.name,
+                            time: new Date().toLocaleTimeString('en-IN'),
+                            timestamp: Date.now(),
+                            deviceId: "GOOGLE_MEET_IMPORT"
+                        };
+                        promises.push(ref.push(attendanceData));
+                        addedCount++;
+                    }
+                });
+                
+                if (promises.length > 0) {
+                    Promise.all(promises).then(() => {
+                        showToast(`✅ Successfully marked ${addedCount} students present!`);
+                        closeMeetImportModal();
+                        updateAttendanceDisplay();
+                    });
+                } else {
+                    showToast(`ℹ️ Selected students were already marked present.`);
+                    closeMeetImportModal();
+                }
+            });
+        }
+
         function calculateDistance(lat1, lon1, lat2, lon2) {
             const R = 6371e3; // Earth radius in meters
             const phi1 = lat1 * Math.PI / 180;
@@ -2402,8 +2833,71 @@ Now format this student list:
             return R * c; // in meters
         }
 
+        function getDeviceId() {
+            let id = null;
+            try {
+                id = localStorage.getItem('attendify_device_id');
+                if (!id) id = sessionStorage.getItem('attendify_device_id');
+            } catch (e) {}
+            
+            if (!id) {
+                try {
+                    const match = document.cookie.match(/(^|;)\s*attendify_device_id\s*=\s*([^;]+)/);
+                    if (match) id = match[2];
+                } catch (e) {}
+            }
+            
+            if (!id) {
+                id = 'DEV_' + Math.random().toString(36).substring(2, 15) + '_' + Date.now().toString(36);
+            }
+            
+            try {
+                localStorage.setItem('attendify_device_id', id);
+                sessionStorage.setItem('attendify_device_id', id);
+                document.cookie = `attendify_device_id=${id}; max-age=31536000; path=/; SameSite=Lax`;
+            } catch (e) {}
+            
+            return id;
+        }
+
+        function checkProxySession(key, rollNo, deviceId, callback) {
+            db.ref('attendance/' + key).once('value', (snapshot) => {
+                let isProxy = false;
+                let originalRollNo = '';
+                
+                if (snapshot.exists()) {
+                    snapshot.forEach(child => {
+                        const rec = child.val();
+                        if (rec && rec.deviceId === deviceId && rec.rollNo.toUpperCase() !== rollNo.toUpperCase()) {
+                            isProxy = true;
+                            originalRollNo = rec.rollNo;
+                        }
+                    });
+                }
+                
+                if (isProxy) {
+                    callback(true, originalRollNo);
+                    return;
+                }
+                
+                db.ref('requests/' + key).once('value', (reqSnapshot) => {
+                    if (reqSnapshot.exists()) {
+                        reqSnapshot.forEach(child => {
+                            const rec = child.val();
+                            if (rec && rec.deviceId === deviceId && rec.rollNo.toUpperCase() !== rollNo.toUpperCase()) {
+                                isProxy = true;
+                                originalRollNo = rec.rollNo;
+                            }
+                        });
+                    }
+                    callback(isProxy, originalRollNo);
+                });
+            });
+        }
+
         function submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, distance, gpsDenied) {
             const lateMinutes = isWithin5Minutes ? 0 : Math.floor((currentTime - session.expiryTime) / (1000 * 60));
+            const deviceId = getDeviceId();
             
             const requestData = {
                 rollNo: student.rollNo,
@@ -2416,59 +2910,85 @@ Now format this student list:
                 gpsDenied: gpsDenied,
                 distance: distance || null,
                 radiusLimit: session.location.radius,
-                lateBy: lateMinutes
+                lateBy: lateMinutes,
+                deviceId: deviceId
             };
 
-            db.ref('requests/' + key).push(requestData).then(() => {
-                // Log Analytics Event
-                logAnalyticsEvent("attendance_submitted", {
-                    subject: subject,
-                    status: gpsDenied ? "gps_denied" : "out_of_range"
-                });
-
-                if (!gpsDenied) {
-                    logAnalyticsEvent("geofence_violation", {
-                        subject: subject,
-                        distance: distance,
-                        allowed_radius: session.location.radius
-                    });
+            const classId = key.split('_')[0];
+            
+            checkProxySession(key, student.rollNo, deviceId, (isProxy, originalRollNo) => {
+                if (isProxy) {
+                    requestData.suspicious = true;
+                    requestData.suspiciousReason = `Device shared with ${originalRollNo}`;
                 }
-
-                const classId = key.split('_')[0];
-                let redirectURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(requestData.requestTime)}&class=${encodeURIComponent(classId)}`;
                 
-                if (gpsDenied) {
-                    redirectURL += `&gpsDenied=true`;
-                } else {
-                    redirectURL += `&outOfRange=true&distance=${distance}`;
-                }
+                db.ref('requests/' + key).push(requestData).then(() => {
+                    // Log Analytics Event
+                    logAnalyticsEvent("attendance_submitted", {
+                        subject: subject,
+                        status: gpsDenied ? "gps_denied" : "out_of_range",
+                        suspicious: isProxy
+                    });
 
-                if (lateMinutes > 0) {
-                    redirectURL += `&late=true&lateBy=${lateMinutes}`;
-                }
+                    if (!gpsDenied && !isProxy) {
+                        logAnalyticsEvent("geofence_violation", {
+                            subject: subject,
+                            distance: distance,
+                            allowed_radius: session.location.radius
+                        });
+                    }
 
-                window.location.href = redirectURL;
+                    let redirectURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(requestData.requestTime)}&class=${encodeURIComponent(classId)}`;
+                    
+                    if (gpsDenied) {
+                        redirectURL += `&gpsDenied=true`;
+                    } else {
+                        redirectURL += `&outOfRange=true&distance=${distance}`;
+                    }
+
+                    if (lateMinutes > 0) {
+                        redirectURL += `&late=true&lateBy=${lateMinutes}`;
+                    }
+                    
+                    if (isProxy) {
+                        redirectURL += `&suspicious=true`;
+                    }
+
+                    window.location.href = redirectURL;
+                });
             });
         }
 
         function proceedWithAttendanceSave(student, subject, key, currentTime, isWithin5Minutes, session) {
+            const deviceId = getDeviceId();
+            
             if (isWithin5Minutes) {
                 const attendanceData = {
                     rollNo: student.rollNo,
                     name: student.name,
                     time: new Date().toLocaleTimeString('en-IN'),
-                    timestamp: currentTime
+                    timestamp: currentTime,
+                    deviceId: deviceId
                 };
 
                 const classId = key.split('_')[0];
-                db.ref('attendance/' + key).push(attendanceData).then(() => {
-                    // Log Analytics Event
-                    logAnalyticsEvent("attendance_submitted", {
-                        subject: subject,
-                        status: "present"
+                
+                checkProxySession(key, student.rollNo, deviceId, (isProxy, originalRollNo) => {
+                    if (isProxy) {
+                        attendanceData.suspicious = true;
+                        attendanceData.suspiciousReason = `Device shared with ${originalRollNo}`;
+                    }
+                    
+                    db.ref('attendance/' + key).push(attendanceData).then(() => {
+                        // Log Analytics Event
+                        logAnalyticsEvent("attendance_submitted", {
+                            subject: subject,
+                            status: "present",
+                            suspicious: isProxy
+                        });
+                        const successURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(attendanceData.time)}&class=${encodeURIComponent(classId)}${isProxy ? '&suspicious=true' : ''}`;
+                        window.location.href = successURL;
                     });
-                    const successURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(attendanceData.time)}&class=${encodeURIComponent(classId)}`;
-                    window.location.href = successURL;
                 });
             } else {
                 const lateMinutes = Math.floor((currentTime - session.expiryTime) / (1000 * 60));
@@ -2479,18 +2999,28 @@ Now format this student list:
                     requestTime: new Date().toLocaleTimeString('en-IN'),
                     timestamp: currentTime,
                     lateBy: lateMinutes,
-                    status: 'pending'
+                    status: 'pending',
+                    deviceId: deviceId
                 };
 
-                db.ref('requests/' + key).push(requestData).then(() => {
-                    // Log Analytics Event
-                    logAnalyticsEvent("attendance_submitted", {
-                        subject: subject,
-                        status: "late_pending"
+                const classId = key.split('_')[0];
+                
+                checkProxySession(key, student.rollNo, deviceId, (isProxy, originalRollNo) => {
+                    if (isProxy) {
+                        requestData.suspicious = true;
+                        requestData.suspiciousReason = `Device shared with ${originalRollNo}`;
+                    }
+                    
+                    db.ref('requests/' + key).push(requestData).then(() => {
+                        // Log Analytics Event
+                        logAnalyticsEvent("attendance_submitted", {
+                            subject: subject,
+                            status: "late_pending",
+                            suspicious: isProxy
+                        });
+                        const lateURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(requestData.requestTime)}&late=true&lateBy=${lateMinutes}&class=${encodeURIComponent(classId)}${isProxy ? '&suspicious=true' : ''}`;
+                        window.location.href = lateURL;
                     });
-                    const classId = key.split('_')[0];
-                    const lateURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(requestData.requestTime)}&late=true&lateBy=${lateMinutes}&class=${encodeURIComponent(classId)}`;
-                    window.location.href = lateURL;
                 });
             }
         }
