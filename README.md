@@ -1,59 +1,86 @@
 # 📱 ATTENDIFY
 
-A high-performance, **Firebase-powered web application** designed for seamless student attendance management using **dynamic QR codes** and **smart campus-scale geofencing**.
+A high-performance, **Firebase-powered web application** for seamless student attendance management using **dynamic QR codes**, **smart geofencing**, **Google Meet integration**, and a built-in **anti-proxy detection engine**.
 
 ---
 
 ## 🚀 Key Features
 
+### Core Attendance
 - **⚡ Real-time Tracking**: Live attendance updates powered by Firebase Realtime Database.
-- **🔐 Secure Sessions**: Unique, auto-expiring QR codes to prevent unauthorized entries.
-- **📍 Smart Geofencing**: 
-  - Verification range from **10m up to 2.0 km** with automated unit scaling (`m` and `km`).
-  - Interactive map configuration using Leaflet.js with circle boundary visualization.
-  - Multi-result geocoding location search bar powered by **Nominatim (OpenStreetMap)** with Indian colleges/campus location bias.
-  - Automatic map zooming to fit the geofence circle bounds perfectly.
-- **🔔 Advanced Request Management**:
-  - Automatically flags late check-ins, out-of-boundary submissions, or GPS access denials.
-  - Color-coded badges with reasons (e.g., `Out of Range (120m)`, `GPS Denied`, `Late`).
-  - One-click approval or rejection by the CR.
-- **👨‍🏫 Teacher Dashboard**: Comprehensive control panel for subject management, live monitoring, and student list updates.
-- **👩‍🎓 Student Portal**: Instant, zero-install attendance submission via mobile QR scanning.
-- **📊 Smart Export**: Export professional Excel reports with a customizable date filter, subject filter, or individual student report.
-- **📖 Embedded User Manual**: Svelte, digital manual accessible via `manual.html`, print-friendly (Save as PDF), and accessible directly from the login page and dashboard.
-- **🌙 Premium UI**: Responsive, modern dark-themed interface optimized for all devices with CSS layout fallbacks for absolute stability.
+- **🔐 Secure QR Sessions**: Unique, auto-expiring QR codes (5 min default, extendable by 1 min) to prevent unauthorized entries.
+- **📍 Smart Geofencing**: Verification range from **10m up to 2.0 km** with Leaflet.js map, draggable marker, Nominatim geocoding search (India-biased), and circle boundary visualization.
+- **🔔 Request Management**: Auto-flags late check-ins, out-of-boundary submissions, GPS denials — with one-click CR approval/rejection.
+
+### 🛡️ Anti-Proxy System *(New)*
+- **Device Fingerprinting**: Persistent 3-layer Device ID (localStorage → sessionStorage → cookie) to uniquely identify student devices.
+- **Silent Fraud Detection**: Flags proxy attempts (same device, different roll numbers) without alerting the student — CR sees a ⚠️ Suspicious badge with red dashed border.
+- **Zero false blocking**: Suspicious records are still saved but visually flagged for CR audit.
+
+### 🔔 Native Notifications & Audio *(New)*
+- **OS-Level Push Notifications**: Browser native notifications for every attendance submission — visible even when tab is minimized.
+- **Distinct Audio Chimes**: Web Audio API (no MP3 files needed) — success chime for normal, warning chime for proxy/suspicious submissions.
+
+### 🎓 Google Meet Attendance Import *(New)*
+- **Paste & Match**: CR pastes Google Meet participant list → system auto-matches names using multi-layer fuzzy matching.
+- **Smart Alias Memory**: Remembers custom name-to-roll mappings in localStorage — fully automatic after first link.
+- **Conflict Resolution**: Handles same-name conflicts with checkboxes; unmatched names (e.g., parent accounts) shown with dropdown selection.
+
+### 🏫 Google Classroom Import *(New)*
+- Import student roster directly from Google Classroom using Google Identity Services (GIS) OAuth.
+- No Firebase session disruption — shows only a minimal Classroom consent popup.
+- *Note: Requires CR to have Teacher role in the Classroom to fetch full roster.*
+
+### 📊 Dashboard & Reporting
+- **👨‍🏫 CR Dashboard**: Tabs for QR generation, live feed, today's summary, student management, history, requests, and Export Hub.
+- **👩‍🎓 Student Portal** (`track.html`): Subject-wise attendance percentage, logs, PDF export — no Firebase Auth needed.
+- **📊 Export Hub**: Excel reports (`.xlsx`) with list/matrix formats, date range filter, student search, and manual present/absent editing.
+- **🤖 AI Support Chatbot**: Inline chatbot on the Contact page powered by Gemini 2.5 Flash with OpenRouter fallback, deployed on Cloudflare Workers.
 
 ---
 
 ## 🧭 Quick Start Guide
 
-### 👨‍🏫 For Educators (CR)
+### 👨‍🏫 For CRs / Educators
 
-1. **Initialize**: Open the dashboard and sign in.
-2. **Setup**: Add your subjects and student list in the settings.
-3. **Configure Geofencing (Optional)**: Enable geofencing, search for your building/campus, drag the marker, set the radius, and click **Set Location**.
-4. **Generate**: Select a subject and click **“Generate QR Code”**.
-5. **Monitor & Approve**: Watch the attendance list populate in real-time. Approve/reject flagged submissions in the **Requests** tab.
-6. **Report**: Download the final list as an Excel file from the **Export Hub**.
+1. **Sign In**: Google login (recommended) or phone OTP.
+2. **Setup**: Add class details, subjects, and student list (`NAME - ROLLNO` format per line).
+3. **Generate QR**: Select subject → click **Generate QR Code** → share fullscreen or copy link.
+4. **Monitor**: Watch live attendance feed with OS notifications and audio chimes.
+5. **Online Class**: Use **🟢 MEET IMPORT** → paste Google Meet participant list → auto-match & save.
+6. **Review**: Approve/reject pending requests; audit ⚠️ Suspicious entries.
+7. **Export**: Download Excel report from Export Hub.
 
 ### 👩‍🎓 For Students
 
-1. **Scan**: Use your phone camera to scan the teacher's QR code.
-2. **Verify**: Ensure the subject and teacher details are correct.
-3. **Submit**: Enter your Roll Number, allow browser location permission (if requested), and tap **Submit**.
-4. **Confirm**: Receive instant confirmation or pending approval notice.
+1. **Scan** the CR's QR code or open the shared link.
+2. **Enter** Roll Number (or full name).
+3. **Allow** location if requested.
+4. **Submit** — get instant confirmation or pending approval notice.
+5. **Track** attendance anytime via `track.html` using Class ID + Roll Number.
 
 ---
 
 ## ⚙️ Built With
 
-- **Logic**: Vanilla JavaScript (ES6+)
-- **Styling**: Modern CSS3 with Custom Properties & Dark Mode
-- **Backend**: Google Firebase (Auth & Realtime DB)
-- **Mapping**: Leaflet.js & Nominatim Geocoding API
-- **Engines**: 
-  - `qrcode.js` for dynamic vector QR generation
-  - `SheetJS` for enterprise-grade Excel processing
+| Layer | Technology |
+|---|---|
+| **Frontend** | Vanilla JavaScript (ES6+), HTML5, CSS3 |
+| **Backend / DB** | Google Firebase (Auth + Realtime Database + Hosting) |
+| **AI Chatbot** | Gemini 2.5 Flash (primary) + OpenRouter (fallback) on Cloudflare Workers |
+| **Mapping** | Leaflet.js + Nominatim (OpenStreetMap) |
+| **Classroom OAuth** | Google Identity Services (GIS) |
+| **QR Generation** | qrcode.js |
+| **Excel Export** | SheetJS (xlsx) |
+| **Notifications** | Browser Notification API + Web Audio API |
+| **PWA** | Service Worker (cache-first/network-first strategy) |
+
+---
+
+## 🌐 Live URLs
+
+- **Main App**: https://qr-smart-attendance.web.app
+- **AI Support Worker**: https://attendify-support-worker.sm3165599.workers.dev
 
 ---
 
@@ -62,6 +89,10 @@ A high-performance, **Firebase-powered web application** designed for seamless s
 This project is licensed under the **MIT License**.
 
 **Developed by Shivam Kumar Mahto**  
-🔗 [GitHub](https://github.com/shivam238) | 📷 [Instagram](https://www.instagram.com/heheshivam/)
+🔗 [GitHub](https://github.com/shivam238) | 📷 [Instagram](https://www.instagram.com/heheshivam/) | 💼 [LinkedIn](https://www.linkedin.com/in/shivam-kumar-mahto-046228361/)
 
 © 2026 ATTENDIFY. All rights reserved.
+
+
+---
+

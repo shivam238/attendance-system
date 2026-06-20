@@ -627,7 +627,7 @@
             <h2 class="modal-header">Import from Google Classroom</h2>
             
             <div id="classroom-auth-section" style="text-align: center; padding: 20px 0;">
-                <p style="margin-bottom: 20px; color: var(--text-muted);">Connect your Google Classroom account to import student rosters directly.</p>
+                <p style="margin-bottom: 16px; color: var(--text-muted); font-size: 13px;">Connect your Google account to import student rosters from Google Classroom.</p>
                 <button class="btn btn-primary" onclick="connectGoogleClassroom()" style="display: inline-flex; align-items: center; gap: 8px;">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
@@ -845,6 +845,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
+
+    <!-- Google Identity Services (for Classroom OAuth without disrupting current auth) -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <!-- Non-essential scripts deferred -->
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -1262,16 +1265,15 @@ Now format this student list:
             document.getElementById('classroom-modal').classList.add('active');
             document.getElementById('classroom-message').innerHTML = '';
             document.getElementById('classroom-roster-section').style.display = 'none';
+            document.getElementById('classroom-courses-section').style.display = 'none';
 
             // If we already have a valid token, skip auth and go straight to courses
             if (googleClassroomAccessToken) {
                 document.getElementById('classroom-auth-section').style.display = 'none';
-                document.getElementById('classroom-courses-section').style.display = 'none';
                 document.getElementById('classroom-message').innerHTML = '<div class="message">🔄 Restoring your Classroom session...</div>';
                 loadClassroomCourses();
             } else {
                 document.getElementById('classroom-auth-section').style.display = 'block';
-                document.getElementById('classroom-courses-section').style.display = 'none';
             }
         }
 
@@ -1281,55 +1283,48 @@ Now format this student list:
 
         function connectGoogleClassroom() {
             const msgDiv = document.getElementById('classroom-message');
-            msgDiv.innerHTML = '<div class="message">🔄 Connecting Google Classroom...</div>';
 
-            const provider = new firebase.auth.GoogleAuthProvider();
-            provider.addScope('https://www.googleapis.com/auth/classroom.courses.readonly');
-            provider.addScope('https://www.googleapis.com/auth/classroom.rosters.readonly');
-            provider.setCustomParameters({ prompt: 'consent' });
-
-            const user = auth.currentUser;
-            if (!user) {
+            if (!auth.currentUser) {
                 msgDiv.innerHTML = '<div class="message error">❌ Not logged in!</div>';
                 return;
             }
 
-            const isGoogleLinked = user.providerData.some(p => p.providerId === 'google.com');
-
-            let authPromise;
-            if (isGoogleLinked) {
-                authPromise = auth.signInWithPopup(provider);
-            } else {
-                authPromise = user.linkWithPopup(provider);
+            // Use Google Identity Services (GIS) — requests ONLY Classroom scopes
+            // WITHOUT disturbing the existing Firebase/Phone auth session.
+            if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
+                msgDiv.innerHTML = '<div class="message error">❌ Google library not loaded. Please refresh and try again.</div>';
+                return;
             }
 
-            authPromise.then((result) => {
-                const token = (result && result.credential) ? result.credential.accessToken : null;
-                if (!token) {
-                    throw new Error("Could not retrieve Google access token from credentials.");
-                }
-                saveClassroomToken(token);
-                msgDiv.innerHTML = '<div class="message success">✅ Authorized! Fetching courses...</div>';
-                loadClassroomCourses();
-            }).catch((error) => {
-                console.error("Google Classroom auth error:", error);
-                if (error.code === 'auth/credential-already-in-use' || error.code === 'auth/provider-already-linked') {
-                    msgDiv.innerHTML = '<div class="message">🔄 Fetching authorized Classroom session...</div>';
-                    auth.signInWithPopup(provider).then((result) => {
-                        const token = (result && result.credential) ? result.credential.accessToken : null;
-                        if (!token) {
-                            throw new Error("Could not retrieve Google access token.");
-                        }
-                        saveClassroomToken(token);
+            msgDiv.innerHTML = '<div class="message">🔄 Requesting Google Classroom access...</div>';
+
+            const CLASSROOM_CLIENT_ID = '841328143028-50gkc47h2i4djtr5scnoilo16bgkp79e.apps.googleusercontent.com';
+
+            const tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLASSROOM_CLIENT_ID,
+                scope: [
+                    'https://www.googleapis.com/auth/classroom.courses.readonly',
+                    'https://www.googleapis.com/auth/classroom.rosters.readonly'
+                ].join(' '),
+                callback: (tokenResponse) => {
+                    if (tokenResponse && tokenResponse.access_token) {
+                        saveClassroomToken(tokenResponse.access_token);
                         msgDiv.innerHTML = '<div class="message success">✅ Authorized! Fetching courses...</div>';
                         loadClassroomCourses();
-                    }).catch(err2 => {
-                        msgDiv.innerHTML = '<div class="message error">❌ Authorization failed: ' + err2.message + '</div>';
-                    });
-                } else {
-                    msgDiv.innerHTML = '<div class="message error">❌ Authorization failed: ' + error.message + '</div>';
+                    } else {
+                        msgDiv.innerHTML = '<div class="message error">❌ Could not get access token. Please try again.</div>';
+                    }
+                },
+                error_callback: (err) => {
+                    if (err.type === 'popup_closed') {
+                        msgDiv.innerHTML = '<div class="message warning">⚠️ Popup was closed. Please try again.</div>';
+                    } else {
+                        msgDiv.innerHTML = '<div class="message error">❌ Authorization failed: ' + (err.message || err.type) + '</div>';
+                    }
                 }
             });
+
+            tokenClient.requestAccessToken({ prompt: 'consent' });
         }
 
         function loadClassroomCourses() {
