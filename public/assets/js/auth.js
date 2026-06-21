@@ -452,8 +452,18 @@ function linkGoogleAccount() {
         });
 }
 
+// Track the last processed token to prevent loop/replay of old launch URLs in Capacitor
+let lastProcessedToken = null;
+
 // Automatic Login token verification helper
 function loginWithToken(token) {
+    if (!token) return;
+    if (token === lastProcessedToken) {
+        console.log("Token already processed, skipping duplicate authentication.");
+        return;
+    }
+    lastProcessedToken = token;
+
     const msgDiv = document.getElementById('capacitor-login-message') || document.getElementById('login-message');
     if (msgDiv) msgDiv.innerHTML = '<span style="color: var(--text-color);">🔄 Authenticating from browser...</span>';
     

@@ -269,6 +269,11 @@
             const msgDiv = document.getElementById('message');
 
             auth.getRedirectResult().then((result) => {
+                // Clear URL redirect parameters immediately to prevent loop or stale states on refresh/reopen
+                if (window.location.search || window.location.hash) {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+
                 if (result && result.credential) {
                     const idToken = result.credential.idToken;
                     if (idToken) {
@@ -284,6 +289,10 @@
                 }
             }).catch((error) => {
                 console.error('Redirect sign-in error:', error);
+                // Clear URL redirect parameters on error as well to prevent loops
+                if (window.location.search || window.location.hash) {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
                 document.getElementById('connecting-state').style.display = 'none';
                 document.getElementById('login-section').style.display = 'block';
                 msgDiv.innerHTML = '<span class="error">❌ Sign-in failed: ' + error.message + '</span>';
