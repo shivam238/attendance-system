@@ -205,7 +205,11 @@
     </div>
 
     <script>
+        let redirectInitiated = false;
         function signInWithGoogle() {
+            if (redirectInitiated) return;
+            redirectInitiated = true;
+
             const msgDiv = document.getElementById('message');
             msgDiv.innerHTML = '<span class="info">🔄 Connecting to Google...</span>';
 
@@ -214,13 +218,7 @@
                 prompt: 'select_account'
             });
 
-            // Sign out first to ensure a clean redirect state
-            auth.signOut().then(() => {
-                auth.signInWithRedirect(provider);
-            }).catch(err => {
-                console.error("Sign out error, continuing redirect:", err);
-                auth.signInWithRedirect(provider);
-            });
+            auth.signInWithRedirect(provider);
         }
 
         // On page load, check if redirected back from Google
@@ -240,9 +238,16 @@
                     // No redirect result, check if user is already signed in
                     auth.onAuthStateChanged((user) => {
                         if (user) {
-                            msgDiv.innerHTML = '<span class="info">ℹ️ You are signed in. Click "Continue with Google" to get your code.</span>';
+                            msgDiv.innerHTML = '<span class="info">🔄 Already logged in. Redirecting to app...</span>';
+                            user.getIdToken(true).then((idToken) => {
+                                handleSuccessfulLogin(idToken);
+                            }).catch(err => {
+                                console.error("Error getting ID Token:", err);
+                                signInWithGoogle();
+                            });
                         } else {
-                            msgDiv.innerHTML = '';
+                            // Automatically start Google sign in on page load to avoid the second click
+                            signInWithGoogle();
                         }
                     });
                 }
