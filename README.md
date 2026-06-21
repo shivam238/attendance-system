@@ -88,6 +88,10 @@ A high-performance, **Firebase-powered web application** for seamless student at
 
 ATTENDIFY is fully integrated with **Capacitor** to build a native Android app.
 
+### 📥 Download Android App
+Download the compiled, ready-to-install Android APK directly from our official release:
+👉 **[Download ATTENDIFY APK (Latest)](https://github.com/shivam238/attendance-system/releases/latest/download/ATTENDIFY.apk)**
+
 ### 🌟 Mobile-Specific Features
 - **Instant Entry**: Detects Capacitor and automatically bypasses the landing page to load the login screen instantly.
 - **Native Notifications**: Integrated with `@capacitor/local-notifications` to send native push notifications to the device system tray.
@@ -110,7 +114,7 @@ To compile the native Android APK from the current code:
 This project is licensed under the **MIT License**.
 
 **Developed by Shivam Kumar Mahto**  
-🔗 [GitHub](https://github.com/shivam238) | 📷 [Instagram](https://www.instagram.com/heheshivam/) | 💼 [LinkedIn](https://www.linkedin.com/in/shivam-kumar-mahto-046228361/)
+🔗 [GitHub](https://github.com/shivam238) | 💬 [WhatsApp Community](https://chat.whatsapp.com/GDOjvKK7nxGFvQ7NSrQNiG) | 📷 [Instagram](https://www.instagram.com/heheshivam/) | 💼 [LinkedIn](https://www.linkedin.com/in/shivam-kumar-mahto-046228361/)
 
 © 2026 ATTENDIFY. All rights reserved.
 

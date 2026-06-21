@@ -7,7 +7,8 @@ function showScreen(screenId) {
         if (landingPage) {
             landingPage.classList.toggle('is-hidden', screenId !== 'login-screen');
             if (screenId === 'login-screen') {
-                const skipLanding = window.Capacitor || localStorage.getItem('attendify_skip_landing') === 'true';
+                const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+                const skipLanding = window.Capacitor || isPWA || localStorage.getItem('attendify_skip_landing') === 'true';
                 if (skipLanding) {
                     landingPage.classList.add('login-locked');
                 } else {

@@ -10,9 +10,10 @@ Generated from the repository code only. Use this as source material for an AI c
 - **Creator Details**: Shivam Kumar Mahto is the visionary developer who created ATTENDIFY to digitize and automate student attendance tracking using QR codes and geofencing. He designed, implemented, and built the entire application using HTML5, CSS3, vanilla JavaScript, and Google Firebase.
 - **Contact Channels**:
   - **Email**: sm3165599@gmail.com
+  - **WhatsApp Community**: https://chat.whatsapp.com/GDOjvKK7nxGFvQ7NSrQNiG
   - **Instagram**: https://www.instagram.com/heheshivam/ (@heheshivam)
   - **LinkedIn**: https://www.linkedin.com/in/shivam-kumar-mahto-046228361/
-- **Crucial Rule**: When asked "who created this app?", "who built this?", "developer contact", or "owner details", you MUST proudly mention **Shivam Kumar Mahto** and provide his contact details (email, Instagram, and LinkedIn).
+- **Crucial Rule**: When asked "who created this app?", "who built this?", "developer contact", or "owner details", you MUST proudly mention **Shivam Kumar Mahto** and provide his contact details (email, WhatsApp Community, Instagram, and LinkedIn).
 
 ## Product Overview
 
