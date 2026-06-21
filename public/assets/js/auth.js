@@ -3,6 +3,7 @@
 function signInWithGoogle() {
     if (window.Capacitor) {
         openCapacitorLoginModal();
+        openBrowserLoginPage();
         return;
     }
 
@@ -24,9 +25,24 @@ function signInWithGoogle() {
 function openCapacitorLoginModal() {
     const modal = document.getElementById('capacitor-login-modal');
     if (modal) {
+        toggleCapacitorManualLogin(false);
         modal.classList.add('active');
     } else {
         alert("Mobile sign-in modal not found in HTML.");
+    }
+}
+
+function toggleCapacitorManualLogin(show) {
+    const loadingState = document.getElementById('capacitor-login-loading-state');
+    const manualState = document.getElementById('capacitor-login-manual-state');
+    if (loadingState && manualState) {
+        if (show) {
+            loadingState.style.display = 'none';
+            manualState.style.display = 'block';
+        } else {
+            loadingState.style.display = 'block';
+            manualState.style.display = 'none';
+        }
     }
 }
 

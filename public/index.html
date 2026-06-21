@@ -592,37 +592,58 @@
 
     <!-- CAPACITOR LOGIN MODAL -->
     <div id="capacitor-login-modal" class="modal">
-        <div class="modal-content" style="max-width: 450px; text-align: center;">
+        <style>
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+        </style>
+        <div class="modal-content" style="max-width: 450px; text-align: center; padding: 30px 24px;">
             <span class="modal-close" onclick="closeCapacitorLoginModal()">&times;</span>
-            <h2 class="modal-header" style="margin-bottom: 8px;">🌐 Browser Sign-In</h2>
-            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px; line-height: 1.5;">
-                Since you are using the mobile app, Google Sign-In needs to run securely in your system browser.
-            </p>
             
-            <div style="background: rgba(99, 102, 241, 0.08); padding: 16px; border-radius: 12px; border: 1.5px solid rgba(99, 102, 241, 0.15); margin-bottom: 20px; text-align: left;">
-                <h4 style="margin: 0 0 8px 0; font-size: 14px; color: #818cf8;">Instructions:</h4>
-                <ol style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.6; color: var(--text-color);">
-                    <li>Tap <strong>Open Login Page</strong> below.</li>
-                    <li>Sign in with your Google account in the browser.</li>
-                    <li>Copy the generated <strong>Login Code</strong>.</li>
-                    <li>Return to the app, paste the code below, and tap <strong>Verify & Log In</strong>.</li>
-                </ol>
+            <!-- Default Loading State (Automatic Redirect) -->
+            <div id="capacitor-login-loading-state">
+                <div style="margin: 20px 0;">
+                    <div style="margin: 0 auto 20px auto; width: 50px; height: 50px; border: 4px solid rgba(99, 102, 241, 0.1); border-top-color: #818cf8; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                </div>
+                <h3 style="margin-bottom: 8px; font-size: 18px; color: var(--text-color); font-weight: 700;">Connecting to Google...</h3>
+                <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 24px; line-height: 1.5; padding: 0 10px;">
+                    We are opening your system browser to sign you in securely.
+                </p>
+                <div id="capacitor-login-message" style="margin-bottom: 20px; font-size: 13px; font-weight: 600; min-height: 18px;"></div>
+                
+                <button class="btn btn-secondary" onclick="openBrowserLoginPage()" style="width: 100%; height: 44px; border-radius: 12px; font-size: 14px; font-weight: 600; margin-bottom: 16px; background: rgba(99, 102, 241, 0.08); color: #818cf8; border: 1.5px solid rgba(99, 102, 241, 0.15);">
+                    🌐 Reopen Browser Page
+                </button>
+                
+                <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 16px;">
+                    <a href="javascript:void(0)" onclick="toggleCapacitorManualLogin(true)" style="color: var(--text-muted); font-size: 12px; text-decoration: underline; font-weight: 500;">
+                        Trouble signing in? Enter code manually
+                    </a>
+                </div>
             </div>
 
-            <button class="btn btn-primary" onclick="openBrowserLoginPage()" style="width: 100%; height: 48px; border-radius: 12px; font-size: 15px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
-                🌐 Open Login Page
-            </button>
+            <!-- Manual Fallback State -->
+            <div id="capacitor-login-manual-state" style="display: none;">
+                <h2 class="modal-header" style="margin-bottom: 8px; font-size: 18px; font-weight: 700;">🔑 Manual Verification</h2>
+                <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 16px; line-height: 1.5;">
+                    If the automatic redirect didn't open the app, copy the login code from the browser and paste it below.
+                </p>
+                
+                <div class="form-group" style="text-align: left; margin-bottom: 16px;">
+                    <label style="color: var(--text-color); font-weight: 600; font-size: 13px;">Paste Login Code</label>
+                    <textarea id="capacitor-token-input" rows="3" placeholder="Paste the long login code here..." style="width: 100%; border-radius: 8px; padding: 10px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-family: monospace; font-size: 11px; resize: none;"></textarea>
+                </div>
 
-            <div class="form-group" style="text-align: left; margin-bottom: 16px;">
-                <label style="color: var(--text-color); font-weight: 600;">Paste Login Code</label>
-                <textarea id="capacitor-token-input" rows="3" placeholder="Paste the long login code here..." style="width: 100%; border-radius: 8px; padding: 10px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-family: monospace; font-size: 12px; resize: none;"></textarea>
+                <button class="btn btn-success" onclick="verifyCapacitorLoginToken()" style="width: 100%; height: 44px; border-radius: 12px; font-size: 14px; font-weight: 700; margin-bottom: 16px;">
+                    🔑 Verify &amp; Log In
+                </button>
+
+                <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+                    <a href="javascript:void(0)" onclick="toggleCapacitorManualLogin(false)" style="color: var(--text-muted); font-size: 12px; text-decoration: underline; font-weight: 500;">
+                        ← Go back to automatic login
+                    </a>
+                </div>
             </div>
-
-            <button class="btn btn-success" onclick="verifyCapacitorLoginToken()" style="width: 100%; height: 48px; border-radius: 12px; font-size: 15px; font-weight: 700; margin-bottom: 10px;">
-                🔑 Verify &amp; Log In
-            </button>
-            
-            <div id="capacitor-login-message" style="margin-top: 10px; font-size: 13px; font-weight: 600;"></div>
         </div>
     </div>
 
