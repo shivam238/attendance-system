@@ -8,34 +8,29 @@ A high-performance, **Firebase-powered web application** for seamless student at
 
 ### Core Attendance
 - **⚡ Real-time Tracking**: Live attendance updates powered by Firebase Realtime Database.
-- **🔐 Secure QR Sessions**: Unique, auto-expiring QR codes (5 min default, extendable by 1 min) to prevent unauthorized entries.
-- **📍 Smart Geofencing**: Verification range from **10m up to 2.0 km** with Leaflet.js map, draggable marker, Nominatim geocoding search (India-biased), and circle boundary visualization.
+- **🔐 Secure QR Sessions & Auto-Cleanup**: Unique QR codes (5 min default) with auto-expiry. Database cleans up expired session data instantly when the timer runs out to prevent bypass.
+- **📍 Smart Geofencing with Auto-Approval**: Circle boundary geofencing from **10m to 2.0 km**. Automatically approves and marks present students within a minor GPS-drift tolerance (1.8x radius or +60m), saving manual approval time.
 - **🔔 Request Management**: Auto-flags late check-ins, out-of-boundary submissions, GPS denials — with one-click CR approval/rejection.
 
-### 🛡️ Anti-Proxy System *(New)*
-- **Device Fingerprinting**: Persistent 3-layer Device ID (localStorage → sessionStorage → cookie) to uniquely identify student devices.
-- **Silent Fraud Detection**: Flags proxy attempts (same device, different roll numbers) without alerting the student — CR sees a ⚠️ Suspicious badge with red dashed border.
-- **Zero false blocking**: Suspicious records are still saved but visually flagged for CR audit.
+### 🛡️ Anti-Proxy & Authentication System *(Enhanced)*
+- **Mandatory Google Auth (First-Scan Binding)**: Students must sign in via Google. Their Google UID binds permanently to their roll number on the first scan, preventing account/roll sharing.
+- **Mock GPS Spoofing Detection**: Integrated native Android APK checks (via `MockLocationChecker`) that detect and block fake GPS applications.
+- **Device Fingerprinting**: Persistent 3-layer Device ID (localStorage → sessionStorage → cookie) to uniquely identify student devices and silently flag proxy/shared device attempts.
 
-### 🔔 Native Notifications & Audio *(New)*
-- **OS-Level Push Notifications**: Browser native notifications for every attendance submission — visible even when tab is minimized.
-- **Distinct Audio Chimes**: Web Audio API (no MP3 files needed) — success chime for normal, warning chime for proxy/suspicious submissions.
+### 🔔 Native Notifications & Audio
+- **OS-Level Push Notifications**: Browser native notifications and native Android tray notifications (via Capacitor) for each attendance submission.
+- **Distinct Audio Chimes**: Web Audio API double tone for normal, warning chime for proxy/suspicious submissions.
 
-### 🎓 Google Meet Attendance Import *(New)*
-- **Paste & Match**: CR pastes Google Meet participant list → system auto-matches names using multi-layer fuzzy matching.
-- **Smart Alias Memory**: Remembers custom name-to-roll mappings in localStorage — fully automatic after first link.
-- **Conflict Resolution**: Handles same-name conflicts with checkboxes; unmatched names (e.g., parent accounts) shown with dropdown selection.
-
-### 🏫 Google Classroom Import *(New)*
-- Import student roster directly from Google Classroom using Google Identity Services (GIS) OAuth.
-- No Firebase session disruption — shows only a minimal Classroom consent popup.
-- *Note: Requires CR to have Teacher role in the Classroom to fetch full roster.*
+### 🎓 Roster Syncing & Google Meet Import
+- **Google Sheets Live Sync**: Sync student lists instantly using a public Google Sheets CSV URL.
+- **Google Classroom Import**: Fetch courses and rosters directly from Google Classroom using Google Identity Services (GIS) OAuth.
+- **Google Meet Attendance Import**: Paste Google Meet participants list to auto-match names using smart fuzzy matching and alias memory.
 
 ### 📊 Dashboard & Reporting
 - **👨‍🏫 CR Dashboard**: Tabs for QR generation, live feed, today's summary, student management, history, requests, and Export Hub.
-- **👩‍🎓 Student Portal** (`track.html`): Subject-wise attendance percentage, logs, PDF export — no Firebase Auth needed.
-- **📊 Export Hub**: Excel reports (`.xlsx`) with list/matrix formats, date range filter, student search, and manual present/absent editing.
-- **🤖 AI Support Chatbot**: Inline chatbot on the Contact page powered by Gemini 2.5 Flash with OpenRouter fallback, deployed on Cloudflare Workers.
+- **👩‍🎓 Student Portal** (`track.html`): Subject-wise attendance percentage, logs, PDF export.
+- **📊 Export Hub & Auto-Export**: Manual/Matrix Excel reports (`.xlsx`). Prompts with a shareable Excel file for immediate download or native mobile sharing as soon as a session is closed.
+- **🤖 AI Support Chatbot**: Chatbot on the Contact page powered by Gemini 2.5 Flash with OpenRouter fallback on Cloudflare Workers.
 
 ---
 

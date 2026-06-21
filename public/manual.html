@@ -219,7 +219,7 @@
         <div class="cover-logo">🎓</div>
         <h1>ATTENDIFY</h1>
         <div class="subtitle">Smart QR-Based Attendance Management System</div>
-        <div class="version">User Manual · v2.0</div>
+        <div class="version">User Manual · v1.0</div>
         <div style="margin-top: 16px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
             <a href="QR Attendance System - Complete User Manual.pdf" download style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.2); color: #fff; text-decoration: none; padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3);">⬇️ Download PDF</a>
             <a href="index.html" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.15); color: #fff; text-decoration: none; padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3);">← Back to App</a>
@@ -363,13 +363,14 @@
                 <li>When a student submits attendance, the browser requests their GPS location.</li>
                 <li>The Haversine formula calculates the exact distance from the classroom center.</li>
                 <li><strong>Within range →</strong> Attendance marked immediately ✅</li>
+                <li><strong>Smart Geofence Auto-Approval →</strong> Students within a minor GPS-drift tolerance (1.8x the geofence radius, capped at +60m) are automatically marked Present with a <code>geofenceRelaxed</code> flag, saving manual CR review time.</li>
                 <li><strong>Out of range →</strong> Submission goes to <em>Requests</em> tab with distance shown 📍</li>
                 <li><strong>GPS denied →</strong> Submission goes to <em>Requests</em> tab marked as GPS Denied ⚠️</li>
             </ul>
         </div>
         <div class="info-box tip">
             <span>💡</span>
-            <span>GPS accuracy varies by device and network. Give a 20–30% buffer above your expected area (e.g. use 60m for a 50m classroom) to reduce false rejections.</span>
+            <span>GPS accuracy varies by device and network. The Smart Geofence tolerance handles minor drifts automatically, but it's still best to set a reasonable baseline radius.</span>
         </div>
     </div>
 
@@ -391,11 +392,10 @@
             </ul>
         </div>
         <div class="steps-group">
-            <div class="steps-label">Google Classroom Sync</div>
+            <div class="steps-label">Google Classroom &amp; Sheets Sync</div>
             <ul class="bullet-list">
-                <li><strong>🏫 Import from Classroom:</strong> Go to the Students tab and click "Import from Google Classroom".</li>
-                <li><strong>GIS OAuth Integration:</strong> Sign in with Google to grant Classroom permission. Your current Firebase login session remains completely unaffected.</li>
-                <li><strong>Note:</strong> You must be registered as a Teacher or Co-Teacher in that Classroom to successfully pull the roster.</li>
+                <li><strong>🏫 Import from Classroom:</strong> Go to the Students tab and click "Import from Google Classroom". Authenticate with your Google account using GIS OAuth to import course rosters directly (requires Teacher role in the course).</li>
+                <li><strong>📊 Google Sheets Live Sync:</strong> Publish a Google Sheet as a CSV (File → Share → Publish to Web → CSV), paste the URL into the Google Sheets sync modal, and pull your entire class list in one click.</li>
             </ul>
         </div>
     </div>
@@ -513,11 +513,12 @@
             </ul>
         </div>
         <div class="steps-group">
-            <div class="steps-label">Export Hub</div>
+            <div class="steps-label">Export Hub &amp; Reporting</div>
             <div class="step"><span class="step-num">1</span><span class="step-text">Click the <strong>📊 Export Hub</strong> button.</span></div>
             <div class="step"><span class="step-num">2</span><span class="step-text">Select export format: <strong>All Subjects</strong>, specific subjects, or individual student report.</span></div>
             <div class="step"><span class="step-num">3</span><span class="step-text">Optionally filter by <strong>date range</strong>.</span></div>
             <div class="step"><span class="step-num">4</span><span class="step-text">Click <strong>Download Report</strong> to save as an Excel (.xlsx) file.</span></div>
+            <div class="step"><span class="step-num">5</span><span class="step-text"><strong>⚡ Session Auto-Export:</strong> When you clear or close an active QR session, a prompt automatically appears, allowing you to instantly download or share the compiled Excel report (via native share sheets on WhatsApp, Email, etc.).</span></div>
         </div>
     </div>
 

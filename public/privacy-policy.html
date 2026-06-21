@@ -148,7 +148,8 @@
 
         <section>
             <h2>Data Collection &amp; Device Fingerprinting</h2>
-            <p>We collect only the information necessary to provide the attendance service. This includes student names, roll numbers, and attendance timestamps.</p>
+            <p>We collect only the information necessary to provide the attendance service. This includes student names, roll numbers, Google Account UIDs (stored upon mandatory student sign-in), and attendance timestamps.</p>
+            <p><strong>Google Account Verification:</strong> Students must log in via Google to verify their identity. The Google account UID is bound to the student's Roll Number in the database (First-Scan Binding) to prevent identity spoofing and proxy submissions. We do not access or collect any sensitive personal Google data (such as emails or contacts) except for basic public profile fields (email, name, and profile picture).</p>
             <p><strong>Anti-Proxy Device Fingerprinting:</strong> To prevent attendance fraud, our system generates and stores a persistent 3-layer Device ID on the student's device using localStorage, sessionStorage, and browser cookies. This allows the system to identify if multiple attendance submissions are being marked from the same device (proxying). This data is processed securely and is used solely for audit logs visible to the Class Representative (CR).</p>
         </section>
 
