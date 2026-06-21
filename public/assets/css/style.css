@@ -2550,3 +2550,8 @@
         .leaflet-bar a:hover {
             background-color: #f4f4f4;
         }
+
+        /* Hide floating Firebase/Google reCAPTCHA badge to prevent overlapping UI on mobile */
+        .grecaptcha-badge {
+            visibility: hidden !important;
+        }
