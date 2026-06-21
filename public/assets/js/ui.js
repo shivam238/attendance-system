@@ -1,3 +1,13 @@
+// Native app / PWA detection
+(function() {
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    if (window.Capacitor || isPWA) {
+        document.documentElement.classList.add('is-native-app');
+    }
+})();
+
+let isBypassingScrollLock = false;
+
 function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const target = document.getElementById(screenId);
@@ -35,6 +45,10 @@ function scrollToLogin(event) {
 }
 
 function handleLandingScroll() {
+    if (isBypassingScrollLock) {
+        return;
+    }
+
     const landingPage = document.getElementById('landing-page');
     if (!landingPage || landingPage.classList.contains('is-hidden') || landingPage.classList.contains('login-locked')) {
         return;
@@ -85,11 +99,10 @@ function scrollToLandingSection(event, sectionId) {
     const section = document.getElementById(sectionId);
     if (!section) return;
 
+    isBypassingScrollLock = true;
+
     const landingPage = document.getElementById('landing-page');
     if (landingPage && landingPage.classList.contains('login-locked')) {
-        // Remove scroll listener temporarily to prevent locking during the transition
-        window.removeEventListener('scroll', handleLandingScroll);
-        
         // Remove the locked class to render the landing sections again
         landingPage.classList.remove('login-locked');
         
@@ -99,6 +112,9 @@ function scrollToLandingSection(event, sectionId) {
             const loginTop = loginScreen.getBoundingClientRect().top + window.scrollY;
             window.scrollTo(0, loginTop);
         }
+
+        // Re-bind scroll listener since it was removed when locked
+        window.addEventListener('scroll', handleLandingScroll, { passive: true });
     }
 
     // Scroll smoothly to the target section (offsetting for the fixed nav bar)
@@ -106,10 +122,10 @@ function scrollToLandingSection(event, sectionId) {
     window.scrollTo({ top: Math.max(targetTop, 0), behavior: 'smooth' });
     window.history.replaceState(null, '', `#${sectionId}`);
 
-    // Re-bind the scroll listener once we are away from the login screen (after a tiny timeout)
+    // Re-enable scroll locking after smooth scroll completes (1000ms)
     setTimeout(() => {
-        window.addEventListener('scroll', handleLandingScroll, { passive: true });
-    }, 100);
+        isBypassingScrollLock = false;
+    }, 1000);
 
     setTimeout(() => replayLandingSectionReveal(section), 260);
     setTimeout(() => replayLandingSectionReveal(section), 620);

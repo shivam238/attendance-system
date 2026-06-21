@@ -446,6 +446,10 @@
             color: #22d3ee;
         }
 
+        .is-native-app .landing-apk-btn {
+            display: none !important;
+        }
+
         .landing-stats {
             display: flex;
             flex-wrap: wrap;
@@ -2157,15 +2161,42 @@
                 padding-right: 5%;
             }
 
-            .landing-hero,
+            .landing-hero {
+                padding-top: 80px;
+                padding-bottom: 40px;
+                padding-left: 5%;
+                padding-right: 5%;
+            }
+
             .landing-section,
             .landing-finale {
                 padding-left: 5%;
                 padding-right: 5%;
             }
 
+            .landing-badge {
+                margin-bottom: 16px;
+            }
+
             .landing-hero h1 {
                 font-size: 2.35rem;
+                margin-bottom: 14px;
+            }
+
+            .landing-hero-copy > p {
+                margin-bottom: 20px;
+            }
+
+            .landing-actions {
+                gap: 10px;
+            }
+
+            .landing-primary-btn,
+            .landing-secondary-btn,
+            .landing-apk-btn {
+                min-height: 48px;
+                padding: 12px 20px;
+                font-size: 15px;
             }
 
             .landing-actions a {
@@ -2173,6 +2204,8 @@
             }
 
             .landing-stats {
+                margin-top: 24px;
+                padding-top: 16px;
                 gap: 18px;
             }
 
