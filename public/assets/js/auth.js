@@ -2,8 +2,7 @@
 
 function signInWithGoogle() {
     if (window.Capacitor) {
-        const msgDiv = document.getElementById('login-message');
-        if (msgDiv) msgDiv.innerHTML = '<div class="message">🔄 Redirecting to secure login...</div>';
+        openCapacitorLoginModal();
         openBrowserLoginPage();
         return;
     }
@@ -455,22 +454,30 @@ function linkGoogleAccount() {
 
 // Automatic Login token verification helper
 function loginWithToken(token) {
-    const msgDiv = document.getElementById('login-message');
-    if (msgDiv) msgDiv.innerHTML = '<div class="message">🔄 Signing in...</div>';
+    const msgDiv = document.getElementById('capacitor-login-message') || document.getElementById('login-message');
+    if (msgDiv) msgDiv.innerHTML = '<span style="color: var(--text-color);">🔄 Authenticating from browser...</span>';
+    
+    // Auto open/ensure modal is active to show progress
+    openCapacitorLoginModal();
+    const tokenInput = document.getElementById('capacitor-token-input');
+    if (tokenInput) tokenInput.value = token;
 
     try {
         const credential = firebase.auth.GoogleAuthProvider.credential(token);
         auth.signInWithCredential(credential)
             .then((result) => {
-                if (msgDiv) msgDiv.innerHTML = '<div class="message success">✅ Signed in successfully!</div>';
+                if (msgDiv) msgDiv.innerHTML = '<span style="color: #10b981;">✅ Signed in successfully!</span>';
+                setTimeout(() => {
+                    closeCapacitorLoginModal();
+                }, 1200);
             })
             .catch((error) => {
                 console.error("Token sign-in error:", error);
-                if (msgDiv) msgDiv.innerHTML = '<div class="message error">❌ Sign-in failed: ' + error.message + '</div>';
+                if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Invalid or expired login code. Please try again.</span>';
             });
     } catch (e) {
         console.error("Credential parsing error:", e);
-        if (msgDiv) msgDiv.innerHTML = '<div class="message error">❌ Error parsing code.</div>';
+        if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Error parsing code.</span>';
     }
 }
 
