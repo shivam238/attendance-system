@@ -152,21 +152,23 @@ In addition to standard fields, attendance records may contain:
 - \`suspicious\`: boolean, true if proxy detected
 - \`suspiciousReason\`: text describing the conflict
 
-## Native Browser Notifications & Audio Chimes
+## Native Browser & Mobile App Notifications & Audio Chimes
 
 When the CR is logged in and has a QR session active, ATTENDIFY sends real-time alerts for every student attendance submission.
 
-### Permission Request
-When the CR logs into the dashboard, the app calls \`Notification.requestPermission()\` automatically. If the CR grants permission, they will receive native OS-level browser notifications.
+### Permission Request & Platform Logic
+When the CR logs into the dashboard:
+- **Web App:** The app calls \`Notification.requestPermission()\` automatically. If the CR grants permission, they will receive native OS-level browser notifications.
+- **Mobile App (Android APK):** The app uses the \`@capacitor/local-notifications\` plugin. It requests native Android notification permissions on the first dashboard load.
 
 ### Notification Behavior
 For each attendance submission:
 - A **toast notification** is shown inside the app.
-- A **native browser notification** (OS-level popup, visible even when the tab is in the background or minimized) is sent showing:
-  - Student name and roll number
-  - Subject
-  - Whether the submission is suspicious/proxy
-- Clicking the notification focuses the browser window.
+- A **native push/local notification** (OS-level popup, visible even when the app is in the background or minimized) is sent:
+  - **On Web:** Standard browser native notifications are triggered.
+  - **On Mobile:** Capacitor Native Local Notifications are fired directly to the Android system tray.
+  - The notification includes the student's name, roll number, subject, and whether the submission is suspicious/proxy.
+  - Clicking the notification focuses the app window.
 
 For suspicious/proxy submissions:
 - Title: **⚠️ Suspicious Attendance!**
@@ -180,11 +182,9 @@ The app uses the Web Audio API (no external audio files required, works offline)
 - **Success chime**: High-pitched double tone (A5 → E6) for normal attendance.
 - **Warning chime**: Lower triangle-wave swoop for suspicious/proxy attendance.
 
-### Limitation
-Native notifications require:
-- HTTPS (the live site at \`qr-smart-attendance.web.app\` qualifies).
-- The CR to have granted notification permission in the browser.
-- The browser to be open (even if minimized). True background push (like Instagram/YouTube when browser is fully closed) requires a Push API server which is not implemented.
+### Limitation & Smart Mobile Bypass
+- **Web Limitations:** Browser notifications require HTTPS and require the tab/browser to remain open (minimized is fine). True background push is not supported.
+- **Mobile Integration:** The Android app is optimized for native speed and features **⚡ Smart Landing Bypass** where the marketing landing page is skipped, taking the CR directly to the login screen immediately upon launch. Location permissions and native notification requests are managed cleanly by the Capacitor shell.
 
 ## Google Meet Attendance Import
 

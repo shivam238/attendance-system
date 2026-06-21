@@ -1,0 +1,6 @@
+{
+  "appId": "com.attendify.app",
+  "appName": "ATTENDIFY",
+  "webDir": "public",
+  "bundledWebRuntime": false
+}

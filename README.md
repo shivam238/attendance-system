@@ -84,6 +84,27 @@ A high-performance, **Firebase-powered web application** for seamless student at
 
 ---
 
+## 📱 Mobile Application (Android APK)
+
+ATTENDIFY is fully integrated with **Capacitor** to build a native Android app.
+
+### 🌟 Mobile-Specific Features
+- **Instant Entry**: Detects Capacitor and automatically bypasses the landing page to load the login screen instantly.
+- **Native Notifications**: Integrated with `@capacitor/local-notifications` to send native push notifications to the device system tray.
+- **Custom App Branding**: Custom launcher icons and splash screens compiled using `@capacitor/assets`.
+
+### 🛠️ Building the APK
+To compile the native Android APK from the current code:
+1. Ensure your environment has Java 17+ (`jdk21` folder or system path) and Android SDK (`/home/darkeeidea/Android/Sdk`) configured.
+2. Run the build script in the root directory:
+   ```bash
+   bash build-app.sh
+   ```
+3. The script will copy the web assets, sync the Android platform, and run the Gradle build.
+4. The output APK will be generated at the root directory as **`ATTENDIFY.apk`** (~5 MB).
+
+---
+
 ## 📄 License & Attribution
 
 This project is licensed under the **MIT License**.

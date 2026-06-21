@@ -1,16 +1,13 @@
 {
   "hosting": {
     "site": "qr-smart-attendance",
-    "public": ".",
+    "public": "public",
     "ignore": [
       "firebase.json",
       ".*",
       ".*/**",
       "**/.*",
       "**/.*/**",
-      ".git/**",
-      ".agents/**",
-      ".codex/**",
       "**/node_modules/**",
       "attendify-support-chatbot/**"
     ],

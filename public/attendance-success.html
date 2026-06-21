@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Your ATTENDIFY attendance submission status — instant confirmation of QR scan, pending approvals, and location verification.">
+    <title>Attendance Status | ATTENDIFY</title>
+    <link rel="icon" type="image/webp" href="logo.webp">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .success-container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            border-radius: 24px;
+            padding: 48px 32px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.5s ease-out;
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            animation: scaleIn 0.5s ease-out 0.2s both;
+        }
+        .warning-icon {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+        .checkmark {
+            width: 50px;
+            height: 50px;
+            border: 4px solid white;
+            border-radius: 50%;
+            position: relative;
+        }
+        .checkmark:after {
+            content: '';
+            position: absolute;
+            left: 14px;
+            top: 6px;
+            width: 12px;
+            height: 24px;
+            border: solid white;
+            border-width: 0 4px 4px 0;
+            transform: rotate(45deg);
+        }
+        .clock-icon {
+            font-size: 50px;
+            color: white;
+        }
+        h1 {
+            font-size: 32px;
+            font-weight: 800;
+            color: #10b981;
+            margin-bottom: 16px;
+            animation: fadeIn 0.5s ease-out 0.4s both;
+        }
+        h1.warning-title {
+            color: #f59e0b;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .success-message {
+            font-size: 18px;
+            color: #4a5568;
+            margin-bottom: 32px;
+            line-height: 1.6;
+            animation: fadeIn 0.5s ease-out 0.6s both;
+        }
+        .student-info {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+            border-left: 4px solid #10b981;
+            animation: fadeIn 0.5s ease-out 0.8s both;
+        }
+        .student-info.warning-info {
+            border-left-color: #f59e0b;
+            background: #fef3c7;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+        .info-label {
+            color: #718096;
+            font-weight: 600;
+        }
+        .info-value {
+            color: #1a202c;
+            font-weight: 700;
+        }
+        .info-value.late {
+            color: #dc2626;
+        }
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            animation: fadeIn 0.5s ease-out 1s both;
+        }
+        .close-btn, .feedback-btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .close-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .close-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        .feedback-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+        .feedback-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+        }
+        .note {
+            margin-top: 0;
+            padding: 16px;
+            background: #eff6ff;
+            border-radius: 8px;
+            color: #1e40af;
+            font-size: 14px;
+            line-height: 1.6;
+            animation: fadeIn 0.5s ease-out 1.2s both;
+        }
+        .note.warning-note {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .late-badge {
+            display: inline-block;
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            animation: fadeIn 0.5s ease-out 0.5s both;
+        }
+        @media (max-width: 768px) {
+            .success-container { padding: 32px 24px; }
+            h1 { font-size: 24px; }
+            .success-message { font-size: 16px; }
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon" id="status-icon">
+            <div class="checkmark"></div>
+        </div>
+        
+        <div id="late-badge-container"></div>
+        
+        <h1 id="status-title">✅ Attendance Marked!</h1>
+        
+        <p class="success-message" id="status-message">
+            Your attendance has been successfully recorded. Thank you!
+        </p>
+        
+        <div class="student-info" id="student-details">
+            <!-- Details will be populated by JavaScript -->
+        </div>
+        
+        <div class="button-group">
+            <button class="close-btn" onclick="closeWindow()">Close Window</button>
+            <button class="feedback-btn" onclick="openFeedback()">📝 Feedback</button>
+        </div>
+        
+        <div id="tracker-btn-container" style="margin-bottom: 24px; display: none;">
+            <a id="tracker-link" href="#" style="text-decoration: none; width: 100%;">
+                <button style="width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; text-transform: uppercase; letter-spacing: 0.5px;">📊 View Full Attendance</button>
+            </a>
+        </div>
+        
+        <div class="note" id="status-note">
+            ℹ️ <strong>Note:</strong> You can safely close this window now. Your attendance has been saved in the system.
+        </div>
+    </div>
+
+    <script>
+        // Get data from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const studentName = urlParams.get('name') || 'Student';
+        const rollNo = urlParams.get('roll') || 'N/A';
+        const subject = urlParams.get('subject') || 'N/A';
+        const time = urlParams.get('time') || new Date().toLocaleTimeString('en-IN');
+        const isLate = urlParams.get('late') === 'true';
+        const lateMinutes = urlParams.get('lateBy') || '0';
+        const isAlreadyMarked = urlParams.get('alreadyMarked') === 'true';
+
+        const isOutOfRange = urlParams.get('outOfRange') === 'true';
+        const distance = urlParams.get('distance') || '0';
+        const gpsDenied = urlParams.get('gpsDenied') === 'true';
+
+        let isPendingRequest = isLate || isOutOfRange || gpsDenied;
+
+        // Update UI based on status
+        if (isAlreadyMarked) {
+            document.getElementById('status-icon').className = 'success-icon warning-icon';
+            document.getElementById('status-icon').innerHTML = '<div class="clock-icon">🔔</div>';
+
+            document.getElementById('status-title').textContent = '✅ Already Marked!';
+            document.getElementById('status-title').className = '';
+            document.getElementById('status-title').style.color = '#f59e0b';
+
+            document.getElementById('status-message').innerHTML =
+                `Hi <strong>${studentName}</strong>!<br>Your attendance has already been recorded today.<br>No need to submit again.`;
+
+            document.getElementById('student-details').innerHTML = `
+                <div class="info-row">
+                    <span class="info-label">Name:</span>
+                    <span class="info-value">${studentName}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" style="color: #f59e0b;">⚠️ Already Recorded</span>
+                </div>
+            `;
+            document.getElementById('student-details').className = 'student-info warning-info';
+
+            document.getElementById('status-note').innerHTML =
+                `ℹ️ <strong>Note:</strong> You can safely close this window. Your attendance is already saved.`;
+
+        } else if (isOutOfRange) {
+            document.getElementById('status-icon').className = 'success-icon warning-icon';
+            document.getElementById('status-icon').innerHTML = '<div class="clock-icon">📍</div>';
+            
+            document.getElementById('late-badge-container').innerHTML = 
+                `<div class="late-badge" style="background: #fee2e2; color: #991b1b;">⚠️ Out of Range (${distance}m)</div>`;
+            
+            document.getElementById('status-title').textContent = '📍 Location Mismatch';
+            document.getElementById('status-title').className = 'warning-title';
+            document.getElementById('status-title').style.color = '#dc2626';
+            
+            document.getElementById('status-message').innerHTML = 
+                `Your current location is <strong>${distance} meters</strong> away from the classroom.<br>Your attendance request has been sent to the CR for manual approval.`;
+            
+            document.getElementById('student-details').className = 'student-info warning-info';
+            document.getElementById('student-details').style.borderLeftColor = '#dc2626';
+            
+            document.getElementById('status-note').className = 'note warning-note';
+            document.getElementById('status-note').innerHTML = 
+                `⚠️ <strong>Pending Approval:</strong> Since you were detected outside the classroom range, your attendance requires CR approval. Please inform your CR to approve your request.`;
+
+        } else if (gpsDenied) {
+            document.getElementById('status-icon').className = 'success-icon warning-icon';
+            document.getElementById('status-icon').innerHTML = '<div class="clock-icon">⚠️</div>';
+            
+            document.getElementById('late-badge-container').innerHTML = 
+                `<div class="late-badge" style="background: #fee2e2; color: #991b1b;">⚠️ GPS Access Denied</div>`;
+            
+            document.getElementById('status-title').textContent = '⚠️ GPS Permission Required';
+            document.getElementById('status-title').className = 'warning-title';
+            document.getElementById('status-title').style.color = '#dc2626';
+            
+            document.getElementById('status-message').innerHTML = 
+                `We could not verify your location because GPS permission was denied or unavailable.<br>Your attendance request has been sent to the CR for manual verification.`;
+            
+            document.getElementById('student-details').className = 'student-info warning-info';
+            document.getElementById('student-details').style.borderLeftColor = '#dc2626';
+            
+            document.getElementById('status-note').className = 'note warning-note';
+            document.getElementById('status-note').innerHTML = 
+                `⚠️ <strong>Pending Approval:</strong> Your attendance request is pending CR approval because location checks could not be completed. Please ask your CR to verify and approve.`;
+
+        } else if (isLate) {
+            // Late attendance - request sent to CR
+            document.getElementById('status-icon').className = 'success-icon warning-icon';
+            document.getElementById('status-icon').innerHTML = '<div class="clock-icon">⏰</div>';
+            
+            document.getElementById('late-badge-container').innerHTML = 
+                `<div class="late-badge">⚠️ ${lateMinutes} Minutes Late</div>`;
+            
+            document.getElementById('status-title').textContent = '⏰ Request Sent to CR';
+            document.getElementById('status-title').className = 'warning-title';
+            
+            document.getElementById('status-message').innerHTML = 
+                `The QR code expired ${lateMinutes} minutes ago.<br>Your attendance request has been sent to the CR for approval.`;
+            
+            document.getElementById('student-details').className = 'student-info warning-info';
+            
+            document.getElementById('status-note').className = 'note warning-note';
+            document.getElementById('status-note').innerHTML = 
+                `⚠️ <strong>Pending Approval:</strong> Your attendance is pending CR approval. You will be marked present only if the CR approves your request. Check with your CR for status.`;
+        }
+
+        // Display student details
+        const detailsContainer = document.getElementById('student-details');
+        let detailsHTML = `
+            <div class="info-row">
+                <span class="info-label">Name:</span>
+                <span class="info-value">${studentName}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Roll Number:</span>
+                <span class="info-value">${rollNo}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Subject:</span>
+                <span class="info-value">${subject}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Request Time:</span>
+                <span class="info-value">${time}</span>
+            </div>
+        `;
+
+        if (isPendingRequest) {
+            let statusLabel = '⏳ Pending CR Approval';
+            if (isLate && isOutOfRange) {
+                statusLabel = '⏳ Pending (Late & Out of Range)';
+            } else if (isOutOfRange) {
+                statusLabel = '⏳ Pending (Location Mismatch)';
+            } else if (gpsDenied) {
+                statusLabel = '⏳ Pending (GPS Permission Denied)';
+            }
+            detailsHTML += `
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value late">${statusLabel}</span>
+                </div>
+            `;
+        } else {
+            detailsHTML += `
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" style="color: #10b981;">✅ Marked Present</span>
+                </div>
+            `;
+        }
+
+        detailsContainer.innerHTML = detailsHTML;
+
+        function closeWindow() {
+            window.close();
+            setTimeout(() => {
+                window.location.href = 'about:blank';
+            }, 100);
+        }
+
+function openFeedback() {
+    window.location.href = 'feedback.html';
+}
+
+// Initialize Student tracker link if class parameter is present
+const classId = urlParams.get('class');
+if (classId) {
+    const trackerBtnContainer = document.getElementById('tracker-btn-container');
+    const trackerLink = document.getElementById('tracker-link');
+    if (trackerBtnContainer && trackerLink) {
+        trackerLink.href = `track.html?class=${encodeURIComponent(classId)}&roll=${encodeURIComponent(rollNo)}`;
+        trackerBtnContainer.style.display = 'block';
+    }
+}
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+/* Subjects Page Specific Styles */
+.header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.header h1 {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--primary-color);
+    margin-bottom: 8px;
+}
+
+.header p {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.back-btn {
+    background: #64748b;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 20px;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.back-btn:hover {
+    background: #475569;
+    transform: translateX(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.subject-list {
+    margin-top: 20px;
+}
+
+.subject-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 16px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    color: var(--text-color);
+    animation: slideInRight 0.4s ease both;
+    transition: all 0.3s;
+}
+
+.subject-item:hover {
+    transform: scale(1.02);
+    box-shadow: var(--shadow);
+}
+
+.subject-name {
+    font-weight: 700;
+    font-size: 16px;
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+}
+
+.subject-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.message {
+    padding: 14px;
+    border-radius: 10px;
+    margin: 16px 0;
+    font-weight: 700;
+    font-size: 14px;
+    text-align: center;
+    animation: fadeInUp 0.4s ease;
+}
+
+.success {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+    .subject-item { 
+        padding: 12px; 
+        flex-direction: column; 
+        align-items: flex-start; 
+        gap: 10px; 
+    }
+    .subject-item .subject-actions { 
+        width: 100%; 
+    }
+    .subject-item .subject-actions .btn {
+        flex: 1;
+    }
+}

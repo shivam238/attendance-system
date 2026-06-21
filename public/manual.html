@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATTENDIFY — User Manual</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.7;
+            font-size: 14px;
+        }
+
+        .page {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 40px 32px;
+        }
+
+        /* ── Cover ── */
+        .cover {
+            text-align: center;
+            padding: 48px 32px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border-radius: 16px;
+            margin-bottom: 36px;
+        }
+        .cover-logo { font-size: 52px; margin-bottom: 12px; }
+        .cover h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; }
+        .cover .subtitle { font-size: 14px; opacity: 0.85; margin-top: 6px; }
+        .cover .version { display: inline-block; margin-top: 16px; background: rgba(255,255,255,0.2); padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+        /* ── TOC ── */
+        .toc {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px 28px;
+            margin-bottom: 32px;
+        }
+        .toc h2 { font-size: 16px; font-weight: 700; color: #667eea; margin-bottom: 14px; }
+        .toc ol { padding-left: 20px; }
+        .toc li { padding: 4px 0; color: #475569; font-size: 13px; }
+        .toc li a { color: #667eea; text-decoration: none; font-weight: 500; }
+
+        /* ── Section ── */
+        .section {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        .section-icon { font-size: 28px; }
+        .section-title { font-size: 19px; font-weight: 700; color: #1e293b; }
+        .section-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-cr { background: #ede9fe; color: #6d28d9; }
+        .badge-student { background: #dcfce7; color: #15803d; }
+
+        /* ── Steps ── */
+        .steps-group { margin-bottom: 18px; }
+        .steps-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 9px 0;
+            border-bottom: 1px dashed #f1f5f9;
+        }
+        .step:last-child { border-bottom: none; }
+        .step-num {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .step-text { color: #334155; font-size: 13.5px; }
+        .step-text strong { color: #1e293b; }
+
+        /* ── Bullet list ── */
+        .bullet-list { list-style: none; }
+        .bullet-list li {
+            padding: 7px 0 7px 20px;
+            color: #334155;
+            font-size: 13.5px;
+            border-bottom: 1px dashed #f1f5f9;
+            position: relative;
+        }
+        .bullet-list li:last-child { border-bottom: none; }
+        .bullet-list li::before {
+            content: "▸";
+            color: #667eea;
+            font-size: 12px;
+            position: absolute;
+            left: 0;
+            top: 8px;
+        }
+
+        /* ── Info / warning boxes ── */
+        .info-box {
+            display: flex;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-top: 14px;
+        }
+        .info-box.tip { background: #eff6ff; border-left: 3px solid #3b82f6; color: #1d4ed8; }
+        .info-box.warning { background: #fff7ed; border-left: 3px solid #f97316; color: #c2410c; }
+        .info-box.danger { background: #fef2f2; border-left: 3px solid #ef4444; color: #991b1b; }
+
+        /* ── Feature grid ── */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 4px;
+        }
+        .feature-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+        .feature-card .fc-icon { font-size: 20px; margin-bottom: 6px; }
+        .feature-card .fc-title { font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
+        .feature-card .fc-desc { font-size: 12px; color: #64748b; line-height: 1.5; }
+
+        /* ── Danger zone ── */
+        .danger-zone {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 14px;
+            padding: 22px 28px;
+            margin-bottom: 24px;
+        }
+        .danger-zone .dz-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .danger-zone .dz-title { font-size: 16px; font-weight: 700; color: #991b1b; }
+        .danger-zone p { font-size: 13px; color: #7f1d1d; line-height: 1.6; }
+
+        /* ── Footer ── */
+        .manual-footer {
+            text-align: center;
+            padding: 24px 0 0;
+            border-top: 1px solid #e2e8f0;
+            color: #94a3b8;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        .manual-footer strong { color: #667eea; }
+
+        /* ── Print styles ── */
+        @media print {
+            body { background: #fff; font-size: 12px; }
+            .page { padding: 20px 24px; }
+            .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; border-radius: 8px; }
+            .section, .toc, .danger-zone { break-inside: avoid; page-break-inside: avoid; }
+            .feature-card { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .step-num { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+    <script>
+        function applyTheme() {
+            if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
+            const btn = document.getElementById('theme-toggle-btn');
+            if (btn) btn.textContent = document.body.classList.contains('dark-mode') ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+        function toggleDarkMode() {
+            const isDark = document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+            const btn = document.getElementById('theme-toggle-btn');
+            if (btn) btn.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+        document.addEventListener('DOMContentLoaded', applyTheme);
+    </script>
+</head>
+<body>
+<div class="page">
+
+    <!-- Cover -->
+    <div class="cover">
+        <div class="cover-logo">🎓</div>
+        <h1>ATTENDIFY</h1>
+        <div class="subtitle">Smart QR-Based Attendance Management System</div>
+        <div class="version">User Manual · v2.0</div>
+        <div style="margin-top: 16px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <a href="QR Attendance System - Complete User Manual.pdf" download style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.2); color: #fff; text-decoration: none; padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3);">⬇️ Download PDF</a>
+            <a href="index.html" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.15); color: #fff; text-decoration: none; padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3);">← Back to App</a>
+            <button id="theme-toggle-btn" onclick="toggleDarkMode()" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer;">🌙 Dark Mode</button>
+        </div>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="toc">
+        <h2>📋 Contents</h2>
+        <ol>
+            <li><a href="#overview">System Overview</a></li>
+            <li><a href="#cr-registration">CR Registration</a></li>
+            <li><a href="#cr-attendance">Taking Attendance (CR)</a></li>
+            <li><a href="#geofencing">Geofencing &amp; Location Verification</a></li>
+            <li><a href="#integrations">Google Meet &amp; Classroom Integration</a></li>
+            <li><a href="#anti-proxy">Anti-Proxy Security Engine</a></li>
+            <li><a href="#mobile-app">Mobile Application (Android APK)</a></li>
+            <li><a href="#student-guide">Student Guide</a></li>
+            <li><a href="#requests">Managing Requests</a></li>
+            <li><a href="#history">History &amp; Export</a></li>
+            <li><a href="#account">Account Management</a></li>
+            <li><a href="#support">Customer Support &amp; AI Assistant</a></li>
+        </ol>
+    </div>
+
+    <!-- 1. Overview -->
+    <div class="section" id="overview">
+        <div class="section-header">
+            <span class="section-icon">🌐</span>
+            <div>
+                <div class="section-title">System Overview</div>
+            </div>
+        </div>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="fc-icon">📲</div>
+                <div class="fc-title">QR Code Attendance</div>
+                <div class="fc-desc">CR generates a time-limited QR code. Students scan it to mark attendance instantly.</div>
+            </div>
+            <div class="feature-card">
+                <div class="fc-icon">📍</div>
+                <div class="fc-title">Geofencing</div>
+                <div class="fc-desc">Restricts attendance to a physical radius around the classroom. Prevents fake marking.</div>
+            </div>
+            <div class="feature-card">
+                <div class="fc-icon">📊</div>
+                <div class="fc-title">Live Dashboard</div>
+                <div class="fc-desc">Real-time attendance feed, present/total counts, subject-wise history.</div>
+            </div>
+            <div class="feature-card">
+                <div class="fc-icon">📁</div>
+                <div class="fc-title">Excel Export</div>
+                <div class="fc-desc">Download full attendance sheets filtered by subject, date range, or individual student.</div>
+            </div>
+        </div>
+        <div class="info-box tip" style="margin-top: 16px;">
+            <span>💡</span>
+            <span>ATTENDIFY is 100% free — no subscription, no credit card. Built on Firebase + OpenStreetMap.</span>
+        </div>
+    </div>
+
+    <!-- 2. CR Registration -->
+    <div class="section" id="cr-registration">
+        <div class="section-header">
+            <span class="section-icon">🎯</span>
+            <div>
+                <div class="section-title">CR Registration</div>
+                <span class="section-badge badge-cr">CR Only</span>
+            </div>
+        </div>
+        <div class="steps-group">
+            <div class="step"><span class="step-num">1</span><span class="step-text">Open the app and click the <strong>Google Login</strong> button to sign in with your college Google account.</span></div>
+            <div class="step"><span class="step-num">2</span><span class="step-text">On the Setup screen, enter your <strong>Passout Year</strong> (last 2 digits, e.g. <code>29</code>), College, Branch, and Section.</span></div>
+            <div class="step"><span class="step-num">3</span><span class="step-text">Enter your <strong>Mobile Number</strong> (10 digits) for OTP verification and account recovery.</span></div>
+            <div class="step"><span class="step-num">4</span><span class="step-text"><em>(Optional)</em> Enter your <strong>College Website</strong> URL (e.g. <code>https://dtu.ac.in</code>) if you'd like students to have a direct portal link.</span></div>
+            <div class="step"><span class="step-num">5</span><span class="step-text">Enter all <strong>Subjects</strong> — one per line (e.g. MATHEMATICS-1, PHYSICS, BASIC CIVIL ENGINEERING).</span></div>
+            <div class="step"><span class="step-num">6</span><span class="step-text">Click <strong>"Copy ChatGPT Prompt"</strong> → paste in ChatGPT with your class roster → copy the formatted result → paste it in the Students field.</span></div>
+            <div class="step"><span class="step-num">7</span><span class="step-text">Click <strong>Save & Continue</strong>. Your class ID (e.g. <code>29DTUCSE5</code>) is auto-generated.</span></div>
+        </div>
+        <div class="info-box tip">
+            <span>💡</span>
+            <span><strong>Student Format:</strong> Each student should be on one line as <code>NAME - ROLLNO</code> (e.g. <code>RAHUL SHARMA - 29/B09/042</code>). ChatGPT handles the formatting for you.</span>
+        </div>
+    </div>
+
+    <!-- 3. Taking Attendance -->
+    <div class="section" id="cr-attendance">
+        <div class="section-header">
+            <span class="section-icon">📲</span>
+            <div>
+                <div class="section-title">Taking Attendance</div>
+                <span class="section-badge badge-cr">CR Only</span>
+            </div>
+        </div>
+        <div class="steps-group">
+            <div class="step"><span class="step-num">1</span><span class="step-text">Login and go to the <strong>CR</strong> tab.</span></div>
+            <div class="step"><span class="step-num">2</span><span class="step-text">Select the subject from the <strong>Select Subject</strong> dropdown.</span></div>
+            <div class="step"><span class="step-num">3</span><span class="step-text"><em>(Optional)</em> Configure <strong>Geofencing</strong> — enable it and set the classroom location on the map.</span></div>
+            <div class="step"><span class="step-num">4</span><span class="step-text">Click <strong>Generate QR Code</strong>. The QR is valid for <strong>5 minutes</strong> (extendable by 1 minute).</span></div>
+            <div class="step"><span class="step-num">5</span><span class="step-text">Show the QR on your screen, or click <strong>Copy Link</strong> to share the attendance link via WhatsApp/message.</span></div>
+            <div class="step"><span class="step-num">6</span><span class="step-text">Watch the <strong>live attendance feed</strong> as students submit. Present / Total counts update in real-time.</span></div>
+        </div>
+        <div class="info-box warning">
+            <span>⚠️</span>
+            <span>Each student can mark attendance <strong>only once per QR session</strong>. Duplicate submissions are automatically blocked.</span>
+        </div>
+        
+        <div class="steps-group" style="margin-top: 20px;">
+            <div class="steps-label">QR Lifecycle & Security</div>
+            <ul class="bullet-list">
+                <li><strong>📺 Fullscreen Presentation:</strong> Click the Fullscreen button to project a large, dynamically scaled QR code with a distraction-free dark layout. Real-time student statistics (e.g. <code>Present: 15 / 60</code>) are displayed directly below the subject name and update live.</li>
+                <li><strong>⏱️ Timer Natural Expiry:</strong> When the 5-minute countdown reaches zero, the QR code disappears from the CR dashboard. However, students who already have the registration page open can still request <strong>"Late Attendance"</strong> (pending manual approval in your Requests tab).</li>
+                <li><strong>🛑 Manual Termination (✕ Clear):</strong> If you click <strong>"✕ Clear"</strong> or switch the selected subject, the QR session is instantly deleted from the database. Any student attempting to mark attendance after this will be blocked with an error (<code>❌ Invalid or expired session</code>) and cannot even request late attendance.</li>
+                <li><strong>🔄 Active Session Recovery:</strong> If the dashboard page is reloaded, refreshed, or closed accidentally while a QR code session is active, the app will automatically recover and restore the active QR code, its remaining countdown timer, live attendance counts, and fullscreen presentation state on load.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 4. Geofencing -->
+    <div class="section" id="geofencing">
+        <div class="section-header">
+            <span class="section-icon">📍</span>
+            <div>
+                <div class="section-title">Geofencing & Location Verification</div>
+                <span class="section-badge badge-cr">CR Only</span>
+            </div>
+        </div>
+        <div class="steps-group">
+            <div class="steps-label">Setting Up</div>
+            <div class="step"><span class="step-num">1</span><span class="step-text">In the CR tab, set <strong>Geofencing</strong> dropdown to <em>"Enabled (Verify Student Location)"</em>.</span></div>
+            <div class="step"><span class="step-num">2</span><span class="step-text">Click <strong>"Configure Area on Map"</strong>. The map modal opens centered on your current GPS position.</span></div>
+            <div class="step"><span class="step-num">3</span><span class="step-text">Use the <strong>search bar</strong> to find your college or building by name (e.g. "DTU Delhi").</span></div>
+            <div class="step"><span class="step-num">4</span><span class="step-text"><strong>Drag the marker</strong> to the exact classroom location, or click anywhere on the map to reposition it.</span></div>
+            <div class="step"><span class="step-num">5</span><span class="step-text">Use the <strong>radius slider</strong> (10m – 2km) to set the allowed boundary. The blue circle updates live. Typical classroom = 30–50m. Campus-wide = 500m+.</span></div>
+            <div class="step"><span class="step-num">6</span><span class="step-text">Click <strong>"Set Location"</strong> to save. The button label will update to show the selected radius.</span></div>
+        </div>
+        <div class="steps-group">
+            <div class="steps-label">How Verification Works</div>
+            <ul class="bullet-list">
+                <li>When a student submits attendance, the browser requests their GPS location.</li>
+                <li>The Haversine formula calculates the exact distance from the classroom center.</li>
+                <li><strong>Within range →</strong> Attendance marked immediately ✅</li>
+                <li><strong>Out of range →</strong> Submission goes to <em>Requests</em> tab with distance shown 📍</li>
+                <li><strong>GPS denied →</strong> Submission goes to <em>Requests</em> tab marked as GPS Denied ⚠️</li>
+            </ul>
+        </div>
+        <div class="info-box tip">
+            <span>💡</span>
+            <span>GPS accuracy varies by device and network. Give a 20–30% buffer above your expected area (e.g. use 60m for a 50m classroom) to reduce false rejections.</span>
+        </div>
+    </div>
+
+    <!-- 4.1 Google Meet & Classroom Integration -->
+    <div class="section" id="integrations">
+        <div class="section-header">
+            <span class="section-icon">🎓</span>
+            <div>
+                <div class="section-title">Google Meet &amp; Classroom Integration</div>
+                <span class="section-badge badge-cr">CR Only</span>
+            </div>
+        </div>
+        <div class="steps-group">
+            <div class="steps-label">Google Meet Import</div>
+            <ul class="bullet-list">
+                <li><strong>🟢 Meet Import Button:</strong> Click the "Meet Import" button on the dashboard. Paste the raw participant list copied from your Google Meet session.</li>
+                <li><strong>🧠 Smart Alias Memory:</strong> The system automatically runs fuzzy name matching to link names with registered roll numbers. If a student uses a custom alias, you can map it manually once, and the system will remember it forever using localStorage.</li>
+                <li><strong>Conflict Resolution:</strong> Handles same-name conflicts with checkboxes and displays unmatched participants for manual mapping.</li>
+            </ul>
+        </div>
+        <div class="steps-group">
+            <div class="steps-label">Google Classroom Sync</div>
+            <ul class="bullet-list">
+                <li><strong>🏫 Import from Classroom:</strong> Go to the Students tab and click "Import from Google Classroom".</li>
+                <li><strong>GIS OAuth Integration:</strong> Sign in with Google to grant Classroom permission. Your current Firebase login session remains completely unaffected.</li>
+                <li><strong>Note:</strong> You must be registered as a Teacher or Co-Teacher in that Classroom to successfully pull the roster.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 4.2 Anti-Proxy Security Engine -->
+    <div class="section" id="anti-proxy">
+        <div class="section-header">
+            <span class="section-icon">🛡️</span>
+            <div>
+                <div class="section-title">Anti-Proxy Security Engine</div>
+                <span class="section-badge badge-cr">CR Only</span>
+            </div>
+        </div>
+        <div class="steps-group">
+            <div class="steps-label">How It Protects Your Roster</div>
+            <ul class="bullet-list">
+                <li><strong>Persistent Device Fingerprinting:</strong> Every student device is assigned a unique, secure 3-layer device identifier stored in localStorage, sessionStorage, and browser cookies.</li>
+                <li><strong>Silent Fraud Detection:</strong> If multiple students attempt to mark attendance using the same device in a single session, the system flags the submissions as suspicious without showing any block/error page to the student (to prevent evasion).</li>
+                <li><strong>Visual Auditing:</strong> Marked attendance displays a ⚠️ Suspicious badge with a red dashed border on the CR live feed, detailing the reason (e.g. "Device shared with [Other Student Name]"). The CR can review and choose to approve or delete the entry.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 4.3 Mobile App & OS-Level Notifications -->
+    <div class="section" id="mobile-app">
+        <div class="section-header">
+            <span class="section-icon">📱</span>
+            <div>
+                <div class="section-title">Mobile Application (Android APK)</div>
+                <span class="section-badge badge-cr">All Users</span>
+            </div>
+        </div>
+        <div class="steps-group">
+            <div class="steps-label">Key Features &amp; Settings</div>
+            <ul class="bullet-list">
+                <li><strong>⚡ Native App Shell:</strong> ATTENDIFY is fully packaged as a lightweight native Android app (.apk) using Capacitor.</li>
+                <li><strong>⚡ Smart Landing Bypass:</strong> The mobile app is designed for speed; it bypasses the marketing landing page on launch and opens the login/dashboard screen instantly.</li>
+                <li><strong>🔔 Native Push Notifications:</strong> The app utilizes the Capacitor Local Notifications plugin to deliver system alerts directly to the device notification tray.</li>
+                <li><strong>🔊 Custom Web Audio Alerts:</strong> Audio feedback chimes are played (success chime for correct marking, warning chime for suspicious entries) to provide immediate acoustic feedback during active sessions.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 5. Student Guide -->
+    <div class="section" id="student-guide">
+        <div class="section-header">
+            <span class="section-icon">👨‍🎓</span>
+            <div>
+                <div class="section-title">Student Guide</div>
+                <span class="section-badge badge-student">Students</span>
+            </div>
+        </div>
+        <div class="steps-group">
+            <div class="step"><span class="step-num">1</span><span class="step-text"><strong>Scan</strong> the QR code shown by your CR on screen, or open the attendance link shared via WhatsApp/message.</span></div>
+            <div class="step"><span class="step-num">2</span><span class="step-text">Enter your <strong>Roll Number</strong> exactly as registered (case-insensitive). You can also type your full name.</span></div>
+            <div class="step"><span class="step-num">3</span><span class="step-text">If Geofencing is enabled, <strong>allow location access</strong> when the browser asks. Denying will send your attendance for CR approval.</span></div>
+            <div class="step"><span class="step-num">4</span><span class="step-text">Click <strong>Submit</strong>. You'll be redirected to a confirmation page.</span></div>
+        </div>
+        <div class="info-box warning">
+            <span>⚠️</span>
+            <span>If your attendance shows as <strong>"Pending CR Approval"</strong>, it means you were outside the classroom boundary or denied GPS access. Your CR will review and approve/reject it manually.</span>
+        </div>
+        
+        <div class="steps-group" style="margin-top: 20px;">
+            <div class="steps-label">Student Attendance Tracker (track.html)</div>
+            <ul class="bullet-list">
+                <li><strong>🔑 Login:</strong> Students can log in to the Student Portal using their Class ID and Roll Number. No Firebase account is required.</li>
+                <li><strong>🌐 College Portal Link:</strong> If the CR configured a college website during setup, a <strong>🌐 College Portal</strong> button will appear on the dashboard. Clicking this redirects students to their college portal.</li>
+                <li><strong>📈 Track Attendance:</strong> Monitor overall attendance percentage, check attended vs. total lectures, configure target threshold warnings (defaults to 75%), and filter detailed logs.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 6. Requests -->
+    <div class="section" id="requests">
+        <div class="section-header">
+            <span class="section-icon">🔔</span>
+            <div>
+                <div class="section-title">Managing Requests</div>
+                <span class="section-badge badge-cr">CR Only</span>
+            </div>
+        </div>
+        <ul class="bullet-list">
+            <li>Go to the <strong>Requests</strong> tab to see all pending attendance submissions.</li>
+            <li>Each request shows the student name, roll number, time, and reason (Late / Out of Range / GPS Denied).</li>
+            <li>Click <strong>Approve</strong> to mark the student as present, or <strong>Reject</strong> to decline.</li>
+            <li>Out-of-range requests show the <strong>exact distance</strong> the student was from the classroom.</li>
+        </ul>
+    </div>
+
+    <!-- 7. History & Export -->
+    <div class="section" id="history">
+        <div class="section-header">
+            <span class="section-icon">📊</span>
+            <div>
+                <div class="section-title">History & Export</div>
+                <span class="section-badge badge-cr">CR Only</span>
+            </div>
+        </div>
+        <div class="steps-group">
+            <div class="steps-label">View History</div>
+            <ul class="bullet-list">
+                <li>Click the <strong>History</strong> tab to see all past attendance sessions grouped by subject and date.</li>
+                <li>Each session shows who was present and who was absent.</li>
+            </ul>
+        </div>
+        <div class="steps-group">
+            <div class="steps-label">Export Hub</div>
+            <div class="step"><span class="step-num">1</span><span class="step-text">Click the <strong>📊 Export Hub</strong> button.</span></div>
+            <div class="step"><span class="step-num">2</span><span class="step-text">Select export format: <strong>All Subjects</strong>, specific subjects, or individual student report.</span></div>
+            <div class="step"><span class="step-num">3</span><span class="step-text">Optionally filter by <strong>date range</strong>.</span></div>
+            <div class="step"><span class="step-num">4</span><span class="step-text">Click <strong>Download Report</strong> to save as an Excel (.xlsx) file.</span></div>
+        </div>
+    </div>
+
+    <!-- 8. Account Management -->
+    <div class="section" id="account">
+        <div class="section-header">
+            <span class="section-icon">⚙️</span>
+            <div>
+                <div class="section-title">Account Management</div>
+            </div>
+        </div>
+        <ul class="bullet-list">
+            <li>Click <strong>⚙️ Settings</strong> in the top bar to view your Class ID, linked accounts, and manage login methods.</li>
+            <li>You can link both a <strong>Google account</strong> and a <strong>phone number</strong> for login flexibility.</li>
+            <li>To add/edit/remove students, go to the <strong>Students</strong> tab.</li>
+            <li>To add or rename subjects, click <strong>📚 Manage Subjects</strong>.</li>
+        </ul>
+    </div>
+
+    <!-- 9. Customer Support & AI Assistant -->
+    <div class="section" id="support">
+        <div class="section-header">
+            <span class="section-icon">🤖</span>
+            <div>
+                <div class="section-title">Customer Support & AI Assistant</div>
+            </div>
+        </div>
+        <ul class="bullet-list">
+            <li><strong>💬 Inline AI Assistant:</strong> A custom support chatbot widget is now embedded directly on the <strong>Contact Us</strong> page (<code>contact.html</code>). You can ask it questions about how to use the app, troubleshoot login issues, or clarify QR session lifecycles.</li>
+            <li><strong>📧 Email support:</strong> Clicking the Email card on the Contact page will instantly copy the support email (<code>sm3165599@gmail.com</code>) to your clipboard for quick and easy messaging.</li>
+            <li><strong>📱 Social Channels:</strong> Connect directly with the developer via the official Instagram and LinkedIn links provided on the contact page.</li>
+        </ul>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="danger-zone">
+        <div class="dz-header">
+            <span style="font-size: 22px;">⚠️</span>
+            <div class="dz-title">Deleting Your Account</div>
+        </div>
+        <p>Go to <strong>⚙️ Settings → Danger Zone → Delete My Account</strong>.<br>
+        This permanently deletes your class, all students, and all attendance records. <strong>This action cannot be undone.</strong></p>
+    </div>
+
+    <!-- Footer -->
+    <div class="manual-footer">
+        <p>© 2026 <strong>ATTENDIFY</strong> · Developed by Shivam Kumar Mahto · All rights reserved</p>
+        <p style="margin-top: 6px;">
+            <a href="index.html" style="color: #667eea; text-decoration: none; font-weight: 600;">← Back to App</a>
+            &nbsp;·&nbsp;
+            <a href="contact.html" style="color: #667eea; text-decoration: none; font-weight: 600;">Contact Support</a>
+            &nbsp;·&nbsp;
+            <a href="feedback.html" style="color: #667eea; text-decoration: none; font-weight: 600;">Feedback</a>
+            &nbsp;·&nbsp;
+            <a href="QR Attendance System - Complete User Manual.pdf" download style="color: #667eea; text-decoration: none; font-weight: 600;">⬇️ Download PDF</a>
+        </p>
+    </div>
+
+</div>
+</body>
+</html>

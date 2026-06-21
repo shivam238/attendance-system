@@ -42,3 +42,8 @@ ui-debug.log*
 # Force-track optimized logo assets (used instead of heavy logo.png)
 !logo.webp
 !logo-opt.png
+
+# Capacitor & Native Builds
+www/
+jdk21/
+ATTENDIFY.apk
