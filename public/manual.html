@@ -412,9 +412,12 @@
         <div class="steps-group">
             <div class="steps-label">How It Protects Your Roster</div>
             <ul class="bullet-list">
+                <li><strong>Mandatory Google Student Authentication:</strong> Students must authenticate using their Google account before they can submit attendance, eliminating anonymous/unauthenticated submissions.</li>
+                <li><strong>First-Scan Binding:</strong> During a student's first scan, their Google account UID is locked to their Roll Number in the database. Subsequent scans automatically verify this link, preventing students from using multiple accounts or marking attendance for friends.</li>
                 <li><strong>Persistent Device Fingerprinting:</strong> Every student device is assigned a unique, secure 3-layer device identifier stored in localStorage, sessionStorage, and browser cookies.</li>
                 <li><strong>Silent Fraud Detection:</strong> If multiple students attempt to mark attendance using the same device in a single session, the system flags the submissions as suspicious without showing any block/error page to the student (to prevent evasion).</li>
                 <li><strong>Visual Auditing:</strong> Marked attendance displays a ⚠️ Suspicious badge with a red dashed border on the CR live feed, detailing the reason (e.g. "Device shared with [Other Student Name]"). The CR can review and choose to approve or delete the entry.</li>
+                <li><strong>Native Mock Location Blocking (Android APK):</strong> The official Android app utilizes a native Geolocation checker plugin to verify coordinates directly from the OS. It detects and completely blocks attendance marking if any Fake GPS or mock location provider app is active.</li>
             </ul>
         </div>
     </div>

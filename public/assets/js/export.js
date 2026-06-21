@@ -530,3 +530,111 @@ async function downloadExport() {
     showToast('✅ Excel Downloaded!');
     closeExportModal();
 }
+
+function autoExportClosedSession(sessionKey) {
+    if (!sessionKey) return;
+    const parts = sessionKey.split('_');
+    const subject = parts.slice(2).join('_');
+    const date = parts[1];
+
+    db.ref('attendance/' + sessionKey).once('value', async (snapshot) => {
+        const data = snapshot.val();
+        if (!data || Object.keys(data).length === 0) {
+            showToast('ℹ️ No attendance recorded during this session.');
+            return;
+        }
+
+        showAutoExportPrompt(data, date, subject);
+    });
+}
+
+function showAutoExportPrompt(records, date, subject) {
+    const existing = document.getElementById('auto-export-prompt-modal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'auto-export-prompt-modal';
+    modal.className = 'modal active';
+    modal.style.zIndex = '10000';
+
+    const recordsCount = Object.keys(records).length;
+
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 400px; text-align: center; border-top: 5px solid var(--primary-color);">
+            <div style="font-size: 40px; margin-bottom: 10px;">📊</div>
+            <h2 class="modal-header" style="text-align: center; margin-bottom: 8px;">Session Closed</h2>
+            <p style="font-size: 14px; color: var(--text-color); margin-bottom: 5px;"><strong>${escapeHtml(subject)}</strong></p>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+                Date: ${date} | Present: <strong>${recordsCount}</strong> students
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn btn-primary" id="btn-auto-share" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0;">
+                    📤 Share Report
+                </button>
+                <button class="btn btn-success" id="btn-auto-download" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0;">
+                    📥 Download Excel
+                </button>
+                <button class="btn btn-secondary" onclick="document.getElementById('auto-export-prompt-modal').classList.remove('active')" style="width: 100%; background: transparent; border: 1px solid var(--border-color); color: var(--text-color); margin: 0;">
+                    Dismiss
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    document.getElementById('btn-auto-share').onclick = () => triggerSessionExport(records, date, subject, 'share');
+    document.getElementById('btn-auto-download').onclick = () => triggerSessionExport(records, date, subject, 'download');
+}
+
+async function triggerSessionExport(records, date, subject, mode) {
+    try {
+        await loadXlsxLibrary();
+    } catch (e) {
+        showToast('❌ Excel library failed to load');
+        return;
+    }
+
+    const wb = XLSX.utils.book_new();
+    const rows = Object.values(records).map((r, i) => ({
+        'S.No': i + 1,
+        'Name': r.name,
+        'Roll No': r.rollNo,
+        'Time': r.time,
+        'Google Email': r.googleEmail || '-',
+        'Device Identifier': r.deviceId || '-'
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+
+    const fileName = `Attendance_${subject.replace(/[^a-zA-Z0-9]/g, '_')}_${date}.xlsx`;
+
+    if (mode === 'share') {
+        const wopts = { bookType: 'xlsx', bookSST: false, type: 'array' };
+        const htmlBuffer = XLSX.write(wb, wopts);
+        const fileBlob = new Blob([htmlBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const fileObject = new File([fileBlob], fileName, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        if (navigator.canShare && navigator.canShare({ files: [fileObject] })) {
+            navigator.share({
+                files: [fileObject],
+                title: `${subject} Attendance`,
+                text: `${subject} attendance report for ${date}`
+            }).then(() => {
+                showToast('✅ Report shared!');
+                document.getElementById('auto-export-prompt-modal').classList.remove('active');
+            }).catch(e => {
+                console.error(e);
+                XLSX.writeFile(wb, fileName);
+            });
+        } else {
+            XLSX.writeFile(wb, fileName);
+            showToast('📥 Downloading report (Sharing not supported)');
+        }
+    } else {
+        XLSX.writeFile(wb, fileName);
+        showToast('✅ Excel Downloaded!');
+        document.getElementById('auto-export-prompt-modal').classList.remove('active');
+    }
+}

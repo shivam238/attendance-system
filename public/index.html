@@ -526,6 +526,9 @@
                             </svg>
                             Classroom Import
                         </button>
+                        <button class="btn-small btn-secondary" onclick="openSheetsSyncModal()" style="padding: 10px 20px; display: inline-flex; align-items: center; gap: 8px; background: #0f9d58; color: white; border: none;">
+                            📊 Google Sheets Sync
+                        </button>
                     </div>
                     <div id="students-list" class="student-list"></div>
                 </div>
@@ -588,19 +591,49 @@
 
     <!-- STUDENT ATTENDANCE MODAL -->
     <div id="student-modal" class="modal">
-        <div class="modal-content">
-            <!-- <span class="modal-close" onclick="closeStudentModal()">&times;</span> -->
-            <h2 class="modal-header">Mark Attendance</h2>
-            <div class="form-group">
+        <div class="modal-content" style="max-width: 420px; text-align: center;">
+            <h2 class="modal-header" style="text-align: center; margin-bottom: 20px;">🎓 Mark Attendance</h2>
+            
+            <div class="form-group" style="text-align: left;">
                 <label>Subject</label>
-                <input type="text" id="modal-subject" disabled>
+                <input type="text" id="modal-subject" disabled style="background: var(--bg-color); color: var(--text-color);">
             </div>
-            <div class="form-group">
-                <label>Your Name or Roll Number</label>
-                <input type="text" id="student-roll" placeholder="Enter Name or Roll No">
+
+            <!-- Google Login Section -->
+            <div id="student-auth-section" style="margin: 20px 0;">
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Google authentication is required to prevent proxy attendance.</p>
+                <button class="btn btn-primary" id="student-google-btn" onclick="studentGoogleLogin()" style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; background: #4285F4; border: none; font-weight: 600;">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.64 9.20455C17.64 8.56636 17.5827 7.95273 17.4764 7.36364H9V10.845H13.8436C13.635 11.97 13.0009 12.9232 12.0477 13.5614V15.8195H14.9564C16.6582 14.2527 17.64 11.9455 17.64 9.20455Z" fill="#4285F4"/>
+                        <path d="M9 18C11.43 18 13.4673 17.1941 14.9577 15.8195L12.0491 13.5614C11.2418 14.1027 10.2109 14.4273 9 14.4273C6.65591 14.4273 4.67182 12.8455 3.96409 10.7182H0.957275V13.05C2.44364 16.0036 5.48182 18 9 18Z" fill="#34A853"/>
+                        <path d="M3.96409 10.7182C3.78409 10.1782 3.68182 9.60136 3.68182 9C3.68182 8.39864 3.78409 7.82182 3.96409 7.28182V4.95H0.957275C0.347727 6.16773 0 7.54773 0 9C0 10.4523 0.347727 11.8323 0.957275 13.05L3.96409 10.7182Z" fill="#FBBC05"/>
+                        <path d="M9 3.57273C10.3214 3.57273 11.5077 4.02545 12.4405 4.91727L15.0218 2.33591C13.4632 0.887727 11.4259 0 9 0C5.48182 0 2.44364 1.99636 0.957275 4.95L3.96409 7.28182C4.67182 5.15455 6.65591 3.57273 9 3.57273Z" fill="#EA4335"/>
+                    </svg>
+                    Sign in with Google
+                </button>
             </div>
-            <button class="btn btn-success" onclick="submitAttendance()">✓ Submit</button>
-            <div id="modal-message"></div>
+
+            <!-- Student Verification Profile (Shown after Login) -->
+            <div id="student-profile-section" style="display: none; align-items: center; gap: 12px; background: rgba(99, 102, 241, 0.08); padding: 12px; border-radius: 12px; margin-bottom: 20px; border: 1.5px solid rgba(99, 102, 241, 0.15);">
+                <img id="student-avatar" src="" style="width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--primary-color);">
+                <div style="text-align: left; flex: 1;">
+                    <div id="student-google-name" style="font-weight: 700; font-size: 14px; color: var(--text-color);"></div>
+                    <div id="student-google-email" style="font-size: 12px; color: var(--text-muted);"></div>
+                </div>
+                <button class="btn-small" onclick="studentGoogleLogout()" style="background: transparent; color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); padding: 4px 10px; border-radius: 8px; cursor: pointer; font-size: 11px;">Logout</button>
+            </div>
+
+            <!-- Roll Number Input (Shown after login, disabled if already bound) -->
+            <div id="student-roll-section" style="display: none;">
+                <div class="form-group" style="text-align: left;">
+                    <label id="student-roll-label">Your Name or Roll Number</label>
+                    <input type="text" id="student-roll" placeholder="Enter Name or Roll No">
+                    <p id="student-binding-hint" style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: none;">🔒 This will lock your Google account to this Roll Number permanently.</p>
+                </div>
+                <button class="btn btn-success" id="student-submit-btn" onclick="submitAttendance()" style="width: 100%;">✓ Submit Attendance</button>
+            </div>
+
+            <div id="modal-message" style="margin-top: 15px;"></div>
         </div>
     </div>
 
@@ -620,6 +653,39 @@
             <button class="btn btn-success" onclick="saveStudent()">💾 Save</button>
             <button class="btn btn-danger" onclick="closeAddStudentModal()">Cancel</button>
             <div id="add-student-message"></div>
+        </div>
+    </div>
+
+    <!-- GOOGLE SHEETS SYNC MODAL -->
+    <div id="sheets-sync-modal" class="modal">
+        <div class="modal-content" style="max-width: 600px; width: 90%;">
+            <span class="modal-close" onclick="closeSheetsSyncModal()">&times;</span>
+            <h2 class="modal-header">Sync with Google Sheets</h2>
+            <div style="padding: 10px 0;">
+                <p style="margin-bottom: 12px; color: var(--text-color); font-size: 13px;">
+                    Enter the URL of your Google Sheet published as <strong>CSV</strong>.
+                </p>
+                <div class="form-group">
+                    <label>Google Sheet CSV Link</label>
+                    <input type="text" id="sheets-csv-url" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color);">
+                </div>
+                <div class="info-text" style="margin-bottom: 15px; font-size: 11px; background: rgba(0,0,0,0.03); padding: 10px; border-radius: 6px; line-height: 1.4;">
+                    💡 <strong>How to get this link:</strong><br>
+                    1. Open your student list in Google Sheets.<br>
+                    2. Go to <strong>File</strong> &rarr; <strong>Share</strong> &rarr; <strong>Publish to web</strong>.<br>
+                    3. Under Link, choose the sheet containing students and change "Web Page" to <strong>Comma-separated values (.csv)</strong>.<br>
+                    4. Click <strong>Publish</strong>, copy the generated link, and paste it here.
+                </div>
+                <button class="btn btn-primary" onclick="syncRosterFromGoogleSheet()" style="width: 100%; margin-bottom: 15px;">🔗 Fetch and Preview Roster</button>
+                
+                <div id="sheets-preview-section" style="display: none; margin-top: 15px;">
+                    <h3 style="font-size: 14px; margin-bottom: 10px; font-weight: 600;"> Roster Preview (<span id="sheets-preview-count">0</span> students)</h3>
+                    <div id="sheets-preview-list" style="max-height: 200px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; background: var(--card-bg);">
+                    </div>
+                    <button class="btn btn-success" onclick="saveSheetsSyncedRoster()" style="width: 100%; margin-top: 15px;">💾 Save & Update Roster</button>
+                </div>
+                <div id="sheets-sync-message" style="margin-top: 10px;"></div>
+            </div>
         </div>
     </div>
 
@@ -931,13 +997,90 @@
             }
         };
 
+        let activeStudentCode = null;
+
         function handleStudentLink(code) {
+            activeStudentCode = code;
             const parts = code.split('_');
             if (parts.length >= 3) {
                 const subject = parts.slice(2).join('_');
                 document.getElementById('modal-subject').value = subject;
                 document.getElementById('student-modal').classList.add('active');
-                document.getElementById('student-roll').focus();
+                updateStudentAuthUI(auth.currentUser);
+            }
+        }
+
+        function studentGoogleLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            const msgDiv = document.getElementById('modal-message');
+            msgDiv.innerHTML = '<div class="message info" style="color: var(--primary-color);">🔄 Connecting to Google...</div>';
+            
+            auth.signInWithPopup(provider).then((result) => {
+                updateStudentAuthUI(result.user);
+            }).catch((error) => {
+                console.error("Google Auth failed:", error);
+                msgDiv.innerHTML = '<div class="message error">❌ Sign-in failed: ' + error.message + '</div>';
+            });
+        }
+
+        function studentGoogleLogout() {
+            auth.signOut().then(() => {
+                updateStudentAuthUI(null);
+            });
+        }
+
+        function updateStudentAuthUI(user) {
+            const authSection = document.getElementById('student-auth-section');
+            const profileSection = document.getElementById('student-profile-section');
+            const rollSection = document.getElementById('student-roll-section');
+            const studentRollInput = document.getElementById('student-roll');
+            const studentRollLabel = document.getElementById('student-roll-label');
+            const bindingHint = document.getElementById('student-binding-hint');
+            const msgDiv = document.getElementById('modal-message');
+
+            if (!authSection || !profileSection || !rollSection) return;
+
+            if (!user) {
+                authSection.style.display = 'block';
+                profileSection.style.display = 'none';
+                rollSection.style.display = 'none';
+                msgDiv.innerHTML = '';
+            } else {
+                authSection.style.display = 'none';
+                profileSection.style.display = 'flex';
+                
+                document.getElementById('student-avatar').src = user.photoURL || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
+                document.getElementById('student-google-name').textContent = user.displayName || 'Google Student';
+                document.getElementById('student-google-email').textContent = user.email;
+
+                const code = activeStudentCode || new URLSearchParams(window.location.search).get('code');
+                if (!code) return;
+                const parts = code.split('_');
+                const classId = parts[0];
+
+                msgDiv.innerHTML = '<div class="message info" style="color: var(--primary-color);">🔍 Checking account binding...</div>';
+                
+                db.ref('google_user_links/' + user.uid + '/' + classId).once('value', (snapshot) => {
+                    msgDiv.innerHTML = '';
+                    rollSection.style.display = 'block';
+                    
+                    if (snapshot.exists()) {
+                        const boundRoll = snapshot.val();
+                        studentRollInput.value = boundRoll;
+                        studentRollInput.disabled = true;
+                        studentRollLabel.textContent = "Verified Roll Number (Locked)";
+                        bindingHint.style.display = 'none';
+                    } else {
+                        studentRollInput.value = '';
+                        studentRollInput.disabled = false;
+                        studentRollLabel.textContent = "Enter your Name or Roll Number to Link";
+                        bindingHint.style.display = 'block';
+                        studentRollInput.focus();
+                    }
+                }, (error) => {
+                    console.error("Binding check error:", error);
+                    msgDiv.innerHTML = '<div class="message error">❌ Failed to verify identity binding. Please try again.</div>';
+                });
             }
         }
 
@@ -1106,6 +1249,17 @@ Now format this student list:
         let isFirstAuthCheck = true;
         auth.onAuthStateChanged((user) => {
             const loadingScreen = document.getElementById('loading-screen');
+            const urlParams = new URLSearchParams(window.location.search);
+            const isStudentFlow = urlParams.has('code');
+
+            if (isStudentFlow) {
+                updateStudentAuthUI(user);
+                if (loadingScreen) {
+                    loadingScreen.classList.add('fade-out');
+                    clearTimeout(loadingSafetyTimeout);
+                }
+                return;
+            }
 
             if (user) {
                 isFirstAuthCheck = false;
@@ -1530,6 +1684,169 @@ Now format this student list:
                 }, 1500);
             }).catch(err => {
                 console.error("Error saving imported roster:", err);
+                msgDiv.innerHTML = '<div class="message error">❌ Failed to save roster: ' + err.message + '</div>';
+            });
+        }
+
+        let sheetSyncedStudents = [];
+
+        function openSheetsSyncModal() {
+            document.getElementById('sheets-sync-modal').classList.add('active');
+            document.getElementById('sheets-csv-url').value = localStorage.getItem('last_sheets_csv_url') || '';
+            document.getElementById('sheets-preview-section').style.display = 'none';
+            document.getElementById('sheets-sync-message').innerHTML = '';
+            sheetSyncedStudents = [];
+        }
+
+        function closeSheetsSyncModal() {
+            document.getElementById('sheets-sync-modal').classList.remove('active');
+        }
+
+        function syncRosterFromGoogleSheet() {
+            const urlInput = document.getElementById('sheets-csv-url').value.trim();
+            const msgDiv = document.getElementById('sheets-sync-message');
+            const previewSection = document.getElementById('sheets-preview-section');
+            const previewList = document.getElementById('sheets-preview-list');
+            const previewCount = document.getElementById('sheets-preview-count');
+
+            msgDiv.innerHTML = '';
+            previewSection.style.display = 'none';
+            sheetSyncedStudents = [];
+
+            if (!urlInput) {
+                msgDiv.innerHTML = '<div class="message error">❌ Please enter a published Google Sheets CSV URL.</div>';
+                return;
+            }
+
+            if (!urlInput.startsWith('https://docs.google.com/spreadsheets/')) {
+                msgDiv.innerHTML = '<div class="message error">❌ Invalid Google Sheets URL format. Ensure it starts with https://docs.google.com/spreadsheets/...</div>';
+                return;
+            }
+
+            msgDiv.innerHTML = '<div class="message info" style="color: var(--primary-color);">⏳ Fetching data from Google Sheets...</div>';
+
+            fetch(urlInput)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok. Ensure the sheet is published to the web.');
+                    }
+                    return response.text();
+                })
+                .then(csvText => {
+                    const lines = csvText.split(/\r?\n/);
+                    if (lines.length < 2) {
+                        throw new Error('No student data found. Ensure sheet is not empty.');
+                    }
+
+                    const headers = lines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, '').toLowerCase());
+                    let nameCol = headers.findIndex(h => h.includes('name'));
+                    let rollCol = headers.findIndex(h => h.includes('roll') || h.includes('id') || h.includes('number'));
+
+                    if (nameCol === -1) nameCol = 0;
+                    if (rollCol === -1) rollCol = 1;
+
+                    const tempStudents = [];
+                    const uniqueRolls = new Set();
+
+                    for (let i = 1; i < lines.length; i++) {
+                        const line = lines[i].trim();
+                        if (!line) continue;
+
+                        const columns = [];
+                        let inQuotes = false;
+                        let colBuffer = '';
+                        for (let charIndex = 0; charIndex < line.length; charIndex++) {
+                            const char = line[charIndex];
+                            if (char === '"' || char === "'") {
+                                inQuotes = !inQuotes;
+                            } else if (char === ',' && !inQuotes) {
+                                columns.push(colBuffer.trim().replace(/^["']|["']$/g, ''));
+                                colBuffer = '';
+                            } else {
+                                colBuffer += char;
+                            }
+                        }
+                        columns.push(colBuffer.trim().replace(/^["']|["']$/g, ''));
+
+                        if (columns.length <= Math.max(nameCol, rollCol)) continue;
+
+                        const nameVal = columns[nameCol];
+                        const rollVal = columns[rollCol];
+
+                        if (nameVal && rollVal) {
+                            const rollClean = rollVal.trim().toUpperCase();
+                            if (!uniqueRolls.has(rollClean)) {
+                                uniqueRolls.add(rollClean);
+                                tempStudents.push({
+                                    name: nameVal.trim(),
+                                    rollNo: rollClean
+                                });
+                            }
+                        }
+                    }
+
+                    if (tempStudents.length === 0) {
+                        throw new Error('Could not parse any valid student records. Ensure columns are labeled Name and Roll/ID.');
+                    }
+
+                    localStorage.setItem('last_sheets_csv_url', urlInput);
+
+                    sheetSyncedStudents = tempStudents;
+                    previewCount.textContent = sheetSyncedStudents.length;
+
+                    previewList.innerHTML = '';
+                    sheetSyncedStudents.forEach(stu => {
+                        const item = document.createElement('div');
+                        item.style.padding = '8px';
+                        item.style.borderBottom = '1px solid var(--border-color)';
+                        item.style.fontSize = '12px';
+                        item.style.display = 'flex';
+                        item.style.justifyContent = 'space-between';
+                        item.innerHTML = `
+                            <span style="font-weight:600; color:var(--text-color);">${escapeHtml(stu.name)}</span>
+                            <span style="color:var(--text-muted); font-weight:700;">${escapeHtml(stu.rollNo)}</span>
+                        `;
+                        previewList.appendChild(item);
+                    });
+
+                    previewSection.style.display = 'block';
+                    msgDiv.innerHTML = `<div class="message success">✅ Loaded ${sheetSyncedStudents.length} students from Google Sheets! Preview below and save.</div>`;
+                })
+                .catch(err => {
+                    console.error("CSV sync error:", err);
+                    msgDiv.innerHTML = `<div class="message error">❌ Sync Failed: ${err.message} (Double check you selected 'CSV' format when publishing)</div>`;
+                });
+        }
+
+        function saveSheetsSyncedRoster() {
+            if (sheetSyncedStudents.length === 0) return;
+            const msgDiv = document.getElementById('sheets-sync-message');
+
+            const append = confirm(`Sync and update roster with ${sheetSyncedStudents.length} students?\n\nExisting roll numbers will be skip-updated.`);
+            if (!append) return;
+
+            if (!currentUser.students) {
+                currentUser.students = [];
+            }
+
+            sheetSyncedStudents.forEach(newStu => {
+                const existingIndex = currentUser.students.findIndex(s => s.rollNo === newStu.rollNo);
+                if (existingIndex !== -1) {
+                    currentUser.students[existingIndex].name = newStu.name;
+                } else {
+                    currentUser.students.push(newStu);
+                }
+            });
+
+            db.ref('users/' + currentUser.uid + '/students').set(currentUser.students).then(() => {
+                localStorage.setItem('user_profile_' + currentUser.uid, JSON.stringify(currentUser));
+                msgDiv.innerHTML = '<div class="message success">💾 Successfully saved and synchronized student roster!</div>';
+                setTimeout(() => {
+                    closeSheetsSyncModal();
+                    loadStudents();
+                }, 1500);
+            }).catch(err => {
+                console.error("Error saving synced sheets roster:", err);
                 msgDiv.innerHTML = '<div class="message error">❌ Failed to save roster: ' + err.message + '</div>';
             });
         }
@@ -2237,6 +2554,12 @@ Now format this student list:
 
                 if (remaining <= 0) {
                     clearInterval(qrTimerInterval);
+                    if (currentQRCode) {
+                        const closedCode = currentQRCode.code;
+                        db.ref('qr_sessions/' + closedCode).remove().then(() => {
+                            autoExportClosedSession(closedCode);
+                        });
+                    }
                     resetQR(false);
                 }
             }, 1000);
@@ -2312,11 +2635,14 @@ Now format this student list:
         }
 
         function resetQR(isManual = false) {
-            if (isManual && currentQRCode) {
-                // Remove session from database immediately so students can no longer submit attendance
-                db.ref('qr_sessions/' + currentQRCode.code).remove().then(() => {
-                    showToast('🛑 QR Session revoked successfully.');
-                });
+            if (currentQRCode) {
+                const closedCode = currentQRCode.code;
+                if (isManual) {
+                    db.ref('qr_sessions/' + closedCode).remove().then(() => {
+                        showToast('🛑 QR Session revoked successfully.');
+                        autoExportClosedSession(closedCode);
+                    });
+                }
             }
             document.getElementById('qr-section').style.display = 'none';
             document.getElementById('qrcode').innerHTML = '';
@@ -2926,6 +3252,7 @@ Now format this student list:
         function submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, distance, gpsDenied) {
             const lateMinutes = isWithin5Minutes ? 0 : Math.floor((currentTime - session.expiryTime) / (1000 * 60));
             const deviceId = getDeviceId();
+            const user = auth.currentUser;
             
             const requestData = {
                 rollNo: student.rollNo,
@@ -2941,6 +3268,12 @@ Now format this student list:
                 lateBy: lateMinutes,
                 deviceId: deviceId
             };
+
+            if (user) {
+                requestData.googleUid = user.uid;
+                requestData.googleEmail = user.email;
+                requestData.googleName = user.displayName || "";
+            }
 
             const classId = key.split('_')[0];
             
@@ -2989,6 +3322,7 @@ Now format this student list:
 
         function proceedWithAttendanceSave(student, subject, key, currentTime, isWithin5Minutes, session) {
             const deviceId = getDeviceId();
+            const user = auth.currentUser;
             
             if (isWithin5Minutes) {
                 const attendanceData = {
@@ -2998,6 +3332,17 @@ Now format this student list:
                     timestamp: currentTime,
                     deviceId: deviceId
                 };
+
+                if (student.geofenceRelaxed) {
+                    attendanceData.geofenceRelaxed = true;
+                    attendanceData.actualDistance = student.actualDistance;
+                }
+
+                if (user) {
+                    attendanceData.googleUid = user.uid;
+                    attendanceData.googleEmail = user.email;
+                    attendanceData.googleName = user.displayName || "";
+                }
 
                 const classId = key.split('_')[0];
                 
@@ -3031,6 +3376,12 @@ Now format this student list:
                     deviceId: deviceId
                 };
 
+                if (user) {
+                    requestData.googleUid = user.uid;
+                    requestData.googleEmail = user.email;
+                    requestData.googleName = user.displayName || "";
+                }
+
                 const classId = key.split('_')[0];
                 
                 checkProxySession(key, student.rollNo, deviceId, (isProxy, originalRollNo) => {
@@ -3054,6 +3405,12 @@ Now format this student list:
         }
 
         function submitAttendance() {
+            const user = auth.currentUser;
+            if (!user) {
+                document.getElementById('modal-message').innerHTML = '<div class="message error">❌ Please sign in with Google first.</div>';
+                return;
+            }
+
             const roll = document.getElementById('student-roll').value.trim().toUpperCase();
             const msgDiv = document.getElementById('modal-message');
 
@@ -3094,61 +3451,132 @@ Now format this student list:
                     return;
                 }
 
-                const key = code;
+                // Check Google binding first
+                db.ref('class_student_links/' + username + '/' + student.rollNo).once('value', (linkSnapshot) => {
+                    if (linkSnapshot.exists() && linkSnapshot.val() !== user.uid) {
+                        // Flag this as suspicious attempt
+                        const alertData = {
+                            name: student.name,
+                            rollNo: student.rollNo,
+                            subject: subject,
+                            requestTime: new Date().toLocaleTimeString('en-IN'),
+                            timestamp: Date.now(),
+                            suspicious: true,
+                            suspiciousReason: `❌ ID Proxy: Google user (${user.displayName || user.email}) tried to claim locked Roll ${student.rollNo}`
+                        };
+                        db.ref('requests/' + code).push(alertData);
 
-                // Check if already marked
-                db.ref('attendance/' + key).orderByChild('rollNo').equalTo(student.rollNo).once('value', (snapshot) => {
-                    if (snapshot.exists()) {
-                        // Redirect to already-marked page instead of showing error
-                        const alreadyURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&alreadyMarked=true&class=${encodeURIComponent(username)}`;
-                        window.location.href = alreadyURL;
+                        msgDiv.innerHTML = `<div class="message error">❌ This Roll Number is already linked to another Google account. Your attempt has been logged.</div>`;
                         return;
                     }
 
-                    const currentTime = Date.now();
+                    // Perform database linking (First-scan Binding)
+                    const saveLinkAndProceed = () => {
+                        db.ref('class_student_links/' + username + '/' + student.rollNo).set(user.uid);
+                        db.ref('google_user_links/' + user.uid + '/' + username).set(student.rollNo);
 
-                    // Check QR session expiry
-                    db.ref('qr_sessions/' + code).once('value', (sessionSnapshot) => {
-                        const session = sessionSnapshot.val();
+                        const key = code;
 
-                        if (!session) {
-                            msgDiv.innerHTML = '<div class="message error">❌ Invalid or expired session</div>';
-                            return;
-                        }
-
-                        const isWithin5Minutes = currentTime <= session.expiryTime;
-                        const sessionLoc = session.location;
-
-                        if (sessionLoc) {
-                            // Geofencing enabled for session
-                            msgDiv.innerHTML = '<div class="message info" style="color: var(--primary-color);">📍 Verifying classroom location... Please allow GPS access.</div>';
-
-                            if (!navigator.geolocation) {
-                                submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, null, true);
+                        // Check if already marked
+                        db.ref('attendance/' + key).orderByChild('rollNo').equalTo(student.rollNo).once('value', (snapshot) => {
+                            if (snapshot.exists()) {
+                                // Redirect to already-marked page instead of showing error
+                                const alreadyURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&alreadyMarked=true&class=${encodeURIComponent(username)}`;
+                                window.location.href = alreadyURL;
                                 return;
                             }
 
-                            navigator.geolocation.getCurrentPosition(
-                                (position) => {
-                                    const studentLat = position.coords.latitude;
-                                    const studentLng = position.coords.longitude;
-                                    const distance = calculateDistance(studentLat, studentLng, sessionLoc.lat, sessionLoc.lng);
+                            const currentTime = Date.now();
 
-                                    if (distance > sessionLoc.radius) {
-                                        submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, Math.round(distance), false);
+                            // Check QR session expiry
+                            db.ref('qr_sessions/' + code).once('value', (sessionSnapshot) => {
+                                const session = sessionSnapshot.val();
+
+                                if (!session) {
+                                    msgDiv.innerHTML = '<div class="message error">❌ Invalid or expired session</div>';
+                                    return;
+                                }
+
+                                const isWithin5Minutes = currentTime <= session.expiryTime;
+                                const sessionLoc = session.location;
+
+                                if (sessionLoc) {
+                                    // Geofencing enabled for session
+                                    msgDiv.innerHTML = '<div class="message info" style="color: var(--primary-color);">📍 Verifying classroom location... Please allow GPS access.</div>';
+
+                                    // Try native Capacitor plugin MockLocationChecker first for Android security
+                                    if (window.Capacitor && window.Capacitor.Plugins.MockLocationChecker) {
+                                        const { MockLocationChecker } = window.Capacitor.Plugins;
+                                        MockLocationChecker.getCurrentPosition().then((result) => {
+                                            if (result.isMock) {
+                                                msgDiv.innerHTML = '<div class="message error">❌ Fake/Mock Location detected! Please disable mock GPS apps.</div>';
+                                                alert("❌ Proxy/Fake GPS detected. Your device has been flagged!");
+                                                logAnalyticsEvent("fake_gps_detected", {
+                                                    rollNo: student.rollNo,
+                                                    subject: subject
+                                                });
+                                            } else {
+                                                const studentLat = result.latitude;
+                                                const studentLng = result.longitude;
+                                                const distance = calculateDistance(studentLat, studentLng, sessionLoc.lat, sessionLoc.lng);
+                                                const relaxedRadius = Math.min(sessionLoc.radius * 1.8, sessionLoc.radius + 60);
+
+                                                if (distance > sessionLoc.radius) {
+                                                    if (distance <= relaxedRadius) {
+                                                        student.geofenceRelaxed = true;
+                                                        student.actualDistance = Math.round(distance);
+                                                        proceedWithAttendanceSave(student, subject, key, currentTime, isWithin5Minutes, session);
+                                                    } else {
+                                                        submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, Math.round(distance), false);
+                                                    }
+                                                } else {
+                                                    proceedWithAttendanceSave(student, subject, key, currentTime, isWithin5Minutes, session);
+                                                }
+                                            }
+                                        }).catch((error) => {
+                                            console.error("Native location error:", error);
+                                            submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, null, true);
+                                        });
                                     } else {
-                                        proceedWithAttendanceSave(student, subject, key, currentTime, isWithin5Minutes, session);
+                                        // Web fallback (standard navigator.geolocation)
+                                        if (!navigator.geolocation) {
+                                            submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, null, true);
+                                            return;
+                                        }
+
+                                        navigator.geolocation.getCurrentPosition(
+                                            (position) => {
+                                                const studentLat = position.coords.latitude;
+                                                const studentLng = position.coords.longitude;
+                                                const distance = calculateDistance(studentLat, studentLng, sessionLoc.lat, sessionLoc.lng);
+                                                const relaxedRadius = Math.min(sessionLoc.radius * 1.8, sessionLoc.radius + 60);
+
+                                                if (distance > sessionLoc.radius) {
+                                                    if (distance <= relaxedRadius) {
+                                                        student.geofenceRelaxed = true;
+                                                        student.actualDistance = Math.round(distance);
+                                                        proceedWithAttendanceSave(student, subject, key, currentTime, isWithin5Minutes, session);
+                                                    } else {
+                                                        submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, Math.round(distance), false);
+                                                    }
+                                                } else {
+                                                    proceedWithAttendanceSave(student, subject, key, currentTime, isWithin5Minutes, session);
+                                                }
+                                            },
+                                            (error) => {
+                                                submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, null, true);
+                                            },
+                                            { enableHighAccuracy: true, timeout: 5000 }
+                                        );
                                     }
-                                },
-                                (error) => {
-                                    submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, null, true);
-                                },
-                                { enableHighAccuracy: true, timeout: 5000 }
-                            );
-                        } else {
-                            proceedWithAttendanceSave(student, subject, key, currentTime, isWithin5Minutes, session);
-                        }
-                    });
+                                } else {
+                                    proceedWithAttendanceSave(student, subject, key, currentTime, isWithin5Minutes, session);
+                                }
+                            });
+                        });
+                    };
+
+                    saveLinkAndProceed();
                 });
             });
         }

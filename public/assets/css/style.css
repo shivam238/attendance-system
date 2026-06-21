@@ -1929,7 +1929,6 @@
             position: sticky;
             top: 0px;
             float: right;
-            display: inline-block;
             font-size: 28px;
             font-weight: 700;
             color: var(--text-muted);

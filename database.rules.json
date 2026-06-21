@@ -34,6 +34,24 @@
         ".write": "auth != null",
         ".validate": "!newData.exists() || (newData.hasChildren(['generatedAt', 'expiryTime', 'subject', 'username']) && newData.child('generatedAt').isNumber() && newData.child('expiryTime').isNumber() && newData.child('subject').isString() && newData.child('subject').val().length > 0 && newData.child('subject').val().length <= 80 && newData.child('username').isString() && newData.child('username').val().length > 0 && newData.child('username').val().length <= 120)"
       }
+    },
+    "class_student_links": {
+      ".read": true,
+      "$class_id": {
+        "$roll_no": {
+          ".write": "auth != null",
+          ".validate": "newData.isString()"
+        }
+      }
+    },
+    "google_user_links": {
+      ".read": true,
+      "$google_uid": {
+        ".write": "auth != null && auth.uid === $google_uid",
+        "$class_id": {
+          ".validate": "newData.isString()"
+        }
+      }
     }
   }
 }
