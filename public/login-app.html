@@ -255,7 +255,13 @@
                 prompt: 'select_account'
             });
 
-            auth.signInWithRedirect(provider);
+            // Enforce signing out of browser session first to always force Google Account Chooser
+            auth.signOut().then(() => {
+                auth.signInWithRedirect(provider);
+            }).catch(err => {
+                console.error("Sign out error, continuing redirect:", err);
+                auth.signInWithRedirect(provider);
+            });
         }
 
         // On page load, check if redirected back from Google
@@ -273,21 +279,8 @@
                         msgDiv.innerHTML = '<span class="error">❌ Could not retrieve Google ID Token. Please try again.</span>';
                     }
                 } else {
-                    // No redirect result, check if user is already signed in
-                    auth.onAuthStateChanged((user) => {
-                        if (user) {
-                            document.getElementById('connecting-message').textContent = '🔄 Already logged in. Redirecting to app...';
-                            user.getIdToken(true).then((idToken) => {
-                                handleSuccessfulLogin(idToken);
-                            }).catch(err => {
-                                console.error("Error getting ID Token:", err);
-                                signInWithGoogle();
-                            });
-                        } else {
-                            // Automatically start Google sign in on page load to avoid the second click
-                            signInWithGoogle();
-                        }
-                    });
+                    // Fresh load, not redirected from Google yet. Start sign-in immediately.
+                    signInWithGoogle();
                 }
             }).catch((error) => {
                 console.error('Redirect sign-in error:', error);
