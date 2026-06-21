@@ -19,6 +19,7 @@
   "homepage": "https://github.com/shivam238/attendance-system#readme",
   "dependencies": {
     "@capacitor/android": "^8.4.1",
+    "@capacitor/app": "^8.1.0",
     "@capacitor/core": "^8.4.1",
     "@capacitor/local-notifications": "^8.2.0"
   },

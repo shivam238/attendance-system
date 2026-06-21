@@ -436,3 +436,68 @@ function linkGoogleAccount() {
         });
 }
 
+// Automatic Login token verification helper
+function loginWithToken(token) {
+    const msgDiv = document.getElementById('capacitor-login-message') || document.getElementById('login-message');
+    if (msgDiv) msgDiv.innerHTML = '<span style="color: var(--text-color);">🔄 Authenticating from browser...</span>';
+    
+    // Auto open/ensure modal is active to show progress
+    openCapacitorLoginModal();
+    const tokenInput = document.getElementById('capacitor-token-input');
+    if (tokenInput) tokenInput.value = token;
+
+    try {
+        const credential = firebase.auth.GoogleAuthProvider.credential(token);
+        auth.signInWithCredential(credential)
+            .then((result) => {
+                if (msgDiv) msgDiv.innerHTML = '<span style="color: #10b981;">✅ Signed in successfully!</span>';
+                setTimeout(() => {
+                    closeCapacitorLoginModal();
+                }, 1200);
+            })
+            .catch((error) => {
+                console.error("Token sign-in error:", error);
+                if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Invalid or expired login code. Please try again.</span>';
+            });
+    } catch (e) {
+        console.error("Credential parsing error:", e);
+        if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Error parsing code.</span>';
+    }
+}
+
+// Register deep link listener for Capacitor environment
+if (window.Capacitor) {
+    document.addEventListener('DOMContentLoaded', () => {
+        const checkDeepLink = (url) => {
+            try {
+                // Expecting: attendify://login?token=<token>
+                if (url && url.includes('attendify://')) {
+                    const urlObj = new URL(url.replace('attendify://', 'https://dummy-domain/'));
+                    const token = urlObj.searchParams.get('token');
+                    if (token) {
+                        loginWithToken(token);
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to parse deep link URL:", e);
+            }
+        };
+
+        if (window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+            // Listen to resume events with deep link URL
+            window.Capacitor.Plugins.App.addListener('appUrlOpen', (data) => {
+                console.log('App opened with URL:', data.url);
+                checkDeepLink(data.url);
+            });
+
+            // Check if app was initially launched with a deep link
+            window.Capacitor.Plugins.App.getLaunchUrl().then((launchUrl) => {
+                if (launchUrl && launchUrl.url) {
+                    console.log('App launched with URL:', launchUrl.url);
+                    checkDeepLink(launchUrl.url);
+                }
+            });
+        }
+    });
+}
+
