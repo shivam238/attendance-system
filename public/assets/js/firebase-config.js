@@ -4,10 +4,10 @@ const firebaseConfig = {
     authDomain: "firstfile-c763521e.firebaseapp.com",
     databaseURL: "https://firstfile-c763521e-default-rtdb.firebaseio.com",
     projectId: "firstfile-c763521e",
-    storageBucket: "firstfile-c763521e.appspot.com",
-    messagingSenderId: "338947118228",
-    appId: "1:338947118228:web:7573617be2d12e616259c7",
-    measurementId: "G-65F939V2L3" // Added standard measurementId corresponding to the project appId structure
+    storageBucket: "firstfile-c763521e.firebasestorage.app",
+    messagingSenderId: "841328143028",
+    appId: "1:841328143028:web:caebd6835972138e70c5e1",
+    measurementId: "G-RC6MB6YMV9"
 };
 
 // Initialize Firebase

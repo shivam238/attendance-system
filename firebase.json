@@ -1,30 +1,58 @@
 {
-  "hosting": {
-    "site": "qr-smart-attendance",
-    "public": "public",
-    "ignore": [
-      "firebase.json",
-      ".*",
-      ".*/**",
-      "**/.*",
-      "**/.*/**",
-      "**/node_modules/**",
-      "attendify-support-chatbot/**"
-    ],
-    "redirects": [
-      {
-        "source": "/coming-soon.html",
-        "destination": "/index.html",
-        "type": 301
-      }
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  },
+  "hosting": [
+    {
+      "site": "qr-smart-attendance",
+      "public": "public",
+      "ignore": [
+        "firebase.json",
+        ".*",
+        ".*/**",
+        "**/.*",
+        "**/.*/**",
+        "**/node_modules/**",
+        "attendify-support-chatbot/**"
+      ],
+      "redirects": [
+        {
+          "source": "/coming-soon.html",
+          "destination": "/index.html",
+          "type": 301
+        }
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    },
+    {
+      "site": "firstfile-c763521e",
+      "public": "public",
+      "ignore": [
+        "firebase.json",
+        ".*",
+        ".*/**",
+        "**/.*",
+        "**/.*/**",
+        "**/node_modules/**",
+        "attendify-support-chatbot/**"
+      ],
+      "redirects": [
+        {
+          "source": "/coming-soon.html",
+          "destination": "/index.html",
+          "type": 301
+        }
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    }
+  ],
   "database": {
     "rules": "database.rules.json"
   }

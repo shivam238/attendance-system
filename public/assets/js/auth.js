@@ -1,6 +1,11 @@
 // Auth management for ATTENDIFY
 
 function signInWithGoogle() {
+    if (window.Capacitor) {
+        openCapacitorLoginModal();
+        return;
+    }
+
     const msgDiv = document.getElementById('login-message');
     if (msgDiv) msgDiv.innerHTML = '<div class="message">🔄 Signing in...</div>';
 
@@ -13,6 +18,63 @@ function signInWithGoogle() {
         console.error('Google sign-in error:', error);
         if (msgDiv) msgDiv.innerHTML = '<div class="message error">❌ Sign-in failed: ' + error.message + '</div>';
     });
+}
+
+// Capacitor Auth Bridge Functions
+function openCapacitorLoginModal() {
+    const modal = document.getElementById('capacitor-login-modal');
+    if (modal) {
+        modal.classList.add('active');
+    } else {
+        alert("Mobile sign-in modal not found in HTML.");
+    }
+}
+
+function closeCapacitorLoginModal() {
+    const modal = document.getElementById('capacitor-login-modal');
+    if (modal) modal.classList.remove('active');
+    
+    const tokenInput = document.getElementById('capacitor-token-input');
+    if (tokenInput) tokenInput.value = '';
+    
+    const msgDiv = document.getElementById('capacitor-login-message');
+    if (msgDiv) msgDiv.innerHTML = '';
+}
+
+function openBrowserLoginPage() {
+    const url = 'https://firstfile-c763521e.firebaseapp.com/login-app.html';
+    window.open(url, '_system');
+}
+
+function verifyCapacitorLoginToken() {
+    const tokenInput = document.getElementById('capacitor-token-input');
+    const token = tokenInput ? tokenInput.value.trim() : '';
+    const msgDiv = document.getElementById('capacitor-login-message');
+
+    if (!token) {
+        if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Please paste the login code!</span>';
+        return;
+    }
+
+    if (msgDiv) msgDiv.innerHTML = '<span style="color: var(--text-color);">🔄 Authenticating...</span>';
+
+    try {
+        const credential = firebase.auth.GoogleAuthProvider.credential(token);
+        auth.signInWithCredential(credential)
+            .then((result) => {
+                if (msgDiv) msgDiv.innerHTML = '<span style="color: #10b981;">✅ Signed in successfully!</span>';
+                setTimeout(() => {
+                    closeCapacitorLoginModal();
+                }, 1200);
+            })
+            .catch((error) => {
+                console.error("Token sign-in error:", error);
+                if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Invalid or expired login code. Please try again.</span>';
+            });
+    } catch (e) {
+        console.error("Credential parsing error:", e);
+        if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Error parsing code. Make sure you copied the entire code.</span>';
+    }
 }
 
 function logoutUser() {

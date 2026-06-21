@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="ATTENDIFY — Smart QR-based attendance system with geofencing, real-time tracking, and export tools for CRs and teachers.">
+    <meta name="referrer" content="no-referrer-when-downgrade">
     <title>ATTENDIFY — Smart Attendance System</title>
 
     <!-- Leaflet Maps CSS (non-blocking) -->
@@ -589,6 +590,42 @@
         </div>
     </div>
 
+    <!-- CAPACITOR LOGIN MODAL -->
+    <div id="capacitor-login-modal" class="modal">
+        <div class="modal-content" style="max-width: 450px; text-align: center;">
+            <span class="modal-close" onclick="closeCapacitorLoginModal()">&times;</span>
+            <h2 class="modal-header" style="margin-bottom: 8px;">🌐 Browser Sign-In</h2>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px; line-height: 1.5;">
+                Since you are using the mobile app, Google Sign-In needs to run securely in your system browser.
+            </p>
+            
+            <div style="background: rgba(99, 102, 241, 0.08); padding: 16px; border-radius: 12px; border: 1.5px solid rgba(99, 102, 241, 0.15); margin-bottom: 20px; text-align: left;">
+                <h4 style="margin: 0 0 8px 0; font-size: 14px; color: #818cf8;">Instructions:</h4>
+                <ol style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.6; color: var(--text-color);">
+                    <li>Tap <strong>Open Login Page</strong> below.</li>
+                    <li>Sign in with your Google account in the browser.</li>
+                    <li>Copy the generated <strong>Login Code</strong>.</li>
+                    <li>Return to the app, paste the code below, and tap <strong>Verify & Log In</strong>.</li>
+                </ol>
+            </div>
+
+            <button class="btn btn-primary" onclick="openBrowserLoginPage()" style="width: 100%; height: 48px; border-radius: 12px; font-size: 15px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                🌐 Open Login Page
+            </button>
+
+            <div class="form-group" style="text-align: left; margin-bottom: 16px;">
+                <label style="color: var(--text-color); font-weight: 600;">Paste Login Code</label>
+                <textarea id="capacitor-token-input" rows="3" placeholder="Paste the long login code here..." style="width: 100%; border-radius: 8px; padding: 10px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-family: monospace; font-size: 12px; resize: none;"></textarea>
+            </div>
+
+            <button class="btn btn-success" onclick="verifyCapacitorLoginToken()" style="width: 100%; height: 48px; border-radius: 12px; font-size: 15px; font-weight: 700; margin-bottom: 10px;">
+                🔑 Verify &amp; Log In
+            </button>
+            
+            <div id="capacitor-login-message" style="margin-top: 10px; font-size: 13px; font-weight: 600;"></div>
+        </div>
+    </div>
+
     <!-- STUDENT ATTENDANCE MODAL -->
     <div id="student-modal" class="modal">
         <div class="modal-content" style="max-width: 420px; text-align: center;">
@@ -922,8 +959,11 @@
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
+    <!-- Capacitor Runtime (serves dynamically inside APK, falls back to silent 404 in web) -->
+    <script src="capacitor.js"></script>
+
     <!-- Core Logic Scripts -->
-    <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/firebase-config.js?v=5"></script>
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/ui.js?v=12"></script>
     <script src="assets/js/history.js?v=10"></script>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'attendify-cache-v26';
+const CACHE_NAME = 'attendify-cache-v27';
 const ASSETS = [
     './',
     './index.html',

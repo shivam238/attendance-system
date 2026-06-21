@@ -2,5 +2,9 @@
   "appId": "com.attendify.app",
   "appName": "ATTENDIFY",
   "webDir": "public",
-  "bundledWebRuntime": false
+  "bundledWebRuntime": false,
+  "server": {
+    "hostname": "qr-smart-attendance.web.app",
+    "androidScheme": "https"
+  }
 }
