@@ -169,6 +169,20 @@
         .info {
             color: #6366f1;
         }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .spinner {
+            margin: 20px auto;
+            width: 44px;
+            height: 44px;
+            border: 4px solid rgba(99, 102, 241, 0.1);
+            border-top-color: #818cf8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
     </style>
     <!-- Firebase CDN SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -182,22 +196,45 @@
             <h1>🎓 <span class="brand-text">ATTENDIFY</span></h1>
             <p>Secure Browser Sign-In for Mobile App</p>
 
-            <div id="login-section">
+            <!-- Default connecting state -->
+            <div id="connecting-state" style="text-align: center;">
+                <div class="spinner"></div>
+                <div id="connecting-message" style="font-size: 14px; color: var(--text-color); font-weight: 500; margin-bottom: 20px;">
+                    Connecting to Google...
+                </div>
+            </div>
+
+            <!-- Manual Sign-in Trigger (Hidden by default, shown if redirect fails) -->
+            <div id="login-section" style="display: none; margin-top: 20px;">
                 <button class="btn btn-google" onclick="signInWithGoogle()">
                     <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" class="google-icon">
                     Continue with Google
                 </button>
             </div>
 
-            <div id="token-section" class="token-container">
-                <div class="instruction-box">
-                    🎉 <strong>Sign-in Successful!</strong><br>
-                    Copy the login code below, go back to the <strong>ATTENDIFY</strong> app, paste it into the verification box, and log in.
+            <!-- Successful login redirect screen -->
+            <div id="token-section" class="token-container" style="text-align: center; padding: 20px 0;">
+                <div class="spinner" style="margin-bottom: 20px;"></div>
+                <h3 style="margin-bottom: 8px; font-weight: 700; color: var(--text-color);">🎉 Sign-in Successful!</h3>
+                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px; line-height: 1.5;">
+                    Redirecting you back to the <strong>ATTENDIFY</strong> app...
+                </p>
+                <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 16px;">
+                    <a href="javascript:void(0)" onclick="showManualTokenFallback()" style="color: var(--text-muted); font-size: 12px; text-decoration: underline; font-weight: 500;">
+                        Not redirecting? Click here to show manual code
+                    </a>
                 </div>
-                <textarea id="token-display" class="token-area" readonly></textarea>
-                <button id="copy-btn" class="btn btn-primary" onclick="copyToken()">
-                    📋 Copy Login Code
-                </button>
+                
+                <!-- Hidden manual fallback container -->
+                <div id="manual-fallback-container" style="display: none; margin-top: 20px; text-align: left;">
+                    <div class="instruction-box" style="margin-bottom: 12px;">
+                        Copy the login code below, return to the <strong>ATTENDIFY</strong> app and paste it to log in.
+                    </div>
+                    <textarea id="token-display" class="token-area" readonly></textarea>
+                    <button id="copy-btn" class="btn btn-primary" onclick="copyToken()" style="width: 100%;">
+                        📋 Copy Login Code
+                    </button>
+                </div>
             </div>
 
             <div id="message"></div>
@@ -210,8 +247,8 @@
             if (redirectInitiated) return;
             redirectInitiated = true;
 
-            const msgDiv = document.getElementById('message');
-            msgDiv.innerHTML = '<span class="info">🔄 Connecting to Google...</span>';
+            document.getElementById('connecting-state').style.display = 'block';
+            document.getElementById('login-section').style.display = 'none';
 
             const provider = new firebase.auth.GoogleAuthProvider();
             provider.setCustomParameters({
@@ -224,7 +261,6 @@
         // On page load, check if redirected back from Google
         window.addEventListener('DOMContentLoaded', () => {
             const msgDiv = document.getElementById('message');
-            msgDiv.innerHTML = '<span class="info">🔄 Checking login status...</span>';
 
             auth.getRedirectResult().then((result) => {
                 if (result && result.credential) {
@@ -232,13 +268,15 @@
                     if (idToken) {
                         handleSuccessfulLogin(idToken);
                     } else {
+                        document.getElementById('connecting-state').style.display = 'none';
+                        document.getElementById('login-section').style.display = 'block';
                         msgDiv.innerHTML = '<span class="error">❌ Could not retrieve Google ID Token. Please try again.</span>';
                     }
                 } else {
                     // No redirect result, check if user is already signed in
                     auth.onAuthStateChanged((user) => {
                         if (user) {
-                            msgDiv.innerHTML = '<span class="info">🔄 Already logged in. Redirecting to app...</span>';
+                            document.getElementById('connecting-message').textContent = '🔄 Already logged in. Redirecting to app...';
                             user.getIdToken(true).then((idToken) => {
                                 handleSuccessfulLogin(idToken);
                             }).catch(err => {
@@ -253,12 +291,15 @@
                 }
             }).catch((error) => {
                 console.error('Redirect sign-in error:', error);
+                document.getElementById('connecting-state').style.display = 'none';
+                document.getElementById('login-section').style.display = 'block';
                 msgDiv.innerHTML = '<span class="error">❌ Sign-in failed: ' + error.message + '</span>';
             });
         });
 
         function handleSuccessfulLogin(idToken) {
             const msgDiv = document.getElementById('message');
+            document.getElementById('connecting-state').style.display = 'none';
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('token-section').style.display = 'block';
             document.getElementById('token-display').value = idToken;
@@ -268,6 +309,10 @@
             setTimeout(() => {
                 window.location.href = "attendify://login?token=" + encodeURIComponent(idToken);
             }, 500);
+        }
+
+        function showManualTokenFallback() {
+            document.getElementById('manual-fallback-container').style.display = 'block';
         }
 
         function copyToken() {
