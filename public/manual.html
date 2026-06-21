@@ -194,6 +194,7 @@
             .section, .toc, .danger-zone { break-inside: avoid; page-break-inside: avoid; }
             .feature-card { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .step-num { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .no-print { display: none !important; }
         }
     </style>
     <script>
@@ -220,7 +221,7 @@
         <h1>ATTENDIFY</h1>
         <div class="subtitle">Smart QR-Based Attendance Management System</div>
         <div class="version">User Manual · v1.0</div>
-        <div style="margin-top: 16px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+        <div class="no-print" style="margin-top: 16px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
             <a href="QR Attendance System - Complete User Manual.pdf" download style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.2); color: #fff; text-decoration: none; padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3);">⬇️ Download PDF</a>
             <a href="index.html" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.15); color: #fff; text-decoration: none; padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3);">← Back to App</a>
             <button id="theme-toggle-btn" onclick="toggleDarkMode()" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer;">🌙 Dark Mode</button>
@@ -566,7 +567,7 @@
     <!-- Footer -->
     <div class="manual-footer">
         <p>© 2026 <strong>ATTENDIFY</strong> · Developed by Shivam Kumar Mahto · All rights reserved</p>
-        <p style="margin-top: 6px;">
+        <p class="no-print" style="margin-top: 6px;">
             <a href="index.html" style="color: #667eea; text-decoration: none; font-weight: 600;">← Back to App</a>
             &nbsp;·&nbsp;
             <a href="contact.html" style="color: #667eea; text-decoration: none; font-weight: 600;">Contact Support</a>
