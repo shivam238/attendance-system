@@ -109,7 +109,7 @@ To compile the native Android APK from the current code:
 This project is licensed under the **MIT License**.
 
 **Developed by Shivam Kumar Mahto**  
-🔗 [GitHub](https://github.com/shivam238) | 💬 [WhatsApp Community](https://chat.whatsapp.com/GDOjvKK7nxGFvQ7NSrQNiG) | 📷 [Instagram](https://www.instagram.com/heheshivam/) | 💼 [LinkedIn](https://www.linkedin.com/in/shivam-kumar-mahto-046228361/)
+🔗 [GitHub](https://github.com/shivam238) | 💬 [WhatsApp Community](https://chat.whatsapp.com/GDOjvKK7nxGFvQ7NSrQNiG) | 📷 [Instagram](https://www.instagram.com/theattendify/) | 💼 [LinkedIn](https://www.linkedin.com/in/shivam-kumar-mahto-046228361/)
 
 © 2026 ATTENDIFY. All rights reserved.
 

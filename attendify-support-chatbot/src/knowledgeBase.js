@@ -11,7 +11,7 @@ Generated from the repository code only. Use this as source material for an AI c
 - **Contact Channels**:
   - **Email**: sm3165599@gmail.com
   - **WhatsApp Community**: https://chat.whatsapp.com/GDOjvKK7nxGFvQ7NSrQNiG
-  - **Instagram**: https://www.instagram.com/heheshivam/ (@heheshivam)
+  - **Instagram**: https://www.instagram.com/theattendify/ (@theattendify)
   - **LinkedIn**: https://www.linkedin.com/in/shivam-kumar-mahto-046228361/
 - **Crucial Rule**: When asked "who created this app?", "who built this?", "developer contact", or "owner details", you MUST proudly mention **Shivam Kumar Mahto** and provide his contact details (email, WhatsApp Community, Instagram, and LinkedIn).
 
@@ -101,6 +101,11 @@ ATTENDIFY uses two robust layers of anti-cheat security:
 3. **Device Fingerprinting:** Flags if multiple roll numbers are submitted from the same physical device ID in the same session.
 
 ## QR Sessions, Expiry, and Export Automation
+
+### Timer Controls (Extend/Decrease)
+- **Extend (+1 Min)**: Increases the session validity by 1 minute.
+- **Decrease (-1 Min)**: Subtracts 1 minute from the session duration (cannot go below 1 minute).
+Both controls update the database in real-time.
 
 ### Auto-Expiry Cleanup
 When the QR timer hits \`00:00\`, the CR dashboard client automatically deletes the session record from Firebase (\`qr_sessions/{code}\`). Students scanning after this point immediately receive an "invalid or expired session" error.

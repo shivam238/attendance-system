@@ -361,7 +361,7 @@ function closeGuideModal() {
 }
 
 function contactDeveloper() {
-    window.open('https://www.instagram.com/heheshivam/', '_blank');
+    window.open('https://www.instagram.com/theattendify/', '_blank');
 }
 
 function openLogoPopup() {

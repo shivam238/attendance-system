@@ -442,8 +442,12 @@
                                     <div id="qrcode" style="background: #fff; padding: 10px; border-radius: 8px;"></div>
                                     <div class="qr-timer" id="qr-timer"></div>
                                     <div id="timer-extension" style="display: none; margin-top: 15px;">
-                                        <button class="btn btn-secondary btn-small" onclick="extendTimer()"
-                                            style="background: #fbbf24; color: #fff; border: none;">⏱️ +1 Min Extend</button>
+                                        <div style="display: flex; gap: 8px;">
+                                            <button class="btn btn-danger btn-small" onclick="decreaseTimer()"
+                                                style="background: #ef4444; color: #fff; border: none; flex: 1; margin: 0; padding: 6px 0; font-size: 13px; font-weight: bold; border-radius: 8px;">⏱️ -1 Min</button>
+                                            <button class="btn btn-secondary btn-small" onclick="extendTimer()"
+                                                style="background: #fbbf24; color: #fff; border: none; flex: 1; margin: 0; padding: 6px 0; font-size: 13px; font-weight: bold; border-radius: 8px;">⏱️ +1 Min</button>
+                                        </div>
                                     </div>
                                 </div>
                                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px;">
@@ -2707,6 +2711,23 @@ Now format this student list:
             });
         }
 
+        function decreaseTimer() {
+            if (!currentQRCode) return;
+            const now = Date.now();
+            if (qrExpireTime - now <= 60000) {
+                showToast('⚠️ Cannot decrease timer below 1 minute! Use "Clear" instead.');
+                return;
+            }
+            qrExpireTime -= (60 * 1000); // Subtract 1 minute
+
+            // Update in Firebase
+            db.ref('qr_sessions/' + currentQRCode.code).update({
+                expiryTime: qrExpireTime
+            }).then(() => {
+                showToast('⏱️ Timer decreased by 1 minute!');
+            });
+        }
+
         function resetQR(isManual = false) {
             if (currentQRCode) {
                 const closedCode = currentQRCode.code;
@@ -4177,9 +4198,10 @@ Now format this student list:
             
             <div id="fullscreen-qr-timer" style="font-size: 24px; font-weight: 700; color: #fbbf24; margin-bottom: 5px;"></div>
             
-            <div style="display: flex; gap: 15px; width: 100%; max-width: 400px; margin-top: 5px;">
-                <button class="btn btn-secondary" onclick="extendTimer()" style="flex: 1; background: #fbbf24; color: #fff; border: none; font-size: 15px; padding: 12px 0; margin: 0; font-weight: bold;">⏱️ +1 Min Extend</button>
-                <button class="btn btn-danger" onclick="closeFullscreenQR()" style="flex: 1; font-size: 15px; padding: 12px 0; margin: 0; font-weight: bold;">✕ Close</button>
+            <div style="display: flex; gap: 10px; width: 100%; max-width: 450px; margin-top: 5px;">
+                <button class="btn btn-secondary" onclick="decreaseTimer()" style="flex: 1; background: #ef4444; color: #fff; border: none; font-size: 14px; padding: 12px 0; margin: 0; font-weight: bold; border-radius: 8px;">⏱️ -1 Min</button>
+                <button class="btn btn-secondary" onclick="extendTimer()" style="flex: 1; background: #fbbf24; color: #fff; border: none; font-size: 14px; padding: 12px 0; margin: 0; font-weight: bold; border-radius: 8px;">⏱️ +1 Min</button>
+                <button class="btn btn-danger" onclick="closeFullscreenQR()" style="flex: 1; font-size: 14px; padding: 12px 0; margin: 0; font-weight: bold; border-radius: 8px;">✕ Close</button>
             </div>
         </div>
     </div>
