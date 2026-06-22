@@ -44,7 +44,7 @@
             --secondary-color: #764ba2;
             --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --body-bg: #f8fafc;
-            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-bg: rgba(255, 255, 255, 0.85);
             --text-color: #1a202c;
             --text-muted: #718096;
             --input-border: #e2e8f0;
@@ -60,7 +60,7 @@
             --secondary-color: #a78bfa;
             --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
             --body-bg: #090d16;
-            --card-bg: rgba(15, 23, 42, 0.7);
+            --card-bg: rgba(15, 23, 42, 0.85);
             --text-color: #f8fafc;
             --text-muted: #94a3b8;
             --input-border: #334155;
