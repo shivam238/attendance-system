@@ -98,6 +98,14 @@ function handleLandingScroll() {
         }
 
         landingPage.classList.add('login-locked');
+
+        // Lock viewport for login screen in native/PWA modes
+        const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        const isNative = !!(window.Capacitor) || isPWA;
+        if (isNative) {
+            document.body.classList.add('native-login-active');
+        }
+
         window.scrollTo(0, 0);
         
         // Double-force scroll reset on subsequent frames to override browser layout re-calculation delay
@@ -120,20 +128,26 @@ function scrollToLandingSection(event, sectionId) {
     isBypassingScrollLock = true;
 
     const landingPage = document.getElementById('landing-page');
-    if (landingPage && landingPage.classList.contains('login-locked')) {
-        // Remove the locked class to render the landing sections again
-        landingPage.classList.remove('login-locked');
-        
-        // Instantly adjust scroll position to the new position of the login screen to prevent jump
-        const loginScreen = document.getElementById('login-screen');
-        if (loginScreen) {
-            const loginTop = loginScreen.getBoundingClientRect().top + window.scrollY;
-            window.scrollTo(0, loginTop);
-        }
+    if (landingPage) {
+        if (landingPage.classList.contains('login-locked')) {
+            // Remove the locked class to render the landing sections again
+            landingPage.classList.remove('login-locked');
+            
+            // Instantly adjust scroll position to the new position of the login screen to prevent jump
+            const loginScreen = document.getElementById('login-screen');
+            if (loginScreen) {
+                const loginTop = loginScreen.getBoundingClientRect().top + window.scrollY;
+                window.scrollTo(0, loginTop);
+            }
 
-        // Re-bind scroll listener since it was removed when locked
-        window.addEventListener('scroll', handleLandingScroll, { passive: true });
+            // Re-bind scroll listener since it was removed when locked
+            window.addEventListener('scroll', handleLandingScroll, { passive: true });
+        }
     }
+
+    // Always remove body locking class when we navigate to a landing section,
+    // to ensure scrolling functions correctly.
+    document.body.classList.remove('native-login-active');
 
     // Scroll smoothly to the target section (offsetting for the fixed nav bar)
     const targetTop = section.getBoundingClientRect().top + window.scrollY - 78;

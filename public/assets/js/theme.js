@@ -6,16 +6,23 @@ function applyTheme() {
         document.body.classList.remove('dark-mode');
     }
     
-    // Update subpage theme toggle button
+    // Update subpage theme toggle button (manual.html style)
     const subpageBtn = document.getElementById('theme-toggle-btn');
     if (subpageBtn) {
-        subpageBtn.innerHTML = '';
+        // Only update innerHTML if it's a text-label style button (not a CSS toggle)
+        if (subpageBtn.dataset.style === 'text') {
+            subpageBtn.innerHTML = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+        // CSS-only toggle buttons use ::after pseudo-element — no innerHTML needed
     }
     
     // Update main dashboard & student portal theme buttons
     const appBtns = document.querySelectorAll('.theme-btn');
     appBtns.forEach(btn => {
-        btn.innerHTML = '';
+        // Only update if the button has explicit text content to manage
+        if (btn.dataset.style === 'text') {
+            btn.innerHTML = isDark ? '☀️' : '🌙';
+        }
     });
 }
 
@@ -26,13 +33,17 @@ function toggleDarkMode() {
     // Update subpage button state
     const subpageBtn = document.getElementById('theme-toggle-btn');
     if (subpageBtn) {
-        subpageBtn.innerHTML = '';
+        if (subpageBtn.dataset.style === 'text') {
+            subpageBtn.innerHTML = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
     }
     
     // Update app/portal buttons state
     const appBtns = document.querySelectorAll('.theme-btn');
     appBtns.forEach(btn => {
-        btn.innerHTML = '';
+        if (btn.dataset.style === 'text') {
+            btn.innerHTML = isDark ? '☀️' : '🌙';
+        }
     });
 
     // Cloud Sync if present on dashboard
