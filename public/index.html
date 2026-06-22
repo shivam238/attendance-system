@@ -34,9 +34,15 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <link rel="stylesheet" href="assets/css/style.css?v=13">
+    <script src="assets/js/theme.js" defer></script>
 </head>
 
 <body>
+    <script>
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
     <!-- Background Decorative Orbs -->
     <div class="bg-orb orb-1"></div>
     <div class="bg-orb orb-2"></div>
@@ -1279,32 +1285,7 @@ Now format this student list:
         }
 
 
-        // THEME HANDLING
-        function toggleDarkMode() {
-            const isDark = document.body.classList.toggle('dark-mode');
-            localStorage.setItem('darkMode', isDark);
-            updateThemeButtonText();
-
-            // Cloud Sync
-            if (window.syncSettingToCloud) {
-                window.syncSettingToCloud('darkMode', isDark);
-            }
-        }
-
-        function applyStoredTheme() {
-            const isDark = localStorage.getItem('darkMode') === 'true';
-            if (isDark) {
-                document.body.classList.add('dark-mode');
-            }
-            updateThemeButtonText();
-        }
-
-        function updateThemeButtonText() {
-            const btns = document.querySelectorAll('.theme-btn');
-            btns.forEach(btn => {
-                btn.innerHTML = '';
-            });
-        }
+        // THEME HANDLING (Delegated to theme.js)
 
         function cleanupFirebaseListeners() {
             if (typeof activeListeners !== 'undefined') {
@@ -1327,7 +1308,7 @@ Now format this student list:
             }
         }
 
-        applyStoredTheme();
+        // applyTheme() is called automatically by theme.js on DOMContentLoaded
 
 
 
@@ -3780,48 +3761,7 @@ Now format this student list:
             }
         }
 
-        function setupHorizontalDrag(item, type) {
-            item.draggable = true;
-            item.addEventListener('dragstart', (e) => {
-                draggedItem = item;
-                draggedType = type;
-                item.classList.add('dragging-item');
-                // Freeze scrollbar to prevent vibration
-                item.parentNode.classList.add('dragging-active');
-                e.dataTransfer.effectAllowed = 'move';
-            });
-
-            item.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                const draggingEl = document.querySelector('.dragging-item');
-                if (!draggingEl || draggingEl.parentNode !== item.parentNode || draggingEl === item) return;
-                
-                const bounding = item.getBoundingClientRect();
-                const offset = bounding.x + bounding.width / 2;
-                
-                if (e.clientX < offset) {
-                    item.parentNode.insertBefore(draggingEl, item);
-                } else {
-                    item.parentNode.insertBefore(draggingEl, item.nextSibling);
-                }
-            });
-
-            item.addEventListener('drop', (e) => {
-                e.preventDefault();
-                finalizeNewOrder(draggedType, item.parentNode);
-            });
-
-            item.addEventListener('dragend', () => {
-                item.classList.remove('dragging-item');
-                document.querySelectorAll('.student-list, .subject-list, .nav-tabs, .tabs-container, .student-list-container').forEach(c => {
-                    c.classList.remove('dragging-active');
-                });
-                draggedItem = null;
-            });
-        }
-
-        // Initialize Tabs
-        document.querySelectorAll('.tab-btn').forEach(btn => setupHorizontalDrag(btn, 'tab'));
+        // Horizontal tab drag-and-drop removed to prevent overlap and touch scrolling conflicts
 
         function loadStudents() {
             const list = document.getElementById('students-list');

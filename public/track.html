@@ -9,7 +9,8 @@
     <link rel="apple-touch-icon" href="logo-opt.png">
     
     <!-- App Styles -->
-    <link rel="stylesheet" href="assets/css/style.css?v=11">
+    <link rel="stylesheet" href="assets/css/style.css?v=13">
+    <script src="assets/js/theme.js" defer></script>
 
     <style>
         /* Extra custom styling for Student Tracker Dashboard */
@@ -429,6 +430,11 @@
     </style>
 </head>
 <body>
+    <script>
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
     <!-- Background Decorative Orbs -->
     <div class="bg-orb orb-1"></div>
     <div class="bg-orb orb-2"></div>
@@ -758,27 +764,7 @@
         // ===== END CLASSROOM FEED =====
     </script>
     <script>
-        // Theme Utilities
-        function toggleDarkMode() {
-            const isDark = document.body.classList.toggle('dark-mode');
-            localStorage.setItem('darkMode', isDark);
-            updateThemeButtonText();
-        }
-
-        function applyStoredTheme() {
-            const isDark = localStorage.getItem('darkMode') === 'true';
-            if (isDark) {
-                document.body.classList.add('dark-mode');
-            }
-            updateThemeButtonText();
-        }
-
-        function updateThemeButtonText() {
-            const btns = document.querySelectorAll('.theme-btn');
-            btns.forEach(btn => {
-                btn.innerHTML = '';
-            });
-        }
+        // Theme Utilities (Delegated to theme.js)
 
         // Safety timeout for loading screen
         setTimeout(() => {
@@ -812,8 +798,7 @@
         }
 
         window.onload = function() {
-            // Apply theme
-            applyStoredTheme();
+            // Apply theme (managed automatically by theme.js on DOMContentLoaded)
 
             // Check URL parameters for direct linking
             const urlParams = new URLSearchParams(window.location.search);

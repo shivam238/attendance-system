@@ -10,21 +10,17 @@
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo-opt.png">
 
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css?v=13">
     <link rel="stylesheet" href="assets/css/subjects.css">
-    <script>
-        // Apply dark mode from main app preference
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.documentElement.style.display = 'none';
-            document.addEventListener('DOMContentLoaded', () => {
-                document.body.classList.add('dark-mode');
-                document.documentElement.style.display = '';
-            });
-        }
-    </script>
+    <script src="assets/js/theme.js" defer></script>
 </head>
 
 <body>
+    <script>
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
     <div class="container">
         <a href="index.html" class="back-btn">← Back to Dashboard</a>
 
