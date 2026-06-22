@@ -33,10 +33,10 @@ echo -e "\n${BLUE}[1/9] Ensuring Git credential helper is active...${NC}"
 git config credential.helper store
 echo -e "${GREEN}✔ Git credential helper is set to store credentials.${NC}"
 
-# 3. Regenerate Chatbot Knowledge Base
-echo -e "\n${BLUE}[2/9] Regenerating Chatbot Knowledge Base from manual.html...${NC}"
-node update-kb.js
-echo -e "${GREEN}✔ Chatbot Knowledge Base regenerated successfully.${NC}"
+# 3. Update Application Details & Regenerate Chatbot Knowledge Base
+echo -e "\n${BLUE}[2/9] Propagating application details & regenerating Chatbot Knowledge Base...${NC}"
+node update-details.js
+echo -e "${GREEN}✔ Details propagated and Chatbot Knowledge Base regenerated successfully.${NC}"
 
 # 4. Regenerate PDF Manual
 echo -e "\n${BLUE}[3/9] Regenerating PDF User Manual from manual.html...${NC}"
