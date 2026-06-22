@@ -2582,6 +2582,305 @@
             background-color: #f4f4f4;
         }
 
+        /* ==========================================================================
+           Modern Premium Styles for Login and Cards
+           ========================================================================== */
+        h1, h2, h3, h4, h5, h6, .brand-text {
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        }
+
+        /* Decorative Background Orbs */
+        .bg-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -2;
+            opacity: 0.35;
+            transition: all 0.5s ease;
+            pointer-events: none;
+        }
+        .orb-1 {
+            width: 450px;
+            height: 450px;
+            background: rgba(102, 126, 234, 0.45);
+            top: -100px;
+            left: -150px;
+            animation: float-orb-1 25s infinite alternate ease-in-out;
+        }
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: rgba(118, 75, 162, 0.4);
+            bottom: -150px;
+            right: -150px;
+            animation: float-orb-2 30s infinite alternate ease-in-out;
+        }
+        .orb-3 {
+            width: 350px;
+            height: 350px;
+            background: rgba(244, 63, 94, 0.25);
+            top: 35%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: float-orb-3 22s infinite alternate ease-in-out;
+        }
+        
+        body.dark-mode .bg-orb {
+            opacity: 0.18;
+        }
+        
+        @keyframes float-orb-1 {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(120px, 80px) scale(1.15); }
+        }
+        @keyframes float-orb-2 {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(-140px, -120px) scale(0.9); }
+        }
+        @keyframes float-orb-3 {
+            0% { transform: translate(-50%, -50%) translate(0, 0) scale(1); }
+            100% { transform: translate(-50%, -50%) translate(-60px, 60px) scale(1.15); }
+        }
+
+        /* Glassmorphism Card refinement */
+        .card {
+            background: var(--card-bg) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 28px !important;
+            padding: 40px 36px !important;
+            box-shadow: var(--shadow) !important;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+        
+        .card:hover {
+            transform: translateY(-4px) !important;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18) !important;
+        }
+        body.dark-mode .card:hover {
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6) !important;
+        }
+
+        /* Login Tabs Pill Layout */
+        .login-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 24px;
+            background: var(--tab-bg);
+            padding: 5px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+        .login-tabs .tab-btn {
+            flex: 1;
+            padding: 12px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--tab-text);
+            background: transparent;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin: 0;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+        .login-tabs .tab-btn:hover:not(.active) {
+            color: var(--text-color);
+            background: rgba(255, 255, 255, 0.35);
+        }
+        body.dark-mode .login-tabs .tab-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .login-tabs .tab-btn.active {
+            background: #ffffff !important;
+            color: var(--primary-color) !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+        }
+        body.dark-mode .login-tabs .tab-btn.active {
+            background: var(--primary-color) !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3) !important;
+        }
+
+        /* Banner styling */
+        .login-info-banner {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 16px;
+            border-radius: 16px;
+            background: rgba(102, 126, 234, 0.08);
+            border: 1px solid rgba(102, 126, 234, 0.15);
+            color: var(--text-color);
+            font-size: 13px;
+            line-height: 1.6;
+            text-align: center;
+        }
+        .login-info-banner.phone-banner {
+            background: rgba(129, 140, 248, 0.08);
+            border-color: rgba(129, 140, 248, 0.15);
+        }
+
+        /* Inputs & Prefix */
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            border: 1.5px solid var(--input-border) !important;
+            border-radius: 12px !important;
+            padding: 14px 16px !important;
+            font-size: 15px !important;
+            background: var(--tab-bg) !important;
+            color: var(--text-color) !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15) !important;
+            background: #ffffff !important;
+        }
+        body.dark-mode .form-group input:focus {
+            background: #0f172a !important;
+        }
+        
+        .input-prefix-container {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .input-prefix {
+            background: var(--tab-bg);
+            border: 1.5px solid var(--input-border);
+            border-radius: 12px;
+            padding: 0 16px;
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-color);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 50px;
+            flex-shrink: 0;
+        }
+
+        .warning-banner {
+            background: rgba(245, 158, 11, 0.08);
+            border-left: 4px solid #f59e0b;
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-color);
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Google login button override */
+        .btn-google {
+            background: #ffffff !important;
+            color: #1f2937 !important;
+            border: 1px solid #e5e7eb !important;
+            padding: 14px 24px !important;
+            border-radius: 14px !important;
+            font-size: 15px !important;
+            font-weight: 600 !important;
+            text-transform: none !important;
+            letter-spacing: 0 !important;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            height: 56px !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+            margin-top: 8px;
+        }
+        body.dark-mode .btn-google {
+            background: #1e293b !important;
+            color: #f8fafc !important;
+            border-color: #334155 !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        }
+        .btn-google:hover {
+            transform: translateY(-2px) !important;
+            background: #f9fafb !important;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08) !important;
+            border-color: #d1d5db !important;
+        }
+        body.dark-mode .btn-google:hover {
+            background: #334155 !important;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25) !important;
+            border-color: #475569 !important;
+        }
+
+        .google-login-note {
+            margin-top: 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* Student Portal login button */
+        .btn-student-portal {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+            color: #ffffff !important;
+            border: none !important;
+            height: 52px !important;
+            border-radius: 14px !important;
+            font-size: 15px !important;
+            font-weight: 700 !important;
+            text-transform: none !important;
+            letter-spacing: 0 !important;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 6px 16px rgba(29, 78, 216, 0.25) !important;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            margin-top: 0 !important;
+        }
+        .btn-student-portal:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 10px 24px rgba(29, 78, 216, 0.35) !important;
+            filter: brightness(1.05);
+        }
+        .btn-student-portal:active {
+            transform: translateY(0) !important;
+        }
+
+        .student-portal-divider {
+            margin-top: 28px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 24px;
+            text-align: center;
+        }
+
+        .btn-primary, .btn-success, .btn-secondary, .btn-danger {
+            text-transform: none !important;
+            letter-spacing: 0 !important;
+            border-radius: 12px !important;
+            font-weight: 600 !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+        }
+        .btn-primary:hover, .btn-success:hover, .btn-secondary:hover, .btn-danger:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) !important;
+        }
+
         /* Hide floating Firebase/Google reCAPTCHA badge to prevent overlapping UI on mobile */
         .grecaptcha-badge {
             visibility: hidden !important;
