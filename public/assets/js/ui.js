@@ -13,6 +13,14 @@ function showScreen(screenId) {
     const target = document.getElementById(screenId);
     if (target) {
         target.classList.add('active');
+        
+        // Handle native-app viewport height locking
+        if (screenId === 'app-screen') {
+            document.body.classList.add('app-layout-active');
+        } else {
+            document.body.classList.remove('app-layout-active');
+        }
+
         const landingPage = document.getElementById('landing-page');
         if (landingPage) {
             landingPage.classList.toggle('is-hidden', screenId !== 'login-screen');
@@ -358,6 +366,17 @@ function openGuideModal() {
 function closeGuideModal() {
     const modal = document.getElementById('guide-modal');
     if (modal) modal.classList.remove('active');
+}
+
+function toggleNavDrawer() {
+    const drawer = document.getElementById('nav-drawer');
+    const overlay = document.getElementById('nav-drawer-overlay');
+    const btn = document.getElementById('hamburger-btn');
+    if (drawer && overlay) {
+        const isOpen = drawer.classList.toggle('open');
+        overlay.classList.toggle('open', isOpen);
+        if (btn) btn.classList.toggle('open', isOpen);
+    }
 }
 
 function contactDeveloper() {

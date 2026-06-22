@@ -1409,10 +1409,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
-            gap: 16px;
-            padding-bottom: 16px;
+            margin-bottom: 16px;
+            gap: 12px;
+            padding-bottom: 12px;
             border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
         }
 
         .header-controls-left, .header-controls-right {
@@ -2916,42 +2917,331 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) !important;
         }
 
-        .app-footer {
-            text-align: center;
-            margin-top: 40px;
-            padding: 24px;
-            background: var(--card-bg) !important;
-            backdrop-filter: blur(20px) !important;
-            -webkit-backdrop-filter: blur(20px) !important;
-            border: 1px solid var(--border-color) !important;
-            border-radius: 20px !important;
-            width: 100%;
-            max-width: 480px;
-            margin-left: auto;
-            margin-right: auto;
-            font-size: 13px;
-            color: var(--text-muted);
-            box-shadow: var(--shadow) !important;
-            transition: all 0.3s ease;
+        /* Hamburger Menu Button */
+        .hamburger-btn {
+            background: rgba(99, 102, 241, 0.08);
+            border: 1px solid var(--input-border);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            z-index: 1002;
+            flex-shrink: 0;
+            padding: 0;
         }
-        .app-footer a {
-            color: var(--text-color) !important;
-            text-decoration: none;
-            margin: 0 6px;
-            font-weight: 600;
-            transition: color 0.2s ease;
-            display: inline-block;
-        }
-        .app-footer a:hover {
-            color: var(--primary-color) !important;
-            text-decoration: underline;
-        }
-        .app-footer .copyright {
+
+        .hamburger-btn span {
             display: block;
-            margin-top: 16px;
-            font-size: 11px;
+            width: 16px;
+            height: 2px;
+            background-color: var(--text-color);
+            border-radius: 2px;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+        }
+
+        .hamburger-btn.open span:nth-child(1) {
+            transform: translateY(6px) rotate(45deg);
+        }
+
+        .hamburger-btn.open span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-btn.open span:nth-child(3) {
+            transform: translateY(-6px) rotate(-45deg);
+        }
+
+        .hamburger-btn:hover {
+            transform: scale(1.05);
+            background: rgba(99, 102, 241, 0.15);
+            border-color: var(--primary-color);
+        }
+
+        /* Navigation Drawer Overlay */
+        .nav-drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .nav-drawer-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Navigation Drawer (Hamburger Sidebar) */
+        .nav-drawer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 290px;
+            max-width: 85%;
+            height: 100%;
+            background: var(--body-bg);
+            border-right: 1px solid var(--border-color);
+            z-index: 2001;
+            transform: translateX(-100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 20px 0 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .nav-drawer.open {
+            transform: translateX(0);
+        }
+
+        .nav-drawer-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .nav-drawer-title {
+            font-size: 17px;
+            color: var(--text-color);
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-drawer-close {
+            background: none;
+            border: none;
             color: var(--text-muted);
-            opacity: 0.8;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 6px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .nav-drawer-close:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-color);
+        }
+
+        .nav-drawer-links {
+            padding: 12px 8px;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-drawer-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            color: var(--text-color);
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-drawer-item:hover {
+            background: rgba(99, 102, 241, 0.08);
+            color: var(--primary-color) !important;
+            transform: translateX(4px);
+        }
+
+        .nav-drawer-icon {
+            font-size: 16px;
+            width: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .nav-drawer-footer {
+            padding: 16px;
+            font-size: 10px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            opacity: 0.7;
+        }
+
+        /* --- NATIVE APP FIT-TO-WINDOW VIEWPORT LOCK --- */
+        body.app-layout-active {
+            /* Lock body to exact viewport height */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            height: 100dvh; /* dynamic viewport height — avoids browser chrome issues */
+            overflow: hidden !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            background: var(--body-bg);
+        }
+
+        /* Container fills the full locked body */
+        body.app-layout-active .container {
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        /* App screen itself fills container */
+        body.app-layout-active #app-screen {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Card is the main scrolling container */
+        body.app-layout-active #app-screen .card {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 16px 18px 12px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        /* Header controls bar — compact, fixed height */
+        body.app-layout-active .header-controls {
+            flex-shrink: 0;
+            margin-bottom: 8px !important;
+            padding-bottom: 8px !important;
+        }
+
+        /* App header (logo + title + class info) — shrink aggressively */
+        body.app-layout-active .header {
+            flex-shrink: 0;
+            margin-bottom: 8px !important;
+            padding-top: 0;
+        }
+
+        body.app-layout-active .header .logo {
+            width: 44px;
+            height: 44px;
+            margin-bottom: 4px;
+        }
+
+        body.app-layout-active .header h1 {
+            font-size: 17px !important;
+            margin-bottom: 2px !important;
+            letter-spacing: 1px !important;
+        }
+
+        body.app-layout-active .header p {
+            font-size: 11px;
+            margin: 0;
+        }
+
+        /* Tab bar — compact, no scroll leak */
+        body.app-layout-active .tabs-scroll-wrapper {
+            flex-shrink: 0;
+            margin-bottom: 8px !important;
+        }
+
+        /* All tabs hidden except active */
+        body.app-layout-active .tab {
+            display: none !important;
+        }
+
+        body.app-layout-active .tab.active {
+            flex: 1;
+            min-height: 0;
+            display: flex !important;
+            flex-direction: column;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+
+        /* Allow student/history lists to fill and scroll inside the tab */
+        body.app-layout-active .student-list,
+        body.app-layout-active #history-content,
+        body.app-layout-active #requests-container,
+        body.app-layout-active .dashboard-grid {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Dashboard grid: stack on mobile */
+        body.app-layout-active .dashboard-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Compact QR section to avoid overflow */
+        body.app-layout-active .control-panel,
+        body.app-layout-active .display-panel {
+            width: 100%;
+        }
+
+        /* Mobile tweaks */
+        @media (max-width: 600px) {
+            body.app-layout-active .container {
+                padding: 6px 8px;
+            }
+            body.app-layout-active #app-screen .card {
+                padding: 12px 10px 8px;
+                border-radius: 16px;
+            }
+        }
+
+        /* Tablet / desktop: a bit more breathing room */
+        @media (min-width: 601px) {
+            body.app-layout-active .container {
+                padding: 16px 20px;
+            }
+            body.app-layout-active .header .logo {
+                width: 54px;
+                height: 54px;
+            }
+            body.app-layout-active .header h1 {
+                font-size: 20px !important;
+            }
         }
 
         /* Hide floating Firebase/Google reCAPTCHA badge to prevent overlapping UI on mobile */
