@@ -29,27 +29,32 @@ if [ -z "$COMMIT_MSG" ]; then
 fi
 
 # 2. Configure Git Credential Helper to avoid entering token/password repeatedly
-echo -e "\n${BLUE}[1/8] Ensuring Git credential helper is active...${NC}"
+echo -e "\n${BLUE}[1/9] Ensuring Git credential helper is active...${NC}"
 git config credential.helper store
 echo -e "${GREEN}✔ Git credential helper is set to store credentials.${NC}"
 
-# 3. Regenerate PDF Manual
-echo -e "\n${BLUE}[2/8] Regenerating PDF User Manual from manual.html...${NC}"
+# 3. Regenerate Chatbot Knowledge Base
+echo -e "\n${BLUE}[2/9] Regenerating Chatbot Knowledge Base from manual.html...${NC}"
+node update-kb.js
+echo -e "${GREEN}✔ Chatbot Knowledge Base regenerated successfully.${NC}"
+
+# 4. Regenerate PDF Manual
+echo -e "\n${BLUE}[3/9] Regenerating PDF User Manual from manual.html...${NC}"
 google-chrome --headless --disable-gpu --print-to-pdf="public/QR Attendance System - Complete User Manual.pdf" file://$(pwd)/public/manual.html
 echo -e "${GREEN}✔ PDF User Manual regenerated successfully.${NC}"
 
-# 4. Sync assets and build Android APK
-echo -e "\n${BLUE}[3/8] Syncing web assets and compiling Android APK...${NC}"
+# 5. Sync assets and build Android APK
+echo -e "\n${BLUE}[4/9] Syncing web assets and compiling Android APK...${NC}"
 bash build-app.sh
 echo -e "${GREEN}✔ Android APK built successfully.${NC}"
 
-# 5. Upload APK to GitHub Releases
-echo -e "\n${BLUE}[4/8] Uploading new APK to latest GitHub Release...${NC}"
+# 6. Upload APK to GitHub Releases
+echo -e "\n${BLUE}[5/9] Uploading new APK to latest GitHub Release...${NC}"
 python3 upload-apk.py
 echo -e "${GREEN}✔ APK uploaded to GitHub Releases successfully.${NC}"
 
-# 6. Check and install on connected ADB device
-echo -e "\n${BLUE}[5/8] Checking for connected Android devices via ADB...${NC}"
+# 7. Check and install on connected ADB device
+echo -e "\n${BLUE}[6/9] Checking for connected Android devices via ADB...${NC}"
 if adb devices | grep -q -w "device"; then
     echo -e "${YELLOW}Device detected! Reinstalling/updating APK on device...${NC}"
     adb install -r ATTENDIFY.apk
@@ -58,20 +63,20 @@ else
     echo -e "${YELLOW}⚠ No Android device detected via ADB. Skipping local installation.${NC}"
 fi
 
-# 7. Deploy to Firebase Hosting
-echo -e "\n${BLUE}[6/8] Deploying frontend assets to Firebase Hosting...${NC}"
+# 8. Deploy to Firebase Hosting
+echo -e "\n${BLUE}[7/9] Deploying frontend assets to Firebase Hosting...${NC}"
 firebase deploy --only hosting
 echo -e "${GREEN}✔ Firebase Hosting deployment completed.${NC}"
 
-# 8. Deploy Cloudflare Worker
-echo -e "\n${BLUE}[7/8] Deploying Cloudflare Worker for AI Chatbot...${NC}"
+# 9. Deploy Cloudflare Worker
+echo -e "\n${BLUE}[8/9] Deploying Cloudflare Worker for AI Chatbot...${NC}"
 cd attendify-support-worker
 npx wrangler deploy
 cd ..
 echo -e "${GREEN}✔ Cloudflare Worker deployed.${NC}"
 
-# 9. Sync with Git Repository
-echo -e "\n${BLUE}[8/8] Staging, committing, and pushing changes to GitHub...${NC}"
+# 10. Sync with Git Repository
+echo -e "\n${BLUE}[9/9] Staging, committing, and pushing changes to GitHub...${NC}"
 git add .
 git commit -m "$COMMIT_MSG"
 git push origin main
