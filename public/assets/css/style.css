@@ -3325,10 +3325,9 @@
         body.app-layout-active .tabs-scroll-wrapper::-webkit-scrollbar {
             display: none !important;
         }
-        /* Card overflow must allow horizontal tab scroll to pass through */
+        /* Keep card perfectly locked with no outer scrollbars */
         body.app-layout-active #app-screen .card {
-            overflow-x: visible !important;
-            overflow-y: hidden !important;
+            overflow: hidden !important;
         }
 
         /* =====================================================
@@ -3340,13 +3339,20 @@
         @media (min-width: 769px) {
             /* Wider container on desktop */
             body.app-layout-active .container {
-                max-width: 860px !important;
+                max-width: 1080px !important;
                 padding: 16px 24px !important;
             }
             /* More padding in the card */
             body.app-layout-active #app-screen .card {
                 padding: 22px 28px 16px !important;
                 border-radius: 24px !important;
+            }
+            /* Use side-by-side columns on desktop layout */
+            body.app-layout-active .dashboard-grid {
+                display: grid !important;
+                grid-template-columns: 1.15fr 0.85fr !important;
+                gap: 24px !important;
+                flex-direction: unset !important;
             }
             /* On desktop all 5 tabs fit — no need for horizontal scroll */
             body.app-layout-active .tabs-scroll-wrapper {

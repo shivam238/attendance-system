@@ -486,6 +486,7 @@ function initDraggableTabs() {
 
     const btns = tabsContainer.querySelectorAll('.tab-btn');
     btns.forEach(btn => {
+        btn.setAttribute('draggable', 'true'); // Ensure draggable attribute is set
         btn.addEventListener('dragstart', handleDragStart, false);
         btn.addEventListener('dragenter', handleDragEnter, false);
         btn.addEventListener('dragover', handleDragOver, false);
