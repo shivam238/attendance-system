@@ -2271,33 +2271,27 @@
             }
 
             .header-controls {
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
+                flex-direction: column;
+                align-items: stretch;
                 gap: 10px;
                 padding-bottom: 12px;
-                flex-wrap: wrap;
             }
 
             .header-controls-left {
-                flex: 1;
-                min-width: 0;
+                justify-content: flex-start;
+                width: 100%;
                 gap: 8px;
+                overflow: hidden;
             }
 
-            /* Premium pill container for action buttons on mobile */
+            /* Right side: compact row, right-aligned, no overflow */
             .header-controls-right {
                 display: flex;
                 align-items: center;
-                gap: 6px;
+                justify-content: flex-end;
+                gap: 8px;
+                width: 100%;
                 flex-wrap: nowrap;
-                background: var(--tab-bg);
-                border: 1px solid var(--border-color);
-                border-radius: 50px;
-                padding: 4px 8px;
-                backdrop-filter: blur(12px);
-                -webkit-backdrop-filter: blur(12px);
-                box-shadow: 0 2px 12px rgba(0,0,0,0.08);
             }
 
             .header h1 {
