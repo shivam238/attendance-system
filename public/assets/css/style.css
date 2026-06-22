@@ -3448,28 +3448,28 @@
             width: 100%;
             max-width: 760px;
             margin: 0 auto;
-            padding: 16px;
+            padding: 82px 16px 16px; /* Offset the 66px fixed navbar + 16px padding */
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             box-sizing: border-box;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
-        body.native-login-active #login-screen {
+        body.native-login-active .screen.active {
             flex: 1;
             min-height: 0;
-            display: flex;
+            display: flex !important;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
         }
-        body.native-login-active #login-screen .card {
-            margin: 0;
+        body.native-login-active .screen.active .card {
+            margin: auto 0; /* Center vertically when content fits, align to top on overflow */
             border-radius: 20px !important;
             padding: 24px 20px !important;
         }
         /* Suppress hover lift on login card to avoid post-login flash */
-        body.native-login-active #login-screen .card:hover {
+        body.native-login-active .screen.active .card:hover {
             transform: none !important;
         }
 
