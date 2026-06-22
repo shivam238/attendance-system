@@ -3,145 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Privacy Policy for ATTENDIFY — read how we protect your attendance logs, identity binding, and device fingerprinting details.">
     <title>Privacy Policy | ATTENDIFY</title>
     <link rel="icon" type="image/png" href="logo-opt.png">
-    <style>
-        :root {
-            --primary: #6366f1;
-            --primary-light: #818cf8;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text: #1e293b;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
-        }
-
-        body.dark-mode {
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-            --text: #f8fafc;
-            --text-muted: #94a3b8;
-            --border: #334155;
-            --shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            padding: 60px 20px;
-            transition: all 0.3s ease;
-            line-height: 1.7;
-        }
-
-        .container { 
-            max-width: 900px; 
-            margin: 0 auto; 
-            background: var(--card-bg);
-            border-radius: 30px;
-            padding: 50px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-        }
-
-        h1 {
-            background: linear-gradient(135deg, var(--primary) 0%, #a855f7 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 42px;
-            margin-bottom: 30px;
-            font-weight: 800;
-            text-align: center;
-        }
-
-        .update-date {
-            text-align: center;
-            color: var(--text-muted);
-            margin-bottom: 40px;
-            font-size: 14px;
-            font-style: italic;
-        }
-
-        section {
-            margin-bottom: 40px;
-        }
-
-        h2 {
-            font-size: 22px;
-            margin-bottom: 15px;
-            color: var(--primary-light);
-            font-weight: 700;
-            border-bottom: 2px solid var(--border);
-            padding-bottom: 8px;
-        }
-
-        p, li {
-            margin-bottom: 15px;
-            color: var(--text-muted);
-            font-size: 15px;
-        }
-
-        footer {
-            margin-top: 60px;
-            padding-top: 40px;
-            border-top: 1px solid var(--border);
-            text-align: center;
-        }
-
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 25px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .footer-links a {
-            color: var(--primary-light);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .back-home {
-            display: inline-block;
-            margin-bottom: 30px;
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 700;
-        }
-
-        @media (max-width: 768px) {
-            .container { padding: 30px; }
-            h1 { font-size: 32px; }
-        }
-    </style>
-    <script>
-                function applyTheme() {
-            if (localStorage.getItem('darkMode') === 'true') {
-                document.body.classList.add('dark-mode');
-            }
-            const btn = document.getElementById('theme-toggle-btn');
-            if (btn) btn.textContent = document.body.classList.contains('dark-mode') ? '☀️ Light Mode' : '🌙 Dark Mode';
-        }
-        function toggleDarkMode() {
-            const isDark = document.body.classList.toggle('dark-mode');
-            localStorage.setItem('darkMode', isDark);
-            const btn = document.getElementById('theme-toggle-btn');
-            if (btn) btn.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
-        }
-        document.addEventListener('DOMContentLoaded', applyTheme);
-    </script>
+    <link rel="stylesheet" href="assets/css/subpages.css">
+    <script src="assets/js/theme.js" defer></script>
 </head>
 
 <body>
     <div class="container">
-        <a href="index.html" class="back-home">← Back to Dashboard</a>
-        <button id="theme-toggle-btn" onclick="toggleDarkMode()" style="padding: 8px 18px; border-radius: 20px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; float: right; margin-bottom: 12px;">🌙 Dark Mode</button>
+        <div class="subpage-header">
+            <a href="index.html" class="back-home">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                Back to Dashboard
+            </a>
+            <button id="theme-toggle-btn" onclick="toggleDarkMode()">🌙 Dark Mode</button>
+        </div>
         
         <h1>Privacy Policy</h1>
         <p class="update-date">Last Updated: June 2026</p>
@@ -187,10 +64,10 @@
                 <a href="manual.html" target="_blank">📖 Manual</a>
                 <a href="contact.html">Contact</a>
                 <a href="feedback.html">Feedback</a>
-                <a href="privacy-policy.html">Privacy Policy</a>
+                <a href="privacy-policy.html" class="active">Privacy Policy</a>
                 <a href="terms.html">Terms &amp; Conditions</a>
             </div>
-            <p style="color: var(--text-muted); font-size: 14px;">&copy; 2026 ATTENDIFY. All rights reserved. Developed by Shivam Kumar Mahto.</p>
+            <p class="footer-copyright">&copy; 2026 ATTENDIFY. All rights reserved. Developed by Shivam Kumar Mahto.</p>
         </footer>
     </div>
 </body>

@@ -187,8 +187,41 @@
         .manual-footer strong { color: #667eea; }
 
         /* ── Print styles ── */
+        body.dark-mode {
+            background: #0f172a;
+            color: #f8fafc;
+        }
+        body.dark-mode .section, body.dark-mode .toc {
+            background: #1e293b;
+            border-color: #334155;
+            color: #f8fafc;
+        }
+        body.dark-mode .section-title {
+            color: #f8fafc;
+        }
+        body.dark-mode .section-header {
+            border-bottom-color: #334155;
+        }
+        body.dark-mode .step-text, body.dark-mode .step-text strong {
+            color: #e2e8f0;
+        }
+        body.dark-mode .step {
+            border-bottom-color: #1e293b;
+        }
+        body.dark-mode .feature-card {
+            background: #1e293b;
+            border-color: #334155;
+        }
+        body.dark-mode .feature-card .fc-title {
+            color: #f8fafc;
+        }
+        body.dark-mode .bullet-list li {
+            color: #e2e8f0;
+            border-bottom-color: #334155;
+        }
+
         @media print {
-            body { background: #fff; font-size: 12px; }
+            body { background: #fff !important; color: #1e293b !important; font-size: 12px; }
             .page { padding: 20px 24px; }
             .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; border-radius: 8px; }
             .section-header { break-after: avoid; page-break-after: avoid; }
@@ -198,20 +231,7 @@
             .no-print { display: none !important; }
         }
     </style>
-    <script>
-        function applyTheme() {
-            if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
-            const btn = document.getElementById('theme-toggle-btn');
-            if (btn) btn.textContent = document.body.classList.contains('dark-mode') ? '☀️ Light Mode' : '🌙 Dark Mode';
-        }
-        function toggleDarkMode() {
-            const isDark = document.body.classList.toggle('dark-mode');
-            localStorage.setItem('darkMode', isDark);
-            const btn = document.getElementById('theme-toggle-btn');
-            if (btn) btn.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
-        }
-        document.addEventListener('DOMContentLoaded', applyTheme);
-    </script>
+    <script src="assets/js/theme.js" defer></script>
 </head>
 <body>
 <div class="page">
