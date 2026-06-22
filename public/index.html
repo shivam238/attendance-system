@@ -33,7 +33,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <link rel="stylesheet" href="assets/css/style.css?v=17">
+    <link rel="stylesheet" href="assets/css/style.css?v=18">
     <script src="assets/js/theme.js" defer></script>
 </head>
 
@@ -218,12 +218,12 @@
             <button class="nav-drawer-close" id="nav-drawer-close" aria-label="Close navigation menu" onclick="toggleNavDrawer()">✕</button>
         </div>
         <div class="nav-drawer-links">
-            <a href="#app-screen" class="nav-drawer-item" onclick="showScreen('app-screen'); toggleNavDrawer();"><span class="nav-drawer-icon">🏠</span>Dashboard</a>
-            <a href="#students-tab" class="nav-drawer-item" onclick="switchAppTab('students'); toggleNavDrawer();"><span class="nav-drawer-icon">👥</span>Students</a>
-            <a href="#history-tab" class="nav-drawer-item" onclick="switchAppTab('history'); toggleNavDrawer();"><span class="nav-drawer-icon">📜</span>History</a>
-            <a href="#requests-tab" class="nav-drawer-item" onclick="switchAppTab('requests'); toggleNavDrawer();"><span class="nav-drawer-icon">🛎️</span>Requests</a>
-            <a href="#settings" class="nav-drawer-item" onclick="openProfileModal(); toggleNavDrawer();"><span class="nav-drawer-icon">⚙️</span>Settings</a>
-            <a href="#logout" class="nav-drawer-item" onclick="logoutUser(); toggleNavDrawer();"><span class="nav-drawer-icon">🚪</span>Logout</a>
+            <a href="about.html" class="nav-drawer-item" onclick="toggleNavDrawer();"><span class="nav-drawer-icon">ℹ️</span>About</a>
+            <a href="contact.html" class="nav-drawer-item" onclick="toggleNavDrawer();"><span class="nav-drawer-icon">✉️</span>Contact</a>
+            <a href="manual.html" target="_blank" class="nav-drawer-item" onclick="toggleNavDrawer();"><span class="nav-drawer-icon">📖</span>User Manual</a>
+            <a href="feedback.html" class="nav-drawer-item" onclick="toggleNavDrawer();"><span class="nav-drawer-icon">💬</span>Feedback</a>
+            <a href="privacy-policy.html" class="nav-drawer-item" onclick="toggleNavDrawer();"><span class="nav-drawer-icon">🔒</span>Privacy & Policy</a>
+            <a href="terms.html" class="nav-drawer-item" onclick="toggleNavDrawer();"><span class="nav-drawer-icon">📄</span>Terms & Conditions</a>
         </div>
         <div class="nav-drawer-footer">© 2026 ATTENDIFY</div>
     </div>
@@ -4231,6 +4231,23 @@ Now format this student list:
             </div>
         </div>
     </div>
+    <footer class="app-footer">
+        <div class="footer-links">
+            <a href="about.html">About</a>
+            <span class="footer-divider">|</span>
+            <a href="contact.html">Contact</a>
+            <span class="footer-divider">|</span>
+            <a href="manual.html" target="_blank">📖 Manual</a>
+            <span class="footer-divider">|</span>
+            <a href="feedback.html">Feedback</a>
+            <span class="footer-divider">|</span>
+            <a href="privacy-policy.html">Privacy Policy</a>
+            <span class="footer-divider">|</span>
+            <a href="terms.html">Terms & Conditions</a>
+        </div>
+        <p class="footer-copyright">&copy; 2026 ATTENDIFY. All rights reserved. Developed by Shivam Kumar Mahto.</p>
+    </footer>
+
     <!-- PWA Service Worker Registration -->
     <script>
         if ('serviceWorker' in navigator) {

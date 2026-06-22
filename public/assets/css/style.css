@@ -3248,3 +3248,61 @@
         .grecaptcha-badge {
             visibility: hidden !important;
         }
+
+        /* --- WEB FOOTER STYLING & PLATFORM VISIBILITY RULES --- */
+        .app-footer {
+            margin-top: 40px;
+            padding: 30px 20px 20px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            width: 100%;
+            max-width: 1100px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .app-footer .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px 20px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+        .app-footer .footer-links a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: opacity 0.2s ease;
+        }
+        .app-footer .footer-links a:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+        .app-footer .footer-copyright {
+            color: var(--text-muted);
+            font-size: 12px;
+            margin: 8px 0 0;
+            line-height: 1.5;
+        }
+        .app-footer .footer-divider {
+            color: var(--border-color);
+            user-select: none;
+        }
+
+        /* Hide footer on native app or dashboard view */
+        .is-native-app .app-footer,
+        body.app-layout-active .app-footer {
+            display: none !important;
+        }
+
+        /* Hide download app button on native app/standalone PWA */
+        .is-native-app .landing-apk-btn {
+            display: none !important;
+        }
+
+        /* Disable animated background orbs on mobile to eliminate GPU/CPU lag */
+        @media (max-width: 768px) {
+            .bg-orb {
+                display: none !important;
+            }
+        }
