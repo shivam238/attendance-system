@@ -1307,6 +1307,27 @@ Now format this student list:
             });
         }
 
+        function cleanupFirebaseListeners() {
+            if (typeof activeListeners !== 'undefined') {
+                Object.keys(activeListeners).forEach(key => {
+                    if (activeListeners[key]) {
+                        try {
+                            activeListeners[key].off();
+                        } catch (e) {
+                            console.error("Error turning off listener:", e);
+                        }
+                    }
+                });
+            }
+            if (typeof connectedRef !== 'undefined' && connectedRef) {
+                try {
+                    connectedRef.off();
+                } catch (e) {
+                    console.error("Error turning off connectedRef:", e);
+                }
+            }
+        }
+
         applyStoredTheme();
 
 

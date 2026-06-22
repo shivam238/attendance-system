@@ -94,11 +94,26 @@ function verifyCapacitorLoginToken() {
 }
 
 function logoutUser() {
-    auth.signOut().then(() => {
-        window.location.reload();
-    }).catch(err => {
+    // Clear user profile cache to prevent instant-on page restoration
+    if (auth.currentUser) {
+        localStorage.removeItem('user_profile_' + auth.currentUser.uid);
+    }
+    
+    // Cleanup active Firebase listeners to prevent Permission Denied errors
+    if (typeof cleanupFirebaseListeners === 'function') {
+        cleanupFirebaseListeners();
+    }
+
+    auth.signOut().catch(err => {
         console.error("Logout error:", err);
+    }).then(() => {
+        window.location.reload();
     });
+
+    // Fallback: Force reload after 150ms in case of hung promises or unhandled exceptions
+    setTimeout(() => {
+        window.location.reload();
+    }, 150);
 }
 
 function initiateDeleteAccount() {
