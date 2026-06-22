@@ -3233,12 +3233,20 @@
         /* Allow student/history lists to fill and scroll inside the tab */
         body.app-layout-active .student-list,
         body.app-layout-active #history-content,
-        body.app-layout-active #requests-container,
-        body.app-layout-active .dashboard-grid {
+        body.app-layout-active #requests-container {
             flex: 1;
             min-height: 0;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+        }
+
+        /* Dashboard grid in CR tab: does NOT get overflow-y:auto —
+           .tab.active already scrolls. Giving dashboard-grid its own
+           overflow-y:auto forces overflow-x:hidden on it which clips
+           the left edges of labels/selects on narrow viewports. */
+        body.app-layout-active .dashboard-grid {
+            flex: 1;
+            min-height: 0;
         }
 
         /* Dashboard grid: stack on mobile */
@@ -3252,16 +3260,17 @@
         body.app-layout-active .control-panel,
         body.app-layout-active .display-panel {
             width: 100%;
+            min-width: 0; /* Prevent flex children from overflowing parent */
         }
 
-        /* Mobile tweaks */
+        /* Mobile tweaks — !important required to override glassmorphism .card rule */
         @media (max-width: 600px) {
             body.app-layout-active .container {
-                padding: 6px 8px;
+                padding: 6px 8px !important;
             }
             body.app-layout-active #app-screen .card {
-                padding: 12px 10px 8px;
-                border-radius: 16px;
+                padding: 12px 10px 8px !important;
+                border-radius: 16px !important;
             }
         }
 
