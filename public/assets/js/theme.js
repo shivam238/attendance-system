@@ -7,7 +7,7 @@ function applyTheme() {
     }
     const btn = document.getElementById('theme-toggle-btn');
     if (btn) {
-        btn.innerHTML = isDark ? '☀️' : '🌙';
+        btn.innerHTML = ''; // Clear text/placeholder so CSS custom knob renders
     }
 }
 
@@ -16,7 +16,7 @@ function toggleDarkMode() {
     localStorage.setItem('darkMode', isDark);
     const btn = document.getElementById('theme-toggle-btn');
     if (btn) {
-        btn.innerHTML = isDark ? '☀️' : '🌙';
+        btn.innerHTML = '';
     }
 }
 
