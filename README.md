@@ -92,15 +92,27 @@ Download the compiled, ready-to-install Android APK directly from our official r
 - **Native Notifications**: Integrated with `@capacitor/local-notifications` to send native push notifications to the device system tray.
 - **Custom App Branding**: Custom launcher icons and splash screens compiled using `@capacitor/assets`.
 
-### 🛠️ Building the APK
-To compile the native Android APK from the current code:
-1. Ensure your environment has Java 17+ (`jdk21` folder or system path) and Android SDK (`/home/darkeeidea/Android/Sdk`) configured.
-2. Run the build script in the root directory:
-   ```bash
-   bash build-app.sh
-   ```
-3. The script will copy the web assets, sync the Android platform, and run the Gradle build.
-4. The output APK will be generated at the root directory as **`ATTENDIFY.apk`** (~5 MB).
+### 🛠️ Building & Deploying (Unified Automation Pipeline)
+
+The project includes a master deployment script `deploy-all.sh` that automates compilation, release publishing, server hosting updates, and Git pushes in one command:
+
+```bash
+bash deploy-all.sh "Your commit message"
+```
+
+This single command executes:
+1. **Regenerates PDF Manual**: Creates a fresh `public/QR Attendance System - Complete User Manual.pdf` from the updated `manual.html`.
+2. **Compiles Android APK**: Builds `ATTENDIFY.apk` using Android Gradle and Capacitor.
+3. **Auto-Publishes to GitHub Releases**: Uses `upload-apk.py` to connect via the GitHub API, deletes the old APK asset, and uploads the new APK to the latest release automatically.
+4. **Installs on Test Device**: Automatically pushes and updates the app via ADB on any connected Android smartphone.
+5. **Firebase Hosting Deploy**: Deploys front-end static assets to Firebase.
+6. **Cloudflare Worker Deploy**: Deploys the support assistant worker to Cloudflare.
+7. **Git Synchronization**: Commits and pushes the latest updates to the GitHub repository.
+
+To only compile the APK locally without publishing or deploying:
+```bash
+bash build-app.sh
+```
 
 ---
 
