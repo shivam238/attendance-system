@@ -3289,9 +3289,10 @@
             user-select: none;
         }
 
-        /* Hide footer on native app or dashboard view */
+        /* Hide footer in native app or when dashboard is active */
         .is-native-app .app-footer,
-        body.app-layout-active .app-footer {
+        body.app-layout-active .app-footer,
+        body.native-login-active .app-footer {
             display: none !important;
         }
 
@@ -3306,3 +3307,137 @@
                 display: none !important;
             }
         }
+
+        /* =====================================================
+           FIX 1: TABS HORIZONTAL SCROLL in app mode
+           The parent .card has overflow:hidden which was
+           preventing the tabs bar from scrolling sideways.
+           ===================================================== */
+        body.app-layout-active .tabs-scroll-wrapper {
+            flex-shrink: 0;
+            margin-bottom: 8px !important;
+            /* Restore horizontal scroll — critical for tab navigation */
+            overflow-x: auto !important;
+            overflow-y: visible !important;
+            -webkit-overflow-scrolling: touch !important;
+            scrollbar-width: none !important;
+        }
+        body.app-layout-active .tabs-scroll-wrapper::-webkit-scrollbar {
+            display: none !important;
+        }
+        /* Card overflow must allow horizontal tab scroll to pass through */
+        body.app-layout-active #app-screen .card {
+            overflow-x: visible !important;
+            overflow-y: hidden !important;
+        }
+
+        /* =====================================================
+           FIX 2: DESKTOP/LAPTOP WEB - revert position:fixed lock
+           On screens >= 769px the body position:fixed was
+           breaking the normal desktop layout. Revert to normal.
+           ===================================================== */
+        @media (min-width: 769px) {
+            body.app-layout-active {
+                position: relative !important;
+                height: auto !important;
+                overflow: auto !important;
+                display: block !important;
+            }
+            body.app-layout-active .container {
+                flex: unset !important;
+                display: block !important;
+                max-width: 1100px !important;
+                margin: 40px auto !important;
+                padding: 0 20px !important;
+                overflow: visible !important;
+            }
+            body.app-layout-active #app-screen {
+                display: block !important;
+                flex: unset !important;
+            }
+            body.app-layout-active #app-screen .card {
+                display: block !important;
+                flex: unset !important;
+                overflow: visible !important;
+                overflow-x: visible !important;
+                overflow-y: visible !important;
+            }
+            body.app-layout-active .tab {
+                display: none !important;
+            }
+            body.app-layout-active .tab.active {
+                display: block !important;
+                flex: unset !important;
+                overflow-y: visible !important;
+            }
+            body.app-layout-active .tabs-scroll-wrapper {
+                overflow-x: auto !important;
+                overflow-y: visible !important;
+            }
+            /* Restore card hover on desktop */
+            body.app-layout-active #app-screen .card:hover {
+                transform: none !important;
+            }
+        }
+
+        /* =====================================================
+           FIX 3: NATIVE LOGIN SCREEN — fit viewport, no scroll
+           When in Capacitor/PWA and on login screen, body gets
+           native-login-active class. Lock layout same as app.
+           ===================================================== */
+        body.native-login-active {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100dvh;
+            overflow: hidden !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            background: var(--body-bg);
+        }
+        body.native-login-active .container {
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-sizing: border-box;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        body.native-login-active #login-screen {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        body.native-login-active #login-screen .card {
+            margin: 0;
+            border-radius: 20px !important;
+            padding: 24px 20px !important;
+        }
+        /* Suppress hover lift on login card to avoid post-login flash */
+        body.native-login-active #login-screen .card:hover {
+            transform: none !important;
+        }
+
+        /* =====================================================
+           FIX 4: SUPPRESS POST-LOGIN CARD SHIFT FLASH
+           Disable card hover transform in app mode so
+           switching layouts doesn't cause a jump.
+           ===================================================== */
+        body.app-layout-active #app-screen .card:hover {
+            transform: none !important;
+            box-shadow: var(--shadow) !important;
+        }
+
+

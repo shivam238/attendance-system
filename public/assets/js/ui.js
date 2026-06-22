@@ -14,25 +14,31 @@ function showScreen(screenId) {
     if (target) {
         target.classList.add('active');
         
+        const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        const isNative = !!(window.Capacitor) || isPWA;
+
         // Handle native-app viewport height locking
         if (screenId === 'app-screen') {
+            document.body.classList.remove('native-login-active');
             document.body.classList.add('app-layout-active');
+        } else if (screenId === 'login-screen' && isNative) {
+            // Lock viewport for login screen too in native app
+            document.body.classList.remove('app-layout-active');
+            document.body.classList.add('native-login-active');
         } else {
             document.body.classList.remove('app-layout-active');
+            document.body.classList.remove('native-login-active');
         }
 
         const landingPage = document.getElementById('landing-page');
         if (landingPage) {
             landingPage.classList.toggle('is-hidden', screenId !== 'login-screen');
             if (screenId === 'login-screen') {
-                const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-                const skipLanding = window.Capacitor || isPWA || localStorage.getItem('attendify_skip_landing') === 'true';
-                if (skipLanding) {
+                if (isNative || localStorage.getItem('attendify_skip_landing') === 'true') {
                     landingPage.classList.add('login-locked');
                 } else {
-                    landingPage.classList.remove('login-locked'); // Reset lock on showing login screen
+                    landingPage.classList.remove('login-locked');
                     scheduleLandingReveal();
-                    // Bind scroll listener when landing page is shown
                     window.addEventListener('scroll', handleLandingScroll, { passive: true });
                 }
             }
