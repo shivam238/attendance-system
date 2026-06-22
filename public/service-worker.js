@@ -1,8 +1,8 @@
-const CACHE_NAME = 'attendify-cache-v37';
+const CACHE_NAME = 'attendify-cache-v38';
 const ASSETS = [
     './',
     './index.html',
-    './assets/css/style.css?v=19',
+    './assets/css/style.css?v=20',
     './assets/css/subjects.css',
     './assets/js/theme.js',
     './assets/js/auth.js',

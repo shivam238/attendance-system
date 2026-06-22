@@ -3332,53 +3332,42 @@
         }
 
         /* =====================================================
-           FIX 2: DESKTOP/LAPTOP WEB - revert position:fixed lock
-           On screens >= 769px the body position:fixed was
-           breaking the normal desktop layout. Revert to normal.
+           FIX 2: DESKTOP/LAPTOP WEB — proper fit-to-screen
+           Keep the viewport lock (no page scroll) on desktop
+           too. Adjust container width and card padding for
+           a comfortable dashboard experience in the browser.
            ===================================================== */
         @media (min-width: 769px) {
-            body.app-layout-active {
-                position: relative !important;
-                height: auto !important;
-                overflow: auto !important;
-                display: block !important;
-            }
+            /* Wider container on desktop */
             body.app-layout-active .container {
-                flex: unset !important;
-                display: block !important;
-                max-width: 1100px !important;
-                margin: 40px auto !important;
-                padding: 0 20px !important;
-                overflow: visible !important;
+                max-width: 860px !important;
+                padding: 16px 24px !important;
             }
-            body.app-layout-active #app-screen {
-                display: block !important;
-                flex: unset !important;
-            }
+            /* More padding in the card */
             body.app-layout-active #app-screen .card {
-                display: block !important;
-                flex: unset !important;
-                overflow: visible !important;
-                overflow-x: visible !important;
-                overflow-y: visible !important;
+                padding: 22px 28px 16px !important;
+                border-radius: 24px !important;
             }
-            body.app-layout-active .tab {
-                display: none !important;
-            }
-            body.app-layout-active .tab.active {
-                display: block !important;
-                flex: unset !important;
-                overflow-y: visible !important;
-            }
+            /* On desktop all 5 tabs fit — no need for horizontal scroll */
             body.app-layout-active .tabs-scroll-wrapper {
-                overflow-x: auto !important;
-                overflow-y: visible !important;
+                overflow-x: hidden !important;
             }
-            /* Restore card hover on desktop */
-            body.app-layout-active #app-screen .card:hover {
-                transform: none !important;
+            body.app-layout-active .tabs {
+                width: 100% !important;
+                min-width: unset !important;
+                justify-content: flex-start !important;
+                gap: 6px !important;
+            }
+            /* Logo a bit larger on desktop */
+            body.app-layout-active .header .logo {
+                width: 52px !important;
+                height: 52px !important;
+            }
+            body.app-layout-active .header h1 {
+                font-size: 20px !important;
             }
         }
+
 
         /* =====================================================
            FIX 3: NATIVE LOGIN SCREEN — fit viewport, no scroll
