@@ -1725,10 +1725,13 @@
         }
 
         .tab-btn.over {
-            transform: scale(1.05);
-            background: rgba(99, 102, 241, 0.05);
-            margin: 0 5px;
-            /* Create temporary space */
+            transform: scale(1.02);
+            background: rgba(99, 102, 241, 0.08) !important;
+        }
+
+        /* Prevent transitions during active drag reordering to eliminate calculation jitters */
+        .tabs.dragging-active .tab-btn {
+            transition: none !important;
         }
 
         .tab {

@@ -426,15 +426,72 @@ function initDraggableTabs() {
         });
     }
 
+    // Touch support variables
+    let touchStartTimer = null;
+    let touchDraggedActive = false;
+    let touchSrcEl = null;
+
+    function handleTouchStart(e) {
+        const targetBtn = e.currentTarget;
+        touchSrcEl = targetBtn;
+        touchDraggedActive = false;
+        
+        touchStartTimer = setTimeout(() => {
+            touchDraggedActive = true;
+            targetBtn.classList.add('dragging');
+            tabsContainer.classList.add('dragging-active');
+            if (navigator.vibrate) navigator.vibrate(50);
+        }, 220); // 220ms hold to start drag
+    }
+
+    function handleTouchMove(e) {
+        if (!touchSrcEl) return;
+        
+        if (!touchDraggedActive) {
+            clearTimeout(touchStartTimer);
+            return;
+        }
+
+        e.preventDefault(); // Lock page scroll
+
+        const touch = e.touches[0];
+        const elem = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (!elem) return;
+
+        const targetBtn = elem.closest('.tab-btn');
+        if (targetBtn && targetBtn !== touchSrcEl && targetBtn.parentNode === tabsContainer) {
+            const rect = targetBtn.getBoundingClientRect();
+            const midX = rect.left + rect.width / 2;
+
+            if (touch.clientX < midX) {
+                tabsContainer.insertBefore(touchSrcEl, targetBtn);
+            } else {
+                tabsContainer.insertBefore(touchSrcEl, targetBtn.nextSibling);
+            }
+        }
+    }
+
+    function handleTouchEnd(e) {
+        clearTimeout(touchStartTimer);
+        if (touchSrcEl) {
+            touchSrcEl.classList.remove('dragging');
+            touchSrcEl = null;
+        }
+        if (touchDraggedActive) {
+            tabsContainer.classList.remove('dragging-active');
+            touchDraggedActive = false;
+            saveTabOrder();
+        }
+    }
+
     function handleDragStart(e) {
         dragSrcEl = this;
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/html', this.innerHTML);
 
-        // Let the browser take its native snapshot of the SOLID button
-        // Then we make the original button a placeholder after a tiny delay
         setTimeout(() => {
             this.classList.add('dragging');
+            tabsContainer.classList.add('dragging-active');
         }, 10);
 
         if (navigator.vibrate) navigator.vibrate(50);
@@ -448,7 +505,6 @@ function initDraggableTabs() {
             const rect = this.getBoundingClientRect();
             const midX = rect.left + rect.width / 2;
             
-            // Move in DOM instantly for "App-style" slide
             if (e.clientX < midX) {
                 this.parentNode.insertBefore(dragSrcEl, this);
             } else {
@@ -469,12 +525,14 @@ function initDraggableTabs() {
     function handleDrop(e) {
         if (e.stopPropagation) e.stopPropagation();
         this.classList.remove('over');
+        tabsContainer.classList.remove('dragging-active');
         saveTabOrder();
         return false;
     }
 
     function handleDragEnd(e) {
         this.classList.remove('dragging');
+        tabsContainer.classList.remove('dragging-active');
         btns.forEach(btn => btn.classList.remove('over'));
     }
 
@@ -497,6 +555,12 @@ function initDraggableTabs() {
         btn.addEventListener('dragleave', handleDragLeave, false);
         btn.addEventListener('drop', handleDrop, false);
         btn.addEventListener('dragend', handleDragEnd, false);
+
+        // Touch events
+        btn.addEventListener('touchstart', handleTouchStart, { passive: true });
+        btn.addEventListener('touchmove', handleTouchMove, { passive: false });
+        btn.addEventListener('touchend', handleTouchEnd, { passive: true });
+        btn.addEventListener('touchcancel', handleTouchEnd, { passive: true });
     });
 }
 
