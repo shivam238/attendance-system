@@ -1180,26 +1180,33 @@
         }
 
         function copyStudentPrompt() {
-            const prompt = `Please format the following student list in this exact format only, with no additional text or explanation:
+            const prompt = `You are a precise data-formatting assistant. Your sole task is to extract a list of students from the provided input—which may be an uploaded PDF, an image/screenshot, or text pasted inside the <student_list> tags—and convert it into a standardized format.
 
+STRICT FORMAT TO OUTPUT (DO NOT DEVIATE):
 NAME - ROLLNO
-NAME - ROLLNO
 
-Rules:
-- Each line must have: NAME - ROLLNO (with space-dash-space between)
-- NAME should be in UPPERCASE
-- ROLLNO should be in UPPERCASE
-- One student per line
-- No numbering, bullets, or extra formatting
-- Only output the formatted list, nothing else
+RULES:
+1. Output ONLY the formatted student list. Do NOT wrap the output in markdown code blocks (e.g., do not use \`\`\`text or \`\`\`csv).
+2. Write exactly one student per line.
+3. Every single line in your response must strictly match this regular expression pattern:
+   ^[A-Z .'-]+ - [A-Z0-9/.-]+$
+4. NAME must come FIRST, followed by a single space, a hyphen, another single space, and then the ROLLNO (e.g., "NAME - ROLLNO").
+5. Both NAME and ROLLNO must be in UPPERCASE.
+6. Do NOT add numbering, bullets, commas, headings, intro text, outro text, explanations, or blank lines.
+7. Do NOT alter, correct, guess, or reorder any names or roll numbers. Ignore page headers, footers, column titles (like "Name", "Roll No", "S.No"), or page numbers from the input.
+8. The output must contain EVERY student from the input list. Do NOT truncate, skip, summarize, or use ellipses ("...") under any circumstances, even if the list is extremely long.
+9. If extracting from an image or PDF, perform high-accuracy OCR to capture names and roll numbers correctly, ignoring layout tables or grids.
+10. Double-check that the total number of output lines matches the total number of students in the input source exactly.
 
-Example output format:
-JOHN DOE - 25/B09/001
-JANE SMITH - 25/B09/002
-AMIT KUMAR - 25/B09/003
+Example output:
+RAHUL SHARMA - 25/B09/001
+PRIYA SINGH - 25/B09/002
 
-Now format this student list:
-[Paste your student list here]`;
+Convert the student list from the attached file/image, or the text enclosed in the <student_list> tags below:
+
+<student_list>
+[Paste your student list here (if not uploading an image/PDF)]
+</student_list>`;
 
             navigator.clipboard.writeText(prompt).then(() => {
                 alert('✅ Prompt copied! Now:\n1. Open ChatGPT\n2. Paste this prompt\n3. Add your student list\n4. Copy the result\n5. Paste in the Students field above');
