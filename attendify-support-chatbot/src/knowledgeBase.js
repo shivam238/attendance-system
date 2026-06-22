@@ -15,116 +15,178 @@ Generated from the repository code only. Use this as source material for an AI c
   - **LinkedIn**: https://www.linkedin.com/in/shivam-kumar-mahto-046228361/
 - **Crucial Rule**: When asked "who created this app?", "who built this?", "developer contact", or "owner details", you MUST proudly mention **Shivam Kumar Mahto** and provide his contact details (email, WhatsApp Community, Instagram, and LinkedIn).
 
-## Product Overview
+## Product & System Overview
 
-ATTENDIFY is a Firebase-powered web application for QR-based student attendance. A class representative or educator (CR) logs in, configures a class, creates subject-specific QR attendance sessions, monitors submissions in real time, reviews exceptions, and exports reports.
+ATTENDIFY is a high-performance, Firebase-powered web and mobile application for QR-based student attendance.
+- **Host Web URL**: \`https://qr-smart-attendance.web.app\`
+- **Database Backend**: Firebase Realtime Database (handles users, rosters, sessions, requests, database triggers, and feedback).
+- **Authentication**: Firebase Authentication (Google OAuth & Firebase Phone Auth).
+- **PWA Capabilities**: Service worker handling offline assets and caching.
+- **Mobile Environment**: Capacitor-wrapped native Android APK (~5 MB download size) containing native notifications and hardware-level mock location checks.
 
-Students open the QR attendance link, authenticate using Google sign-in (mandatory), and submit their attendance. Once signed in, their Google UID is permanently bound to their roll number for that class (First-Scan Binding), preventing them from signing in with multiple accounts or submitting for others.
+---
 
-The app is hosted as a static Firebase Hosting site at \`https://qr-smart-attendance.web.app\`. The front end is written in HTML, CSS, and vanilla JavaScript. Firebase Auth is used for sign-in, Firebase Realtime Database stores users, attendance records, QR sessions, requests, and feedback, and Firebase Analytics is used for event logging.
+## Complete App UI Architecture & Navigation
 
-Primary source files:
-- \`index.html\`: main login, setup, CR dashboard, student QR submission handler, requests, geofencing, QR sessions, student management, anti-proxy system, notifications, Google Sheets sync, smart geofencing.
-- \`manage-subjects.html\`: subject add, rename, delete, reorder page.
-- \`track.html\`: student attendance tracking portal.
-- \`attendance-success.html\`: student result/status page.
-- \`assets/js/auth.js\`: Google/phone auth, linked login methods, account deletion.
-- \`assets/js/export.js\`: Export Hub, Excel download, manual present/absent edits, auto-export closed session.
-- \`assets/js/history.js\`: attendance history rendering.
-- \`assets/js/ui.js\`: shared UI helpers.
-- \`firebase-config.js\`, \`database.rules.json\`, \`firebase.json\`, \`service-worker.js\`, \`manifest.json\`: platform configuration.
+This guide maps out the specific screens, panels, buttons, inputs, and modals in the ATTENDIFY user interface:
 
-## Key Terms
+### 1. Website Landing Page (\`index.html\` - Web Only)
+*Mobile native apps and PWAs automatically bypass this page and redirect directly to the login screen.*
+- **Top Navigation Bar**:
+  - Logo on left: \`🎓 ATTENDIFY\`
+  - Navigation Links (Desktop): \`How it Works\`, \`Features\`, \`Support\`, \`Student Portal\` (opens \`track.html\`).
+  - Mobile Menu Button: Hamburger menu icon (three-bar toggle).
+  - Theme Toggle Switch: Animates between Sun (Light Mode) and Moon (Dark Mode).
+- **Hero Header Section**:
+  - Title: *"Attendance, simplified for every class"*
+  - Subtitle paragraph outlining QR codes, geofencing, Meet imports, and Excel exports.
+  - Buttons:
+    - \`Open CR Dashboard\` (Primary): Enters the Class Representative login container.
+    - \`Student Portal\` (Secondary): Direct link to the Student Tracker Portal.
+- **Live Preview Card**:
+  - Displays a mock real-time presentation dashboard widget:
+    - A pulse badge: \`🟢 22 present\`
+    - An interactive QR code representation with a scanning laser line.
+    - Mini features tags: \`5-Min QR / Session validity\`, \`No App / Students scan in browser\`, \`Instant / Live sync\`.
+- **Informative Sections**:
+  - **How it Works Flow**: Visual step-by-step layout for CRs and Students.
+  - **Features Grid**: Outlines smart geofencing, anti-cheat mechanisms, Google sync, and reporting.
+  - **Role Selection Box**: Comparison card contrasting CR Dashboard access and Student Portal features.
 
-- **CR**: The class representative or educator using the dashboard to manage class attendance.
-- **Class ID / Username**: Generated during setup as \`year + college + branch + section\`, for example \`29DTUCSE5\`.
-- **QR session**: A subject-specific attendance session stored at \`qr_sessions/{classId}_{date}_{subject}\`.
-- **Attendance record**: A present mark stored under \`attendance/{classId}_{date}_{subject}\`.
-- **Request**: A pending attendance submission that needs CR review, stored under \`requests/{classId}_{date}_{subject}\`.
-- **Geofencing**: Optional location verification against a classroom/campus radius.
-- **Smart Geofence Auto-Approval**: If a student is slightly outside the radius (up to 1.8x of standard radius or standard + 60m, whichever is smaller), the system automatically approves and marks them Present with a \`geofenceRelaxed: true\` flag, preventing false location mismatch rejections in concrete classrooms.
-- **MockLocationChecker**: Android APK native plugin that checks and blocks fake GPS / Mock Location apps.
-- **First-Scan Binding**: Permament coupling of student's Google account UID and roll number in \`class_student_links\` and \`google_user_links\` to prevent proxy/account sharing.
-- **Device ID**: A persistent browser fingerprint stored in localStorage/sessionStorage/cookie used to detect proxy submissions.
-- **Suspicious/Proxy**: An attendance record flagged because the same device submitted for multiple different roll numbers, or an ID proxy was attempted.
+### 2. Login Screen (\`index.html\` - Active Container)
+- **Top Bar**:
+  - Info Button (\`i\` icon): Opens the User Manual (\`manual.html\`) in a new browser tab.
+  - Theme Toggle Knob: Allows switching dark/light themes before logging in.
+- **Header**:
+  - Shows the circular logo badge.
+  - Title: \`🎓 ATTENDIFY\`
+  - Description: *"Experience the future of attendance tracking"*
+- **Login Tabs Selector**:
+  - \`Google Login\` tab (Recommended): Shows a primary button \`Continue with Google\` featuring the Google logo.
+  - \`Phone Login\` tab: Shows phone number inputs:
+    - Mobile country code prefix: \`+91\` (fixed).
+    - Mobile Number Input: 10-digit number field.
+    - Action Button: \`Send OTP\`.
+    - Verification Screen (Toggled post-OTP): Shows 6-digit OTP code entry field and buttons: \`Verify & Login\` and \`Edit Number\`.
+    - Warning banner: *"Service under Setup: Real SMS OTP delivery is currently offline..."*
+- **Student Portal Access Card (Bottom)**:
+  - Text: *"Are you a Student? Track your subject-wise attendance statistics."*
+  - Button: \`🔍 Open Student Portal\` (opens \`track.html?v=1.1\`).
 
-## User Roles
+### 3. Class Setup Screen (\`index.html\` - For New Users)
+- **Header**: \`🎓 Setup Your Class\`
+- **Input Fields**:
+  - Passout Year (2-digit): e.g., \`29\` (for year 2029).
+  - College Abbreviation: e.g., \`DTU\`.
+  - Branch Code: e.g., \`CSE\`.
+  - Section Code: e.g., \`5\`.
+  - Custom Class Name: e.g., \`CSE-5\`.
+- **Generation Logic**: The app automatically generates the **Class ID / Username** as \`Year + College + Branch + Section\` (e.g. \`29DTUCSE5\`). This Class ID is what students use to log in to the student portal.
+- **Button**: \`Save and Continue ➔\` (Creates the database class profile node).
 
-### CR / Educator
-Can:
-- Sign in with Google.
-- Complete class setup.
-- Add subjects and students.
-- Generate QR attendance sessions.
-- Configure optional geofencing.
-- View live present counts and attendance feed.
-- Receive browser native notifications and audio chimes for each attendance submission.
-- See suspicious/proxy-flagged entries highlighted in red on the dashboard.
-- Review pending requests.
-- Import students from Google Classroom or **sync roster live with Google Sheets (CSV link)**.
-- Import attendance from Google Meet participant list (paste-and-match).
-- Edit attendance from the Export Hub.
-- Export attendance to Excel manually, or get an **Auto-Export share/download prompt** immediately upon QR session closure.
-- View history.
-- Delete their account and associated class data.
+### 4. Class Representative (CR) Dashboard (\`index.html\`)
+Once logged in, the CR accesses a unified layout with a top status header and tabbed panels.
+- **Status Header**:
+  - Stats card showing total registered students.
+  - Active QR status banner (displays timer countdown, active subject, and a button to view current attendees).
+  - Main navigation tabs bar.
+- **Tab Panels**:
+  - **QR Session Tab**:
+    - Subject selector dropdown (populated from the subjects list in Roster).
+    - Timer duration dropdown (1, 2, 3, 5, 10 minutes).
+    - Geofencing configuration:
+      - Geofencing switch: Enables/disables location check.
+      - Geofence radius slider/input: Range of 10m to 2000m.
+      - Set Reference Location button: Captures browser's current latitude/longitude to anchor the geofence around the classroom.
+    - Button: \`Generate QR Code\` (Launches the QR fullscreen modal).
+  - **Students Tab**:
+    - Complete table roster showing student names, roll numbers, and binding statuses.
+    - Quick Action Buttons:
+      - \`➕ Add Student\`: Simple modal with Name and Roll Number inputs.
+      - \`🟢 Sheets Sync\`: Modal to paste a Google Sheets published CSV URL to sync roster.
+      - \`🎓 Classroom Import\`: Fetches rosters from a linked Google Classroom course.
+      - \`📹 Meet Import\`: Area to paste Google Meet participant attendance log to auto-verify attendees.
+  - **Requests Tab**:
+    - Live feed of student submission requests waiting for CR review (students who submitted outside the geofence, with GPS blocked, or manually).
+    - Details: Student Name, Roll Number, Distance from Geofence center, Request Reason.
+    - Actions: One-click buttons to \`Approve\` (mark Present) or \`Deny\` (mark Absent).
+  - **History Tab**:
+    - List of completed sessions grouped by Date and Subject.
+    - Click to expand: Reveals list of attendees, timestamp, and verification details for that specific session.
+  - **Export Hub Tab**:
+    - Dynamic spreadsheet matrix table. Rows: Students, Columns: Dates.
+    - Live editing: CR can click directly on any cell to switch a student's status between Present (Green check), Absent (Red cross), or Pending (Yellow clock).
+    - Button: \`Download Excel Report (.xlsx)\` (compiles and downloads sheet).
+  - **Feedback Tab**:
+    - TextArea to send feature requests and bugs directly to Shivam Kumar Mahto.
+  - **Profile Tab**:
+    - Account overview, Class ID details, and Creator contact details.
+    - Danger zone buttons:
+      - \`Reset Class Database\` (wipes history, sessions, roster).
+      - \`Delete Account\` (wipes credentials and data permanently).
 
-### Student
-Can:
-- Scan or open a QR attendance link.
-- Authenticate with their Google account (Mandatory).
-- Submit attendance by roll number (locked via First-Scan Binding).
-- Allow location verification if required.
-- See a success, duplicate, late, out-of-range, or GPS-denied status page.
-- Open the student portal to track subject-wise attendance.
-- Submit feedback.
+### 5. Student Tracker Portal (\`track.html\`)
+- **Login Screen**: Requires the unique **Class ID** (e.g. \`29DTUCSE5\`) and **Roll Number** (e.g. \`25/B09/001\`).
+- **Dashboard Widgets**:
+  - **Overall Progress Ring**: Svg circle showing the overall attendance percentage.
+  - **Total Summary**: Text listing attended lectures out of total.
+  - **Target Threshold Input**: Box to input target percentage (e.g. \`75\`%). Sub-cards will turn green if above the threshold, yellow if close, or red if below.
+- **Subject Grid**: Individual cards showing subject name, count fraction (e.g., \`15/20\`), percentage bar, and status pill (Safe / Warning / Danger).
+- **Detailed Attendance Log**: List of all recorded instances. Dropdown filters to sort by specific subject or specific status (Present, Absent, Pending).
+- **Export Action**: \`🖨️ Export PDF Report\` button to print or download a clean report.
+- **Google Classroom Feed**: Banner button to connect Google Classroom, bringing in coursework, due dates, scores, and announcements into the portal feed.
 
-## Authentication and Roster Setup
+---
 
-### Mandatory Student Google Auth
-Students must sign in with their Google Account before submitting attendance. The system binds the Google UID to the student's Roll Number in the database. If a different Google account attempts to submit for a bound roll number, the submission is rejected and flagged as suspicious.
+## Key Processes & Workflows
 
-### Google Sheets Sync
-CRs can sync their student roster directly from a published Google Sheet CSV URL:
-1. In Google Sheets: File -> Share -> Publish to Web -> Choose CSV format.
-2. Paste the link into the Google Sheets Sync Modal in the Students tab.
-3. The system fetches and parses the roster dynamically (auto-detecting Name and Roll Number columns).
-4. Update the roster in Firebase with one click.
+### 1. QR Code Attendance Session
+1. CR generates a session with subject, duration, and optional geofencing.
+2. Fullscreen QR modal pops up. The QR is generated containing a dynamic submission URL:
+   \`https://qr-smart-attendance.web.app/?classId=...&session=...\`
+3. Timer countdown starts. CR can adjust time using \`+1 Min\` and \`-1 Min\` buttons.
+4. Students scan, log in via Google account, and submit.
+5. Once the timer hits \`00:00\`, the session record is automatically deleted from Firebase.
+6. Auto-Export trigger launches immediately, prompting the CR to download or share the completed session report.
 
-### Phone Login
-The CR dashboard includes phone login using Firebase Phone Auth, but real SMS OTP is marked "offline" in the UI in favor of Google login or test phone credentials.
+### 2. First-Scan Binding (Anti-Cheat)
+- Prevents proxy submissions.
+- On the first scan, the student's Google account ID (UID) is permanently bound to their roll number.
+- In subsequent sessions, if the student logs in with a different Google account to submit for that roll number, the submission is blocked.
+- If the student attempts to log in with their Google account to submit for a classmate's roll number, the system blocks the submission and flags it.
 
-## Anti-Proxy & Android APK Security
+### 3. Device Fingerprinting (Anti-Proxy)
+- The system generates a persistent, unique Device ID stored across three storage layers in the student's browser.
+- If the same device ID is used to submit attendance for multiple different roll numbers in the same session, the system flags the records.
+- Flags show up highlighted in **red** on the CR Dashboard feed and history, warning of a potential proxy attempt.
 
-ATTENDIFY uses two robust layers of anti-cheat security:
-1. **MockLocationChecker (Native Android APK):** Active on the Android native app. If a student uses a GPS Spoofing or Mock Location application, the app blocks the submission and alerts the CR.
-2. **First-Scan Binding:** Ensures 1 student = 1 Google Account. Account swapping to mark attendance for absent friends is fully prevented.
-3. **Device Fingerprinting:** Flags if multiple roll numbers are submitted from the same physical device ID in the same session.
+### 4. Smart Geofencing & Location Permissions
+- Standard geofence boundaries range from **10m to 2000m**.
+- **GPS-Drift Tolerance (Smart Geofence Auto-Approval)**: If a student submits and their GPS coordinates place them slightly outside the geofence radius, the system applies smart tolerance (up to 1.8x of standard radius or standard + 60m, whichever is smaller).
+- Students in the tolerance zone are marked present with a \`geofenceRelaxed: true\` flag to prevent rejections from GPS drift in concrete walls.
+- Students further out are sent to the CR's **Requests Tab** as pending for manual verification.
+- **Location Permission Troubleshooting**:
+  - *iOS Safari*: Settings -> Safari -> Location -> Set to Allow.
+  - *Android Chrome*: Settings -> Site Settings -> Location -> Enable.
+  - *Native App (Capacitor)*: Prompt asks for location permission. Must grant "While using the app" or "Always".
 
-## QR Sessions, Expiry, and Export Automation
+### 5. Native APK Mock Location Detection
+- When accessed via the native Android APK, the native \`MockLocationChecker\` plugin runs.
+- If a student uses a GPS Spoofing app, the application blocks the submission immediately and alerts the CR.
 
-### Timer Controls (Extend/Decrease)
-- **Extend (+1 Min)**: Increases the session validity by 1 minute.
-- **Decrease (-1 Min)**: Subtracts 1 minute from the session duration (cannot go below 1 minute).
-Both controls update the database in real-time.
+### 6. Roster Setup Workflows
+- **Google Sheets Sync**:
+  1. CR publishes a Google Sheet to the web: File -> Share -> Publish to Web -> Web Page -> change dropdown to **Comma-separated values (.csv)**.
+  2. Copy the CSV URL.
+  3. In the Students tab, click \`🟢 Sheets Sync\` and paste the URL.
+  4. The system dynamically pulls student names and roll numbers and updates the roster.
+- **Google Meet Import**:
+  - CR copies the participant list from Google Meet.
+  - Paste it into the \`📹 Meet Import\` box. The system runs a matching algorithm to identify students from the roster and log them present.
+  - Custom alias mappings are saved in localStorage.
 
-### Auto-Expiry Cleanup
-When the QR timer hits \`00:00\`, the CR dashboard client automatically deletes the session record from Firebase (\`qr_sessions/{code}\`). Students scanning after this point immediately receive an "invalid or expired session" error.
-
-### Auto-Export on Close
-Immediately when a session expires or is manually cleared:
-- The dashboard compiles the session's attendance records.
-- It displays a popup: **Download Excel** or **Share Report** (uses native share menu on mobile to send via WhatsApp, Email, etc.).
-
-## Student Portal (\`track.html\`)
-
-Students log in with Class ID and Roll Number. Shows overall and subject-wise attendance percentage, detailed log, filters, and PDF export.
-
-## Limitations and Known Issues
-
-1. Phone OTP real SMS delivery is marked "currently offline" in the UI.
-2. Google Classroom Import only returns full roster if the CR is a Teacher in that Classroom.
-3. Google Sheets sync URL must be published as "Comma-separated values (.csv)", not Web Page.
-4. Alias memory for Meet Import is stored in localStorage.
-5. Deleting or renaming a subject does not migrate existing attendance history keys.
+### 7. Troubleshooting Student Portal Login
+- Students must enter the exact **Class ID** (e.g. \`29DTUCSE5\`, case-insensitive but must match the CR's class string).
+- Students must enter the exact **Roll Number** they were registered with in the roster (e.g. \`25/B09/001\`, including slashes/symbols).
+- The portal pulls attendance history matching the bound Google account.
 `;
-
