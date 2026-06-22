@@ -2659,15 +2659,15 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
         }
 
-        /* Decorative Background Orbs */
         .bg-orb {
             position: fixed;
             border-radius: 50%;
             filter: blur(120px);
             z-index: -2;
             opacity: 0.35;
-            transition: all 0.5s ease;
+            transition: opacity 0.5s ease, transform 0.5s ease;
             pointer-events: none;
+            will-change: transform;
         }
         .orb-1 {
             width: 450px;

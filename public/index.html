@@ -8,9 +8,6 @@
     <meta name="referrer" content="no-referrer-when-downgrade">
     <title>ATTENDIFY — Smart Attendance System</title>
 
-    <!-- Leaflet Maps CSS (non-blocking) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-
     <!-- Preconnect for speed -->
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://firebase.googleapis.com" crossorigin>
@@ -33,7 +30,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <link rel="stylesheet" href="assets/css/style.css?v=22">
+    <link rel="stylesheet" href="assets/css/style.css?v=23">
     <script src="assets/js/theme.js" defer></script>
 </head>
 
@@ -1015,7 +1012,6 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <!-- Non-essential scripts deferred -->
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <!-- Capacitor Runtime (serves dynamically inside APK, falls back to silent 404 in web) -->
@@ -1024,7 +1020,7 @@
     <!-- Core Logic Scripts -->
     <script src="assets/js/firebase-config.js?v=5"></script>
     <script src="assets/js/auth.js"></script>
-    <script src="assets/js/ui.js?v=14"></script>
+    <script src="assets/js/ui.js?v=15"></script>
     <script src="assets/js/history.js?v=10"></script>
     <script src="assets/js/export.js?v=10"></script>
 
@@ -2342,6 +2338,31 @@ Now format this student list:
             }
         }
 
+        function ensureLeafletLoaded(callback) {
+            if (window.L) {
+                callback();
+                return;
+            }
+
+            const mapContainer = document.getElementById('map');
+            if (mapContainer) {
+                mapContainer.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); font-size: 14px; font-weight: 500; gap: 8px;"><span>⚡ Loading Map Engine...</span></div>';
+            }
+
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+            document.head.appendChild(link);
+
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+            script.onload = () => {
+                if (mapContainer) mapContainer.innerHTML = '';
+                callback();
+            };
+            document.body.appendChild(script);
+        }
+
         function openMapModal() {
             const geofenceLimit = document.getElementById('geofence-select').value;
             if (geofenceLimit === 'none') {
@@ -2351,21 +2372,23 @@ Now format this student list:
 
             document.getElementById('map-modal').classList.add('active');
 
-            // Get current location to center map
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const lat = selectedLat || position.coords.latitude;
-                    const lng = selectedLng || position.coords.longitude;
-                    initMap(lat, lng, geofenceRadius);
-                },
-                (error) => {
-                    // Fallback: center on DTU campus, Delhi
-                    const lat = selectedLat || 28.7499;
-                    const lng = selectedLng || 77.1167;
-                    initMap(lat, lng, geofenceRadius);
-                },
-                { enableHighAccuracy: true }
-            );
+            ensureLeafletLoaded(() => {
+                // Get current location to center map
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = selectedLat || position.coords.latitude;
+                        const lng = selectedLng || position.coords.longitude;
+                        initMap(lat, lng, geofenceRadius);
+                    },
+                    (error) => {
+                        // Fallback: center on DTU campus, Delhi
+                        const lat = selectedLat || 28.7499;
+                        const lng = selectedLng || 77.1167;
+                        initMap(lat, lng, geofenceRadius);
+                    },
+                    { enableHighAccuracy: true }
+                );
+            });
         }
 
         function closeMapModal() {
