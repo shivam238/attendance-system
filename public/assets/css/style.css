@@ -2883,6 +2883,44 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) !important;
         }
 
+        .app-footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 24px;
+            background: var(--card-bg) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 20px !important;
+            width: 100%;
+            max-width: 480px;
+            margin-left: auto;
+            margin-right: auto;
+            font-size: 13px;
+            color: var(--text-muted);
+            box-shadow: var(--shadow) !important;
+            transition: all 0.3s ease;
+        }
+        .app-footer a {
+            color: var(--text-color) !important;
+            text-decoration: none;
+            margin: 0 6px;
+            font-weight: 600;
+            transition: color 0.2s ease;
+            display: inline-block;
+        }
+        .app-footer a:hover {
+            color: var(--primary-color) !important;
+            text-decoration: underline;
+        }
+        .app-footer .copyright {
+            display: block;
+            margin-top: 16px;
+            font-size: 11px;
+            color: var(--text-muted);
+            opacity: 0.8;
+        }
+
         /* Hide floating Firebase/Google reCAPTCHA badge to prevent overlapping UI on mobile */
         .grecaptcha-badge {
             visibility: hidden !important;
