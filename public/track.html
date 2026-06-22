@@ -392,7 +392,7 @@
                 background: white !important;
                 padding: 0 !important;
             }
-            .theme-btn, .logout-btn, .btn, .log-filters, .header-controls {
+            .theme-btn, .home-nav-btn, .logout-btn, .btn, .log-filters, .header-controls {
                 display: none !important;
             }
             .subject-card {
@@ -409,6 +409,23 @@
                 page-break-inside: avoid;
             }
         }
+        .home-nav-btn {
+            background: var(--tab-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .home-nav-btn:hover {
+            background: var(--input-border);
+        }
     </style>
 </head>
 <body>
@@ -423,7 +440,7 @@
         <div class="header-controls">
             <div class="header-controls-left">
                 <a href="index.html" style="text-decoration: none;">
-                    <button class="theme-btn" style="background: var(--tab-bg); border-radius: 12px; padding: 8px 16px;">🏠 Main App</button>
+                    <button class="home-nav-btn">🏠 Main App</button>
                 </a>
             </div>
             <div class="header-controls-right">
@@ -752,11 +769,9 @@
         }
 
         function updateThemeButtonText() {
-            const isDark = document.body.classList.contains('dark-mode');
             const btns = document.querySelectorAll('.theme-btn');
             btns.forEach(btn => {
-                if (btn.innerText.includes('🏠')) return;
-                btn.innerHTML = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+                btn.innerHTML = '';
             });
         }
 

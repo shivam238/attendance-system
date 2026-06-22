@@ -379,8 +379,7 @@
                         </div>
                     </div>
                     <div class="header-controls-right">
-                        <button class="theme-btn" onclick="toggleDarkMode()"
-                            style="color: var(--text-color); background: var(--tab-bg); border-radius: 12px; padding: 8px 16px; font-size: 13px;">🌙 Dark Mode</button>
+                        <button class="theme-btn" onclick="toggleDarkMode()"></button>
                         <button class="settings-btn" onclick="openProfileModal()"
                             style="color: var(--text-color); background: var(--tab-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">⚙️ Settings</button>
                         <button class="logout-btn" onclick="logoutUser()">Logout</button>
@@ -1302,10 +1301,9 @@ Now format this student list:
         }
 
         function updateThemeButtonText() {
-            const isDark = document.body.classList.contains('dark-mode');
             const btns = document.querySelectorAll('.theme-btn');
             btns.forEach(btn => {
-                btn.innerHTML = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+                btn.innerHTML = '';
             });
         }
 
