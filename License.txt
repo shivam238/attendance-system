@@ -1,21 +1,18 @@
-MIT License
+Proprietary License (All Rights Reserved)
 
-Copyright (c) 2026 Shivam Kumar Mahto
+Copyright (c) 2026 Shivam Kumar Mahto. All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This software and all associated documentation files (the "Software") are the intellectual property of Shivam Kumar Mahto.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Strictly Confidential & Proprietary.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Permission is hereby GRANTED only to view the source code for educational and review purposes.
+
+Permission is strictly PROHIBITED for the following actions without the prior written consent of Shivam Kumar Mahto:
+1. Copying, reproducing, or redistributing the Software, in whole or in part, in any form or medium.
+2. Modifying, adapting, translating, or creating derivative works based on the Software.
+3. Sublicensing, renting, leasing, lending, or selling the Software.
+4. Using the Software or any portion thereof for commercial purposes.
+5. Reverse engineering, decompiling, or disassembling the Software, including any compiled binaries or APKs.
+
+Any unauthorized use, copying, reproduction, or distribution of the Software constitutes a violation of copyright law and intellectual property rights, and will be subject to legal action.

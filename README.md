@@ -118,12 +118,12 @@ bash build-app.sh
 
 ## 📄 License & Attribution
 
-This project is licensed under the **MIT License**.
+This project is **proprietary and confidential**. All rights are reserved. Copying, redistribution, modification, or commercial use of this codebase and its compiled assets (including the APK) is strictly prohibited without the express written permission of the developer.
 
 **Developed by Shivam Kumar Mahto**  
 🔗 [GitHub](https://github.com/shivam238) | 💬 [WhatsApp Community](https://chat.whatsapp.com/GDOjvKK7nxGFvQ7NSrQNiG) | 📷 [Instagram](https://www.instagram.com/theattendify/) | 💼 [LinkedIn](https://www.linkedin.com/in/shivam-kumar-mahto-046228361/)
 
-© 2026 ATTENDIFY. All rights reserved.
+© 2026 Shivam Kumar Mahto (ATTENDIFY). All rights reserved.
 
 
 ---
