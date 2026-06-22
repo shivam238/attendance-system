@@ -7,9 +7,7 @@ function applyTheme() {
     }
     const btn = document.getElementById('theme-toggle-btn');
     if (btn) {
-        btn.innerHTML = isDark 
-            ? '<span class="toggle-icon">☀️</span> Light Mode' 
-            : '<span class="toggle-icon">🌙</span> Dark Mode';
+        btn.innerHTML = isDark ? '☀️' : '🌙';
     }
 }
 
@@ -18,9 +16,7 @@ function toggleDarkMode() {
     localStorage.setItem('darkMode', isDark);
     const btn = document.getElementById('theme-toggle-btn');
     if (btn) {
-        btn.innerHTML = isDark 
-            ? '<span class="toggle-icon">☀️</span> Light Mode' 
-            : '<span class="toggle-icon">🌙</span> Dark Mode';
+        btn.innerHTML = isDark ? '☀️' : '🌙';
     }
 }
 

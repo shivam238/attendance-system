@@ -91,24 +91,24 @@ body {
 }
 
 #theme-toggle-btn {
-    padding: 9px 18px;
-    border-radius: 20px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
     border: 1px solid var(--border);
     background: var(--card-bg);
     color: var(--text);
     cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    transition: all 0.2s ease;
+    font-size: 18px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
 }
 
 #theme-toggle-btn:hover {
     border-color: var(--primary-light);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
-    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+    transform: translateY(-1px) scale(1.06);
 }
 
 /* Typography styles */
