@@ -35,7 +35,7 @@ echo -e "${GREEN}✔ Git credential helper is set to store credentials.${NC}"
 
 # 3. Update Application Details & Regenerate Chatbot Knowledge Base
 echo -e "\n${BLUE}[2/9] Propagating application details & regenerating Chatbot Knowledge Base...${NC}"
-node update-details.js
+node scripts/update-details.js
 echo -e "${GREEN}✔ Details propagated and Chatbot Knowledge Base regenerated successfully.${NC}"
 
 # 4. Regenerate PDF Manual
@@ -45,12 +45,12 @@ echo -e "${GREEN}✔ PDF User Manual regenerated successfully.${NC}"
 
 # 5. Sync assets and build Android APK
 echo -e "\n${BLUE}[4/9] Syncing web assets and compiling Android APK...${NC}"
-bash build-app.sh
+bash scripts/build-app.sh
 echo -e "${GREEN}✔ Android APK built successfully.${NC}"
 
 # 6. Upload APK to GitHub Releases
 echo -e "\n${BLUE}[5/9] Uploading new APK to latest GitHub Release...${NC}"
-python3 upload-apk.py
+python3 scripts/upload-apk.py
 echo -e "${GREEN}✔ APK uploaded to GitHub Releases successfully.${NC}"
 
 # 7. Check and install on connected ADB device

@@ -2,20 +2,20 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-// Paths
-const configPath = path.join(__dirname, 'attendify-config.json');
-const statePath = path.join(__dirname, 'attendify-config-state.json');
+// Paths (relative to scripts/ directory)
+const configPath = path.join(__dirname, '..', 'attendify-config.json');
+const statePath = path.join(__dirname, '..', 'attendify-config-state.json');
 
 // Files to update
 const targetFiles = [
-    path.join(__dirname, 'README.md'),
-    path.join(__dirname, 'public', 'manual.html'),
-    path.join(__dirname, 'public', 'about.html'),
-    path.join(__dirname, 'public', 'contact.html'),
-    path.join(__dirname, 'public', 'privacy-policy.html'),
-    path.join(__dirname, 'public', 'terms.html'),
-    path.join(__dirname, 'public', 'index.html'),
-    path.join(__dirname, 'update-kb.js')
+    path.join(__dirname, '..', 'README.md'),
+    path.join(__dirname, '..', 'public', 'manual.html'),
+    path.join(__dirname, '..', 'public', 'about.html'),
+    path.join(__dirname, '..', 'public', 'contact.html'),
+    path.join(__dirname, '..', 'public', 'privacy-policy.html'),
+    path.join(__dirname, '..', 'public', 'terms.html'),
+    path.join(__dirname, '..', 'public', 'index.html'),
+    path.join(__dirname, 'update-kb.js') // in the same scripts directory
 ];
 
 // Default fallback values representing the current state of the repo
@@ -107,7 +107,8 @@ if (!hasChanges) {
 // 6. Always run update-kb.js to ensure the chatbot's knowledgeBase.js is synchronized
 console.log("🤖 Running update-kb.js to synchronize support chatbot knowledge base...");
 try {
-    const output = execSync('node update-kb.js', { encoding: 'utf8' });
+    const kbScriptPath = path.join(__dirname, 'update-kb.js');
+    const output = execSync(`node "${kbScriptPath}"`, { encoding: 'utf8' });
     console.log(output.trim());
 } catch (error) {
     console.error("❌ Failed to run update-kb.js:", error.message);

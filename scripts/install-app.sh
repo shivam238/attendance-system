@@ -17,7 +17,7 @@ echo -e "${BLUE}===================================================${NC}"
 APK_PATH="./ATTENDIFY.apk"
 if [ ! -f "$APK_PATH" ]; then
     echo -e "${RED}❌ Error: $APK_PATH not found!${NC}"
-    echo -e "${YELLOW}Please build the APK first by running: ${BLUE}bash build-app.sh${NC}"
+    echo -e "${YELLOW}Please build the APK first by running: ${BLUE}bash scripts/build-app.sh${NC}"
     exit 1
 fi
 

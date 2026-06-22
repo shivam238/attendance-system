@@ -1,9 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
-// Paths
-const manualPath = path.join(__dirname, 'public', 'manual.html');
-const kbPath = path.join(__dirname, 'attendify-support-chatbot', 'src', 'knowledgeBase.js');
+// Paths (relative to scripts/ directory)
+const manualPath = path.join(__dirname, '..', 'public', 'manual.html');
+const kbPath = path.join(__dirname, '..', 'attendify-support-chatbot', 'src', 'knowledgeBase.js');
 
 // 1. Static/Essential Creator and System Information (Highest Priority)
 let kbContent = `
