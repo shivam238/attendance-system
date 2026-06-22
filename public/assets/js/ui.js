@@ -41,9 +41,13 @@ function showScreen(screenId) {
                     scheduleLandingReveal();
                     window.addEventListener('scroll', handleLandingScroll, { passive: true });
                 }
+            } else {
+                landingPage.classList.remove('login-locked');
             }
         }
         window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
     }
 }
 
