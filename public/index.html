@@ -3593,7 +3593,8 @@ Convert the student list from the attached file/image, or the text enclosed in t
                 }
 
                 // Check Google binding first
-                db.ref('class_student_links/' + username + '/' + student.rollNo).once('value', (linkSnapshot) => {
+                const safeRollPath = student.rollNo.replace(/[\.\#\$\[\]]/g, '_');
+                db.ref('class_student_links/' + username + '/' + safeRollPath).once('value', (linkSnapshot) => {
                     if (linkSnapshot.exists() && linkSnapshot.val() !== user.uid) {
                         // Flag this as suspicious attempt
                         const alertData = {
@@ -3613,7 +3614,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
 
                     // Perform database linking (First-scan Binding)
                     const saveLinkAndProceed = () => {
-                        db.ref('class_student_links/' + username + '/' + student.rollNo).set(user.uid);
+                        db.ref('class_student_links/' + username + '/' + safeRollPath).set(user.uid);
                         db.ref('google_user_links/' + user.uid + '/' + username).set(student.rollNo);
 
                         const key = code;
