@@ -1199,10 +1199,10 @@ STRICT FORMAT TO OUTPUT (DO NOT DEVIATE):
 NAME - ROLLNO
 
 RULES:
-1. Output ONLY the formatted student list. Do NOT wrap the output in markdown code blocks (e.g., do not use \`\`\`text or \`\`\`csv).
+1. Output ONLY the formatted student list. Do NOT wrap the output in markdown code blocks (e.g., do not use \\`\\`\\`text or \\`\\`\\`csv).
 2. Write exactly one student per line.
 3. Every single line in your response must strictly match this regular expression pattern:
-   ^[A-Z .'-]+ - [A-Z0-9/().\s-]+$
+   ^[A-Z .'-]+ - [A-Z0-9/().\\s-]+$
 4. NAME must come FIRST, followed by a single space, a hyphen, another single space, and then the ROLLNO (e.g., "NAME - ROLLNO").
 5. Both NAME and ROLLNO must be in UPPERCASE.
 6. Do NOT add numbering, bullets, commas, headings, intro text, outro text, explanations, or blank lines.
@@ -1210,10 +1210,12 @@ RULES:
 8. The output must contain EVERY student from the input list. Do NOT truncate, skip, summarize, or use ellipses ("...") under any circumstances, even if the list is extremely long.
 9. If extracting from an image or PDF, perform high-accuracy OCR to capture names and roll numbers correctly, ignoring layout tables or grids.
 10. Double-check that the total number of output lines matches the total number of students in the input source exactly.
+11. If a student record does not contain an actual roll number, leave that record unchanged and do not invent, generate, or substitute serial numbers, row numbers, or IDs. Only extract values explicitly present as roll numbers in the source. Do not treat S.NO, SERIAL NO, ROW NUMBER, INDEX, or POSITION as a roll number unless the source explicitly identifies it as the student's roll number.
 
 Example output:
 RAHUL SHARMA - 25/B09/001
 PRIYA SINGH - 25/B09/002
+AMAN KUMAR - 3
 
 Convert the student list from the attached file/image, or the text enclosed in the <student_list> tags below:
 
@@ -1222,8 +1224,14 @@ Convert the student list from the attached file/image, or the text enclosed in t
 </student_list>`;
 
             navigator.clipboard.writeText(prompt).then(() => {
-                alert('✅ Prompt copied! Now:\n1. Open ChatGPT\n2. Paste this prompt\n3. Add your student list\n4. Copy the result\n5. Paste in the Students field above');
-            }).catch(() => {
+                const chatgptUrl = 'https://chatgpt.com/?q=' + encodeURIComponent(prompt);
+                if (window.Capacitor) {
+                    window.open(chatgptUrl, '_system');
+                } else {
+                    window.open(chatgptUrl, '_blank');
+                }
+            }).catch((err) => {
+                console.error("Clipboard write error:", err);
                 alert('❌ Failed to copy. Please try again.');
             });
         }
