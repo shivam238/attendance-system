@@ -52,6 +52,13 @@
           ".validate": "newData.isString()"
         }
       }
+    },
+    "feedbacks": {
+      ".read": "auth != null",
+      "$feedback_id": {
+        ".write": "true",
+        ".validate": "newData.hasChildren(['rating', 'category', 'text', 'timestamp']) && newData.child('rating').isNumber() && newData.child('category').isString() && newData.child('text').isString() && newData.child('timestamp').isNumber()"
+      }
     }
   }
 }

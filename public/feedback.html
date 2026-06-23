@@ -8,6 +8,162 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="stylesheet" href="assets/css/subpages.css">
     <script src="assets/js/theme.js" defer></script>
+    <style>
+        /* Custom Native Feedback Styles */
+        .feedback-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 35px 30px;
+            max-width: 550px;
+            margin: 30px auto;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        
+        .rating-section {
+            margin-bottom: 28px;
+            text-align: center;
+        }
+        
+        .rating-label {
+            display: block;
+            font-size: 15.5px;
+            font-weight: 700;
+            margin-bottom: 14px;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: center;
+            gap: 12px;
+            font-size: 38px;
+            line-height: 1;
+        }
+        
+        .star {
+            color: var(--border);
+            cursor: pointer;
+            transition: color 0.2s ease, transform 0.2s ease;
+            user-select: none;
+        }
+        
+        .star:hover,
+        .star:hover ~ .star,
+        .star.active,
+        .star.active ~ .star {
+            color: #ffb703;
+            transform: scale(1.18);
+            text-shadow: 0 0 15px rgba(255, 183, 3, 0.4);
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            text-align: left;
+        }
+        
+        .form-group label {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            font-size: 14.5px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        body.dark-mode .form-group select,
+        body.dark-mode .form-group textarea {
+            background: rgba(10, 15, 30, 0.4);
+        }
+        
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        
+        .form-group select option {
+            background: var(--card-bg);
+            color: var(--text);
+        }
+        
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            border-radius: 14px;
+            border: none;
+            background: linear-gradient(135deg, var(--primary) 0%, #a855f7 100%);
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+        
+        .btn-submit:hover {
+            opacity: 0.95;
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.35);
+        }
+        
+        .btn-submit:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        .success-icon {
+            font-size: 54px;
+            margin-bottom: 20px;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+        
+        #feedback-success-state h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--primary) 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        #feedback-success-state p {
+            color: var(--text-muted);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -34,8 +190,45 @@
         <h1>Feedback & Analytics</h1>
         <p class="subtitle">Please take a moment to help us improve ATTENDIFY by sharing your experience.</p>
 
-        <div class="iframe-container">
-            <iframe src="https://docs.google.com/forms/d/e/1FAIpQLScr0zNjwIz2bqR-2Sxm1V5YPIaEUtL-iE8bOCYQjp-EqE5Wqw/viewform?embedded=true">Loading…</iframe>
+        <!-- Native Glassmorphic Feedback Form -->
+        <div class="feedback-card">
+            <form id="native-feedback-form" onsubmit="submitFeedback(event)">
+                <div class="rating-section">
+                    <span class="rating-label">How would you rate ATTENDIFY?</span>
+                    <div class="star-rating">
+                        <span class="star" data-value="5">★</span>
+                        <span class="star" data-value="4">★</span>
+                        <span class="star" data-value="3">★</span>
+                        <span class="star" data-value="2">★</span>
+                        <span class="star" data-value="1">★</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="feedback-category">Feedback Category</label>
+                    <select id="feedback-category" required>
+                        <option value="" disabled selected>Select a category</option>
+                        <option value="Bug Report">🐛 Bug Report</option>
+                        <option value="Suggestion">💡 Suggestion / Feature Request</option>
+                        <option value="Praise">❤️ Praise / Compliment</option>
+                        <option value="Other">❓ Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="feedback-text">Your Comments</label>
+                    <textarea id="feedback-text" rows="5" placeholder="Tell us what you think, what went well, or what we can improve..." required></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">Submit Feedback</button>
+            </form>
+
+            <div id="feedback-success-state" style="display: none; text-align: center; padding: 20px 10px;">
+                <div class="success-icon">🎉</div>
+                <h2>Thank You!</h2>
+                <p>Your feedback has been successfully submitted. We appreciate your support in making ATTENDIFY better.</p>
+                <button onclick="resetFeedbackForm()" class="btn-submit" style="margin-top: 24px; max-width: 220px; margin-left: auto; margin-right: auto;">Send Another Response</button>
+            </div>
         </div>
 
         <footer>
@@ -51,5 +244,90 @@
             <p class="footer-copyright">&copy; 2026 ATTENDIFY. All rights reserved. Developed by Shivam Kumar Mahto.</p>
         </footer>
     </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/ui.js?v=10" defer></script>
+
+    <script>
+        // Star Rating Interactions
+        let selectedRating = 0;
+        const stars = document.querySelectorAll('.star');
+        stars.forEach(star => {
+            star.addEventListener('click', () => {
+                selectedRating = parseInt(star.getAttribute('data-value'));
+                stars.forEach(s => {
+                    if (parseInt(s.getAttribute('data-value')) <= selectedRating) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+            });
+        });
+
+        // Form Submit
+        function submitFeedback(event) {
+            event.preventDefault();
+            if (selectedRating === 0) {
+                if (window.showToast) {
+                    window.showToast("⚠️ Please select a star rating first!");
+                } else {
+                    alert("Please select a star rating first!");
+                }
+                return;
+            }
+
+            const category = document.getElementById('feedback-category').value;
+            const text = document.getElementById('feedback-text').value;
+            const submitBtn = document.querySelector('.btn-submit');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
+            const feedbackData = {
+                rating: selectedRating,
+                category: category,
+                text: text,
+                timestamp: Date.now(),
+                userAgent: navigator.userAgent
+            };
+
+            firebase.database().ref('feedbacks').push(feedbackData)
+                .then(() => {
+                    document.getElementById('native-feedback-form').style.display = 'none';
+                    document.getElementById('feedback-success-state').style.display = 'block';
+                    if (window.showToast) {
+                        window.showToast("✅ Feedback submitted successfully!");
+                    }
+                })
+                .catch(error => {
+                    console.error('Error submitting feedback:', error);
+                    if (window.showToast) {
+                        window.showToast("❌ Submission failed. Please try again.");
+                    } else {
+                        alert("Submission failed. Please try again.");
+                    }
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Feedback';
+                });
+        }
+
+        // Form Reset
+        function resetFeedbackForm() {
+            selectedRating = 0;
+            stars.forEach(s => s.classList.remove('active'));
+            document.getElementById('feedback-category').value = '';
+            document.getElementById('feedback-text').value = '';
+            document.getElementById('native-feedback-form').style.display = 'block';
+            document.getElementById('feedback-success-state').style.display = 'none';
+        }
+    </script>
 </body>
 </html>

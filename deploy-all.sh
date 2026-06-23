@@ -63,10 +63,10 @@ else
     echo -e "${YELLOW}⚠ No Android device detected via ADB. Skipping local installation.${NC}"
 fi
 
-# 8. Deploy to Firebase Hosting
-echo -e "\n${BLUE}[7/9] Deploying frontend assets to Firebase Hosting...${NC}"
-firebase deploy --only hosting
-echo -e "${GREEN}✔ Firebase Hosting deployment completed.${NC}"
+# 8. Deploy to Firebase Hosting and Database Rules
+echo -e "\n${BLUE}[7/9] Deploying to Firebase (Hosting & Database Rules)...${NC}"
+firebase deploy --only hosting,database
+echo -e "${GREEN}✔ Firebase deployment completed.${NC}"
 
 # 9. Deploy Cloudflare Worker
 echo -e "\n${BLUE}[8/9] Deploying Cloudflare Worker for AI Chatbot...${NC}"
