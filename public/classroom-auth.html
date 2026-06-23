@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ATTENDIFY — Google Classroom Connect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/webp" href="logo.webp">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --success-color: #10b981;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 440px;
+            padding: 20px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .logo {
+            width: 72px;
+            height: 72px;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-text {
+            background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 0 0 24px 0;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            height: 48px;
+            border-radius: 10px;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-google {
+            background-color: #ffffff;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-google:hover {
+            background-color: #f8fafc;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-success:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+        }
+
+        .google-icon {
+            width: 18px;
+            height: 18px;
+        }
+
+        .token-container {
+            display: none;
+            margin-top: 24px;
+            text-align: left;
+        }
+
+        .instruction-box {
+            background: rgba(99, 102, 241, 0.08);
+            border: 1.5px solid rgba(99, 102, 241, 0.15);
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .token-area {
+            width: 100%;
+            height: 80px;
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            color: var(--text-color);
+            font-family: monospace;
+            font-size: 11px;
+            resize: none;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+            word-break: break-all;
+        }
+
+        #message {
+            margin-top: 16px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .error {
+            color: #ef4444;
+        }
+
+        .info {
+            color: #6366f1;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .spinner {
+            margin: 20px auto;
+            width: 44px;
+            height: 44px;
+            border: 4px solid rgba(99, 102, 241, 0.1);
+            border-top-color: #818cf8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+    </style>
+    <!-- Firebase CDN SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="assets/js/firebase-config.js?v=5"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <img src="logo.webp" alt="ATTENDIFY Logo" class="logo" onerror="this.src='logo-opt.png'">
+            <h1>🎓 <span class="brand-text">Google Classroom</span></h1>
+            <p id="sub-title">Connect Classroom to your mobile app</p>
+
+            <!-- Default connecting state -->
+            <div id="connecting-state" style="text-align: center;">
+                <div class="spinner"></div>
+                <div id="connecting-message" style="font-size: 14px; color: var(--text-color); font-weight: 500; margin-bottom: 20px;">
+                    Connecting to Google...
+                </div>
+            </div>
+
+            <!-- Manual Sign-in Trigger -->
+            <div id="login-section" style="display: none; margin-top: 20px;">
+                <button class="btn btn-google" onclick="connectClassroom()">
+                    <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" class="google-icon">
+                    Authorize Google Classroom
+                </button>
+            </div>
+
+            <!-- Successful login redirect screen -->
+            <div id="token-section" class="token-container" style="text-align: center; padding: 20px 0;">
+                <div class="spinner" style="margin-bottom: 20px;"></div>
+                <h3 style="margin-bottom: 8px; font-weight: 700; color: var(--text-color);">🎉 Connection Authorized!</h3>
+                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px; line-height: 1.5;">
+                    Redirecting you back to the <strong>ATTENDIFY</strong> app...
+                </p>
+                <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 16px;">
+                    <a href="javascript:void(0)" onclick="showManualTokenFallback()" style="color: var(--text-muted); font-size: 12px; text-decoration: underline; font-weight: 500;">
+                        Not redirecting? Click here to show manual code
+                    </a>
+                </div>
+                
+                <!-- Hidden manual fallback container -->
+                <div id="manual-fallback-container" style="display: none; margin-top: 20px; text-align: left;">
+                    <div class="instruction-box" style="margin-bottom: 12px;">
+                        Copy the connection code below, return to the <strong>ATTENDIFY</strong> app, and paste it to connect.
+                    </div>
+                    <textarea id="token-display" class="token-area" readonly></textarea>
+                    <button id="copy-btn" class="btn btn-primary" onclick="copyToken()" style="width: 100%;">
+                        📋 Copy Connection Code
+                    </button>
+                </div>
+            </div>
+
+            <div id="message"></div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const role = urlParams.get('role') || 'teacher'; // 'teacher' or 'student'
+        
+        document.getElementById('sub-title').textContent = role === 'teacher' 
+            ? "Connect Google Classroom to import student rosters" 
+            : "Connect Google Classroom to view coursework and assignments";
+
+        let redirectInitiated = false;
+        function connectClassroom() {
+            if (redirectInitiated) return;
+            redirectInitiated = true;
+
+            document.getElementById('connecting-state').style.display = 'block';
+            document.getElementById('login-section').style.display = 'none';
+
+            const provider = new firebase.auth.GoogleAuthProvider();
+            
+            // Set Scopes depending on role
+            if (role === 'teacher') {
+                provider.addScope('https://www.googleapis.com/auth/classroom.courses.readonly');
+                provider.addScope('https://www.googleapis.com/auth/classroom.rosters.readonly');
+            } else {
+                provider.addScope('https://www.googleapis.com/auth/classroom.courses.readonly');
+                provider.addScope('https://www.googleapis.com/auth/classroom.coursework.me.readonly');
+                provider.addScope('https://www.googleapis.com/auth/classroom.announcements.readonly');
+            }
+
+            provider.setCustomParameters({
+                prompt: 'select_account'
+            });
+
+            // Enforce signing out first to show Account Chooser
+            auth.signOut().then(() => {
+                auth.signInWithRedirect(provider);
+            }).catch(err => {
+                console.error("Sign out error, continuing redirect:", err);
+                auth.signInWithRedirect(provider);
+            });
+        }
+
+        // On page load, check if redirected back from Google
+        window.addEventListener('DOMContentLoaded', () => {
+            const msgDiv = document.getElementById('message');
+
+            auth.getRedirectResult().then((result) => {
+                if (window.location.search || window.location.hash) {
+                    // Retain role in path when replacing state so refresh doesn't break
+                    window.history.replaceState({}, document.title, window.location.pathname + '?role=' + role);
+                }
+
+                if (result && result.credential) {
+                    const accessToken = result.credential.accessToken;
+                    if (accessToken) {
+                        handleSuccessfulConnection(accessToken);
+                    } else {
+                        document.getElementById('connecting-state').style.display = 'none';
+                        document.getElementById('login-section').style.display = 'block';
+                        msgDiv.innerHTML = '<span class="error">❌ Could not retrieve Google Access Token. Please try again.</span>';
+                    }
+                } else {
+                    // Fresh load, start auth
+                    connectClassroom();
+                }
+            }).catch((error) => {
+                console.error('Redirect auth error:', error);
+                if (window.location.search || window.location.hash) {
+                    window.history.replaceState({}, document.title, window.location.pathname + '?role=' + role);
+                }
+                document.getElementById('connecting-state').style.display = 'none';
+                document.getElementById('login-section').style.display = 'block';
+                msgDiv.innerHTML = '<span class="error">❌ Authentication failed: ' + error.message + '</span>';
+            });
+        });
+
+        function handleSuccessfulConnection(accessToken) {
+            const msgDiv = document.getElementById('message');
+            document.getElementById('connecting-state').style.display = 'none';
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('token-section').style.display = 'block';
+            document.getElementById('token-display').value = accessToken;
+            msgDiv.innerHTML = '';
+
+            // Attempt to deep link redirect back to app
+            setTimeout(() => {
+                window.location.href = `attendify://classroom?token=${encodeURIComponent(accessToken)}&role=${encodeURIComponent(role)}`;
+            }, 500);
+        }
+
+        function showManualTokenFallback() {
+            document.getElementById('manual-fallback-container').style.display = 'block';
+        }
+
+        function copyToken() {
+            const tokenDisplay = document.getElementById('token-display');
+            tokenDisplay.select();
+            tokenDisplay.setSelectionRange(0, 99999);
+
+            navigator.clipboard.writeText(tokenDisplay.value).then(() => {
+                const copyBtn = document.getElementById('copy-btn');
+                copyBtn.textContent = "✅ Copied to Clipboard!";
+                copyBtn.className = "btn btn-success";
+                setTimeout(() => {
+                    copyBtn.textContent = "📋 Copy Connection Code";
+                    copyBtn.className = "btn btn-primary";
+                }, 2000);
+            }).catch(err => {
+                console.error("Failed to copy:", err);
+            });
+        }
+    </script>
+</body>
+</html>

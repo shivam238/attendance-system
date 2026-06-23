@@ -511,12 +511,29 @@ if (window.Capacitor) {
     document.addEventListener('DOMContentLoaded', () => {
         const checkDeepLink = (url) => {
             try {
-                // Expecting: attendify://login?token=<token>
                 if (url && url.includes('attendify://')) {
                     const urlObj = new URL(url.replace('attendify://', 'https://dummy-domain/'));
                     const token = urlObj.searchParams.get('token');
-                    if (token) {
-                        loginWithToken(token);
+                    const role = urlObj.searchParams.get('role');
+
+                    if (url.includes('classroom') || role) {
+                        if (token && role === 'teacher') {
+                            if (typeof saveClassroomToken === 'function') {
+                                saveClassroomToken(token);
+                                const msgDiv = document.getElementById('classroom-message');
+                                if (msgDiv) msgDiv.innerHTML = '<div class="message success">✅ Authorized from browser! Loading courses...</div>';
+                                const authSec = document.getElementById('classroom-auth-section');
+                                if (authSec) authSec.style.display = 'none';
+                                if (typeof loadClassroomCourses === 'function') {
+                                    loadClassroomCourses();
+                                }
+                                if (typeof showToast === 'function') showToast("Classroom connected!");
+                            }
+                        }
+                    } else {
+                        if (token) {
+                            loginWithToken(token);
+                        }
                     }
                 }
             } catch (e) {
