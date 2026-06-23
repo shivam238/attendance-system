@@ -1348,28 +1348,42 @@ Convert the student list from the attached file/image, or the text enclosed in t
 
 
 
+        const pageLoadTime = Date.now();
+        const minLoadingDuration = 800; // minimum 800ms of loading splash screen
+
+        function hideLoadingScreen() {
+            const loadingScreen = document.getElementById('loading-screen');
+            if (!loadingScreen || loadingScreen.classList.contains('fade-out')) return;
+
+            const elapsed = Date.now() - pageLoadTime;
+            const remaining = minLoadingDuration - elapsed;
+
+            if (remaining > 0) {
+                setTimeout(() => {
+                    loadingScreen.classList.add('fade-out');
+                    clearTimeout(loadingSafetyTimeout);
+                }, remaining);
+            } else {
+                loadingScreen.classList.add('fade-out');
+                clearTimeout(loadingSafetyTimeout);
+            }
+        }
+
         // Safety timeout for loading screen
         const loadingSafetyTimeout = setTimeout(() => {
-            const ls = document.getElementById('loading-screen');
-            if (ls && !ls.classList.contains('fade-out')) {
-                console.warn('Loading taking too long, forcing fade-out...');
-                ls.classList.add('fade-out');
-            }
+            console.warn('Loading taking too long, forcing fade-out...');
+            hideLoadingScreen();
         }, 5000);
 
         // Auth state observer with Smart Flicker Prevention
         let isFirstAuthCheck = true;
         auth.onAuthStateChanged((user) => {
-            const loadingScreen = document.getElementById('loading-screen');
             const urlParams = new URLSearchParams(window.location.search);
             const isStudentFlow = urlParams.has('code');
 
             if (isStudentFlow) {
                 updateStudentAuthUI(user);
-                if (loadingScreen) {
-                    loadingScreen.classList.add('fade-out');
-                    clearTimeout(loadingSafetyTimeout);
-                }
+                hideLoadingScreen();
                 return;
             }
 
@@ -1383,8 +1397,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
                         currentUser = { uid: user.uid, email: user.email, displayName: user.displayName, ...userData };
                         showScreen('app-screen');
                         initializeApp();
-                        loadingScreen.classList.add('fade-out');
-                        clearTimeout(loadingSafetyTimeout);
+                        hideLoadingScreen();
                         console.log("🚀 App loaded from cache (Instant-On)");
                     } catch (e) {
                         console.error("Cache error:", e);
@@ -1401,16 +1414,14 @@ Convert the student list from the attached file/image, or the text enclosed in t
                         if (!auth.currentUser) {
                             currentUser = null;
                             showScreen('login-screen');
-                            loadingScreen.classList.add('fade-out');
-                            clearTimeout(loadingSafetyTimeout);
+                            hideLoadingScreen();
                             isFirstAuthCheck = false;
                         }
                     }, 600); // 600ms is usually enough for session recovery
                 } else {
                     currentUser = null;
                     showScreen('login-screen');
-                    loadingScreen.classList.add('fade-out');
-                    clearTimeout(loadingSafetyTimeout);
+                    hideLoadingScreen();
                 }
             }
         });
@@ -1455,8 +1466,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
                                 `Passout ${20}${currentUser.year} - ${currentUser.college} ${currentUser.branch} Section ${currentUser.section}`;
                         }
 
-                        document.getElementById('loading-screen').classList.add('fade-out');
-                        clearTimeout(loadingSafetyTimeout);
+                        hideLoadingScreen();
                     } else {
                         showScreen('setup-screen');
                         if (user.phoneNumber) {
@@ -1467,8 +1477,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
                                 phoneInput.disabled = true;
                             }
                         }
-                        document.getElementById('loading-screen').classList.add('fade-out');
-                        clearTimeout(loadingSafetyTimeout);
+                        hideLoadingScreen();
                     }
                 } else {
                     showScreen('setup-screen');
@@ -1480,13 +1489,11 @@ Convert the student list from the attached file/image, or the text enclosed in t
                             phoneInput.disabled = true;
                         }
                     }
-                    document.getElementById('loading-screen').classList.add('fade-out');
-                    clearTimeout(loadingSafetyTimeout);
+                    hideLoadingScreen();
                 }
             }, (error) => {
                 console.error("Database error:", error);
-                document.getElementById('loading-screen').classList.add('fade-out');
-                clearTimeout(loadingSafetyTimeout);
+                hideLoadingScreen();
             });
         }
 
