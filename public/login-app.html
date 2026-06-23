@@ -243,62 +243,82 @@
     </div>
 
     <script>
-        let redirectInitiated = false;
-        function signInWithGoogle() {
-            if (redirectInitiated) return;
-            redirectInitiated = true;
+        let signingIn = false;
 
+        function signInWithGoogle() {
+            if (signingIn) return;
+            signingIn = true;
+
+            const msgDiv = document.getElementById('message');
             document.getElementById('connecting-state').style.display = 'block';
             document.getElementById('login-section').style.display = 'none';
+            msgDiv.innerHTML = '';
 
             const provider = new firebase.auth.GoogleAuthProvider();
-            provider.setCustomParameters({
-                prompt: 'select_account'
-            });
+            provider.setCustomParameters({ prompt: 'select_account' });
 
-            // Enforce signing out of browser session first to always force Google Account Chooser
-            auth.signOut().then(() => {
-                auth.signInWithRedirect(provider);
-            }).catch(err => {
-                console.error("Sign out error, continuing redirect:", err);
-                auth.signInWithRedirect(provider);
+            // signInWithPopup works reliably in system browser (Chrome) — no redirect loop
+            auth.signInWithPopup(provider).then((result) => {
+                const idToken = result.credential ? result.credential.idToken : null;
+                if (idToken) {
+                    handleSuccessfulLogin(idToken);
+                } else {
+                    // Fallback: get idToken from user directly
+                    return result.user.getIdToken().then((token) => {
+                        handleSuccessfulLogin(token);
+                    });
+                }
+            }).catch((error) => {
+                console.error('Sign-in error:', error);
+                signingIn = false;
+                document.getElementById('connecting-state').style.display = 'none';
+                document.getElementById('login-section').style.display = 'block';
+                msgDiv.innerHTML = '<span class="error">❌ Sign-in failed: ' + error.message + '</span>';
             });
         }
 
-        // On page load, check if redirected back from Google
+        // Show the sign-in button immediately on load — no auto-redirect
         window.addEventListener('DOMContentLoaded', () => {
-            const msgDiv = document.getElementById('message');
-
-            // Show sign-in button immediately (don't auto-redirect — causes blank page loop in Android browser)
             document.getElementById('connecting-state').style.display = 'none';
             document.getElementById('login-section').style.display = 'block';
-
-            // Check if we're returning from a Google redirect
-            auth.getRedirectResult().then((result) => {
-                // Clear URL params to prevent stale state on refresh
-                if (window.location.search || window.location.hash) {
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                }
-
-                if (result && result.credential) {
-                    const idToken = result.credential.idToken;
-                    if (idToken) {
-                        // Coming back from Google redirect — process login
-                        document.getElementById('login-section').style.display = 'none';
-                        handleSuccessfulLogin(idToken);
-                    } else {
-                        msgDiv.innerHTML = '<span class="error">❌ Could not retrieve Google ID Token. Please try again.</span>';
-                    }
-                }
-                // else: fresh load — button is already shown, user clicks to start
-            }).catch((error) => {
-                console.error('Redirect sign-in error:', error);
-                if (window.location.search || window.location.hash) {
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                }
-                msgDiv.innerHTML = '<span class="error">❌ Sign-in failed: ' + error.message + '</span>';
-            });
         });
+
+        function handleSuccessfulLogin(idToken) {
+            const msgDiv = document.getElementById('message');
+            document.getElementById('connecting-state').style.display = 'none';
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('token-section').style.display = 'block';
+            document.getElementById('token-display').value = idToken;
+            msgDiv.innerHTML = '';
+
+            // Attempt to deep link redirect back to app
+            setTimeout(() => {
+                window.location.href = "attendify://login?token=" + encodeURIComponent(idToken);
+            }, 500);
+        }
+
+        function showManualTokenFallback() {
+            document.getElementById('manual-fallback-container').style.display = 'block';
+        }
+
+        function copyToken() {
+            const tokenDisplay = document.getElementById('token-display');
+            tokenDisplay.select();
+            tokenDisplay.setSelectionRange(0, 99999);
+
+            navigator.clipboard.writeText(tokenDisplay.value).then(() => {
+                const copyBtn = document.getElementById('copy-btn');
+                copyBtn.textContent = "✅ Copied to Clipboard!";
+                copyBtn.className = "btn btn-success";
+                setTimeout(() => {
+                    copyBtn.textContent = "📋 Copy Login Code";
+                    copyBtn.className = "btn btn-primary";
+                }, 2000);
+            }).catch(err => {
+                console.error("Failed to copy:", err);
+            });
+        }
+    </script>
 
         function handleSuccessfulLogin(idToken) {
             const msgDiv = document.getElementById('message');

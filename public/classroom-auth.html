@@ -250,16 +250,18 @@
             ? "Connect Google Classroom to import student rosters" 
             : "Connect Google Classroom to view coursework and assignments";
 
-        let redirectInitiated = false;
+        let connectingClassroom = false;
         function connectClassroom() {
-            if (redirectInitiated) return;
-            redirectInitiated = true;
+            if (connectingClassroom) return;
+            connectingClassroom = true;
 
+            const msgDiv = document.getElementById('message');
             document.getElementById('connecting-state').style.display = 'block';
             document.getElementById('login-section').style.display = 'none';
+            msgDiv.innerHTML = '';
 
             const provider = new firebase.auth.GoogleAuthProvider();
-            
+
             // Set Scopes depending on role
             if (role === 'teacher') {
                 provider.addScope('https://www.googleapis.com/auth/classroom.courses.readonly');
@@ -270,48 +272,32 @@
                 provider.addScope('https://www.googleapis.com/auth/classroom.announcements.readonly');
             }
 
-            provider.setCustomParameters({
-                prompt: 'select_account'
-            });
+            provider.setCustomParameters({ prompt: 'select_account' });
 
-            // Enforce signing out first to show Account Chooser
-            auth.signOut().then(() => {
-                auth.signInWithRedirect(provider);
-            }).catch(err => {
-                console.error("Sign out error, continuing redirect:", err);
-                auth.signInWithRedirect(provider);
+            // signInWithPopup — no redirect loop, works reliably in system browser
+            auth.signInWithPopup(provider).then((result) => {
+                const accessToken = result.credential ? result.credential.accessToken : null;
+                if (accessToken) {
+                    handleSuccessfulConnection(accessToken);
+                } else {
+                    connectingClassroom = false;
+                    document.getElementById('connecting-state').style.display = 'none';
+                    document.getElementById('login-section').style.display = 'block';
+                    msgDiv.innerHTML = '<span class="error">❌ Could not retrieve Google Access Token. Please try again.</span>';
+                }
+            }).catch((error) => {
+                console.error('Classroom auth error:', error);
+                connectingClassroom = false;
+                document.getElementById('connecting-state').style.display = 'none';
+                document.getElementById('login-section').style.display = 'block';
+                msgDiv.innerHTML = '<span class="error">❌ Authentication failed: ' + error.message + '</span>';
             });
         }
 
-        // On page load, check if redirected back from Google
+        // Show button immediately on load — no auto-redirect
         window.addEventListener('DOMContentLoaded', () => {
-            const msgDiv = document.getElementById('message');
-
-            // Show button immediately — don't auto-redirect (causes blank page loop in Android browser)
             document.getElementById('connecting-state').style.display = 'none';
             document.getElementById('login-section').style.display = 'block';
-
-            // Check if we're returning from a Google redirect
-            auth.getRedirectResult().then((result) => {
-                // Retain role param when clearing URL state
-                window.history.replaceState({}, document.title, window.location.pathname + '?role=' + role);
-
-                if (result && result.credential) {
-                    const accessToken = result.credential.accessToken;
-                    if (accessToken) {
-                        // Coming back from Google redirect — process connection
-                        document.getElementById('login-section').style.display = 'none';
-                        handleSuccessfulConnection(accessToken);
-                    } else {
-                        msgDiv.innerHTML = '<span class="error">❌ Could not retrieve Google Access Token. Please try again.</span>';
-                    }
-                }
-                // else: fresh load — button is already shown, user clicks to start
-            }).catch((error) => {
-                console.error('Redirect auth error:', error);
-                window.history.replaceState({}, document.title, window.location.pathname + '?role=' + role);
-                msgDiv.innerHTML = '<span class="error">❌ Authentication failed: ' + error.message + '</span>';
-            });
         });
 
         function handleSuccessfulConnection(accessToken) {
