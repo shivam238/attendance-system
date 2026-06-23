@@ -1224,6 +1224,8 @@ Convert the student list from the attached file/image, or the text enclosed in t
 </student_list>`;
 
             navigator.clipboard.writeText(prompt).then(() => {
+                alert('✅ Prompt Copied! Now:\n1. Click OK to open ChatGPT.\n2. Paste this prompt.\n3. Add your student list (as text, image, or PDF).\n4. Copy the final formatted list.\n5. Paste it in the Students field above.');
+                
                 const chatgptUrl = 'https://chatgpt.com/?q=' + encodeURIComponent(prompt);
                 if (window.Capacitor) {
                     window.open(chatgptUrl, '_system');
