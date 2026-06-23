@@ -1224,14 +1224,14 @@ Convert the student list from the attached file/image, or the text enclosed in t
 </student_list>`;
 
             navigator.clipboard.writeText(prompt).then(() => {
-                alert('✅ Prompt Copied! Now:\n1. Click OK to open ChatGPT.\n2. Paste this prompt.\n3. Add your student list (as text, image, or PDF).\n4. Copy the final formatted list.\n5. Paste it in the Students field above.');
-                
                 const chatgptUrl = 'https://chatgpt.com/?q=' + encodeURIComponent(prompt);
                 if (window.Capacitor) {
                     window.open(chatgptUrl, '_system');
                 } else {
                     window.open(chatgptUrl, '_blank');
                 }
+                
+                alert('✅ Prompt Copied & Opening ChatGPT!\n\nNext steps:\n1. The prompt is already pre-filled in ChatGPT for you.\n2. Just add your student list (as text, image, or PDF) at the end of the prompt and submit.\n3. Copy the final formatted list from ChatGPT.\n4. Paste it in the Students field here.');
             }).catch((err) => {
                 console.error("Clipboard write error:", err);
                 alert('❌ Failed to copy. Please try again.');
