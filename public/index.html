@@ -1279,26 +1279,18 @@ Convert the student list from the attached file/image, or the text enclosed in t
 
             // Parse students
             const students = [];
-            const studentLines = studentsText.split('\n');
-            for (const line of studentLines) {
-                const trimmed = line.trim();
-                if (!trimmed) continue;
-
-                const parts = trimmed.split(' - ');
-                if (parts.length === 2) {
-                    const name = parts[0].trim().toUpperCase();
-                    const rollNo = parts[1].trim().toUpperCase();
-                    if (name && rollNo) {
-                        students.push({ name, rollNo });
-                    }
-                } else {
-                    msgDiv.innerHTML = '<div class="message error">❌ Invalid student format. Use: NAME - ROLLNO</div>';
-                    return;
+            const regex = /([A-Za-z .'\-]+)\s*-\s*(.+?)(?=\s*,?\s*[A-Za-z .'\-]+\s*-\s*|$)/g;
+            let match;
+            while ((match = regex.exec(studentsText)) !== null) {
+                const name = match[1].trim().toUpperCase();
+                const rollNo = match[2].trim().toUpperCase();
+                if (name && rollNo) {
+                    students.push({ name, rollNo });
                 }
             }
 
             if (students.length === 0) {
-                msgDiv.innerHTML = '<div class="message error">❌ Please enter at least one student</div>';
+                msgDiv.innerHTML = '<div class="message error">❌ Please enter at least one student in correct format: NAME - ROLLNO</div>';
                 return;
             }
 
