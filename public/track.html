@@ -427,6 +427,69 @@
         .home-nav-btn:hover {
             background: var(--input-border);
         }
+
+        /* Calendar UI Styles */
+        .calendar-day-cell {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 6px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-color);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 48px;
+        }
+        .calendar-day-cell:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.06);
+            z-index: 2;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .calendar-day-cell.other-month {
+            opacity: 0.2;
+            cursor: default;
+            pointer-events: none;
+            background: none;
+            border-color: transparent;
+        }
+        .calendar-day-cell.status-present {
+            background: rgba(16, 185, 129, 0.15) !important;
+            border: 1px solid rgba(16, 185, 129, 0.3) !important;
+            color: #10b981 !important;
+        }
+        .calendar-day-cell.status-absent {
+            background: rgba(239, 68, 68, 0.15) !important;
+            border: 1px solid rgba(239, 68, 68, 0.3) !important;
+            color: #ef4444 !important;
+        }
+        .calendar-day-cell.status-pending {
+            background: rgba(245, 158, 11, 0.15) !important;
+            border: 1px solid rgba(245, 158, 11, 0.3) !important;
+            color: #f59e0b !important;
+        }
+        .calendar-day-cell.status-multiple {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(239, 68, 68, 0.15) 100%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: #fff !important;
+        }
+        .calendar-indicator-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 1px;
+        }
+        .calendar-indicator-dot.present { background: #10b981; }
+        .calendar-indicator-dot.absent { background: #ef4444; }
+        .calendar-indicator-dot.pending { background: #f59e0b; }
     </style>
 </head>
 <body>
@@ -530,6 +593,34 @@
             <h3 style="margin-top: 32px; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--primary-color);">Subject Wise Attendance</h3>
             <div class="subject-grid" id="portal-subject-grid">
                 <!-- Dynamic subject cards will go here -->
+            </div>
+
+            <!-- Visual Calendar Section -->
+            <div class="calendar-section" style="margin-top: 32px; background: var(--tab-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                    <h3 style="font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--primary-color); margin: 0;">📅 Visual Calendar</h3>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button class="btn-small" onclick="prevMonth()" style="padding: 6px 12px; margin: 0; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); cursor: pointer; font-weight: 700; transition: all 0.2s;">&lt; Prev</button>
+                        <span id="calendar-month-year" style="font-size: 15px; font-weight: 700; color: var(--text-color); min-width: 110px; text-align: center; display: inline-block;">June 2026</span>
+                        <button class="btn-small" onclick="nextMonth()" style="padding: 6px 12px; margin: 0; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); cursor: pointer; font-weight: 700; transition: all 0.2s;">Next &gt;</button>
+                    </div>
+                </div>
+
+                <div class="calendar-grid-header" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;">
+                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                </div>
+
+                <div id="calendar-days-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;">
+                    <!-- Calendar days will be rendered dynamically -->
+                </div>
+
+                <!-- Monthly summary stats -->
+                <div id="calendar-month-summary" style="display: flex; justify-content: space-around; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color); font-size: 13px; font-weight: 600; flex-wrap: wrap; gap: 15px; color: var(--text-color);">
+                    <div style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 12px; height: 12px; background: #10b981; border-radius: 3px;"></span>Present: <span id="month-present-count" style="font-weight: 700;">0</span></div>
+                    <div style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 12px; height: 12px; background: #ef4444; border-radius: 3px;"></span>Absent: <span id="month-absent-count" style="font-weight: 700;">0</span></div>
+                    <div style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 12px; height: 12px; background: #f59e0b; border-radius: 3px;"></span>Pending: <span id="month-pending-count" style="font-weight: 700;">0</span></div>
+                    <div style="font-weight: 700;">Percentage: <span id="month-percentage" style="color: #10b981; font-weight: 800; font-size: 14px;">0%</span></div>
+                </div>
             </div>
 
             <!-- Detailed class attendance log -->
@@ -1332,6 +1423,193 @@
                 `;
                 logList.appendChild(item);
             });
+
+            // Re-render visual calendar matching current state/filters
+            renderCalendarView();
+        }
+
+        let calendarCurrentDate = new Date();
+
+        function prevMonth() {
+            calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() - 1);
+            renderCalendarView();
+        }
+
+        function nextMonth() {
+            calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() + 1);
+            renderCalendarView();
+        }
+
+        function renderCalendarView() {
+            const subjectStats = window.studentSubjectStats;
+            const grid = document.getElementById('calendar-days-grid');
+            if (!subjectStats || !grid) return;
+
+            const selectedSubject = document.getElementById('filter-subject').value;
+            
+            // Gather all history logs matching the selected subject filter
+            let logs = [];
+            Object.entries(subjectStats).forEach(([subject, stats]) => {
+                if (!selectedSubject || subject === selectedSubject) {
+                    stats.history.forEach(h => {
+                        logs.push({
+                            date: h.date, // YYYY-MM-DD
+                            subject: subject,
+                            status: h.status
+                        });
+                    });
+                }
+            });
+
+            const year = calendarCurrentDate.getFullYear();
+            const month = calendarCurrentDate.getMonth(); // 0-indexed
+
+            // Format Month Year heading
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const monthYearSpan = document.getElementById('calendar-month-year');
+            if (monthYearSpan) {
+                monthYearSpan.textContent = `${monthNames[month]} ${year}`;
+            }
+
+            // Get first day of the month and total number of days
+            const firstDayIndex = new Date(year, month, 1).getDay(); // 0: Sun, 1: Mon...
+            const totalDays = new Date(year, month + 1, 0).getDate();
+            const prevTotalDays = new Date(year, month, 0).getDate();
+
+            grid.innerHTML = '';
+
+            // Map logs by date for easy lookup (e.g. "YYYY-MM-DD" => [log1, log2...])
+            const logsByDate = {};
+            logs.forEach(log => {
+                if (!logsByDate[log.date]) {
+                    logsByDate[log.date] = [];
+                }
+                logsByDate[log.date].push(log);
+            });
+
+            // Statistics counters for the current month
+            let presentCount = 0;
+            let absentCount = 0;
+            let pendingCount = 0;
+
+            // Render Previous Month's trailing days
+            for (let i = firstDayIndex - 1; i >= 0; i--) {
+                const dayNum = prevTotalDays - i;
+                const cell = document.createElement('div');
+                cell.className = 'calendar-day-cell other-month';
+                cell.textContent = dayNum;
+                grid.appendChild(cell);
+            }
+
+            // Render Current Month's days
+            for (let day = 1; day <= totalDays; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayLogs = logsByDate[dateStr] || [];
+
+                const cell = document.createElement('div');
+                cell.className = 'calendar-day-cell';
+                
+                const numLabel = document.createElement('div');
+                numLabel.className = 'calendar-day-number';
+                numLabel.textContent = day;
+                cell.appendChild(numLabel);
+
+                if (dayLogs.length > 0) {
+                    // Determine dominant status / styling
+                    let hasPresent = dayLogs.some(l => l.status === 'Present');
+                    let hasAbsent = dayLogs.some(l => l.status === 'Absent');
+                    let hasPending = dayLogs.some(l => l.status === 'Pending Approval');
+
+                    // Apply style class based on status
+                    if (hasPresent && !hasAbsent && !hasPending) {
+                        cell.classList.add('status-present');
+                    } else if (hasAbsent && !hasPresent && !hasPending) {
+                        cell.classList.add('status-absent');
+                    } else if (hasPending && !hasPresent && !hasAbsent) {
+                        cell.classList.add('status-pending');
+                    } else {
+                        cell.classList.add('status-multiple');
+                    }
+
+                    // Render small indicator dots
+                    const dotsContainer = document.createElement('div');
+                    dotsContainer.className = 'calendar-dots-container';
+                    dotsContainer.style.cssText = 'display: flex; justify-content: center; gap: 2px; width: 100%; margin-top: auto;';
+
+                    dayLogs.forEach(l => {
+                        const dot = document.createElement('span');
+                        dot.className = 'calendar-indicator-dot';
+                        if (l.status === 'Present') {
+                            dot.classList.add('present');
+                            presentCount++;
+                        } else if (l.status === 'Absent') {
+                            dot.classList.add('absent');
+                            absentCount++;
+                        } else if (l.status === 'Pending Approval') {
+                            dot.classList.add('pending');
+                            pendingCount++;
+                        }
+                        dotsContainer.appendChild(dot);
+                    });
+                    cell.appendChild(dotsContainer);
+
+                    // Add click handler to show details of that day
+                    cell.onclick = () => {
+                        const details = dayLogs.map(l => `• ${escapeHtml(l.subject)}: ${escapeHtml(l.status)}`).join('\n');
+                        const formattedDate = new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+                        if (typeof showToast === 'function') {
+                            showToast(`📅 ${formattedDate}\n${details}`, 4000);
+                        } else {
+                            alert(`📅 ${formattedDate}\n${details}`);
+                        }
+                    };
+                } else {
+                    // No classes on this day, click just shows date
+                    cell.onclick = () => {
+                        const formattedDate = new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+                        if (typeof showToast === 'function') {
+                            showToast(`📅 ${formattedDate}\nNo classes scheduled`, 2000);
+                        }
+                    };
+                }
+
+                grid.appendChild(cell);
+            }
+
+            // Render Next Month's leading days to complete the calendar grid row (6 rows total = 42 cells)
+            const currentCellsCount = firstDayIndex + totalDays;
+            const remainingCells = 42 - currentCellsCount;
+            for (let i = 1; i <= remainingCells; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'calendar-day-cell other-month';
+                cell.textContent = i;
+                grid.appendChild(cell);
+            }
+
+            // Render statistics below the calendar
+            const presCountEl = document.getElementById('month-present-count');
+            const absCountEl = document.getElementById('month-absent-count');
+            const pendCountEl = document.getElementById('month-pending-count');
+            const pctText = document.getElementById('month-percentage');
+
+            if (presCountEl) presCountEl.textContent = presentCount;
+            if (absCountEl) absCountEl.textContent = absentCount;
+            if (pendCountEl) pendCountEl.textContent = pendingCount;
+
+            const monthTotal = presentCount + absentCount;
+            const monthPercentage = monthTotal > 0 ? (presentCount / monthTotal * 100) : 0;
+            if (pctText) {
+                pctText.textContent = `${monthPercentage.toFixed(1)}%`;
+                
+                // Adjust percentage color
+                if (monthPercentage >= 75) {
+                    pctText.style.color = '#10b981';
+                } else if (monthPercentage >= 60) {
+                    pctText.style.color = '#f59e0b';
+                } else {
+                    pctText.style.color = '#ef4444';
+                }
+            }
         }
 
         function applyLogFilters() {
