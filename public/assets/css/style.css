@@ -2072,6 +2072,7 @@
         .student-list {
             max-height: 300px;
             overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .history-card {
@@ -3240,6 +3241,7 @@
             display: flex !important;
             flex-direction: column;
             overflow-y: auto;
+            overflow-x: hidden;
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: contain;
         }
@@ -3251,6 +3253,7 @@
             flex: 1;
             min-height: 0;
             overflow-y: auto;
+            overflow-x: hidden;
             -webkit-overflow-scrolling: touch;
         }
 
