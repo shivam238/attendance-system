@@ -3499,6 +3499,13 @@
 
         /* Optimize login card to fit perfectly on mobile viewports without scroll */
         @media (max-width: 600px) {
+            .landing-page.login-locked .landing-nav {
+                display: none !important;
+            }
+            .landing-page.login-locked ~ .container {
+                margin-top: 15px !important;
+                transition: none !important;
+            }
             .container {
                 margin: 12px auto !important;
                 padding: 10px !important;
