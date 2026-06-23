@@ -287,32 +287,29 @@
         window.addEventListener('DOMContentLoaded', () => {
             const msgDiv = document.getElementById('message');
 
+            // Show button immediately — don't auto-redirect (causes blank page loop in Android browser)
+            document.getElementById('connecting-state').style.display = 'none';
+            document.getElementById('login-section').style.display = 'block';
+
+            // Check if we're returning from a Google redirect
             auth.getRedirectResult().then((result) => {
-                if (window.location.search || window.location.hash) {
-                    // Retain role in path when replacing state so refresh doesn't break
-                    window.history.replaceState({}, document.title, window.location.pathname + '?role=' + role);
-                }
+                // Retain role param when clearing URL state
+                window.history.replaceState({}, document.title, window.location.pathname + '?role=' + role);
 
                 if (result && result.credential) {
                     const accessToken = result.credential.accessToken;
                     if (accessToken) {
+                        // Coming back from Google redirect — process connection
+                        document.getElementById('login-section').style.display = 'none';
                         handleSuccessfulConnection(accessToken);
                     } else {
-                        document.getElementById('connecting-state').style.display = 'none';
-                        document.getElementById('login-section').style.display = 'block';
                         msgDiv.innerHTML = '<span class="error">❌ Could not retrieve Google Access Token. Please try again.</span>';
                     }
-                } else {
-                    // Fresh load, start auth
-                    connectClassroom();
                 }
+                // else: fresh load — button is already shown, user clicks to start
             }).catch((error) => {
                 console.error('Redirect auth error:', error);
-                if (window.location.search || window.location.hash) {
-                    window.history.replaceState({}, document.title, window.location.pathname + '?role=' + role);
-                }
-                document.getElementById('connecting-state').style.display = 'none';
-                document.getElementById('login-section').style.display = 'block';
+                window.history.replaceState({}, document.title, window.location.pathname + '?role=' + role);
                 msgDiv.innerHTML = '<span class="error">❌ Authentication failed: ' + error.message + '</span>';
             });
         });

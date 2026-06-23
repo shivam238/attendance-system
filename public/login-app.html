@@ -269,8 +269,13 @@
         window.addEventListener('DOMContentLoaded', () => {
             const msgDiv = document.getElementById('message');
 
+            // Show sign-in button immediately (don't auto-redirect — causes blank page loop in Android browser)
+            document.getElementById('connecting-state').style.display = 'none';
+            document.getElementById('login-section').style.display = 'block';
+
+            // Check if we're returning from a Google redirect
             auth.getRedirectResult().then((result) => {
-                // Clear URL redirect parameters immediately to prevent loop or stale states on refresh/reopen
+                // Clear URL params to prevent stale state on refresh
                 if (window.location.search || window.location.hash) {
                     window.history.replaceState({}, document.title, window.location.pathname);
                 }
@@ -278,24 +283,19 @@
                 if (result && result.credential) {
                     const idToken = result.credential.idToken;
                     if (idToken) {
+                        // Coming back from Google redirect — process login
+                        document.getElementById('login-section').style.display = 'none';
                         handleSuccessfulLogin(idToken);
                     } else {
-                        document.getElementById('connecting-state').style.display = 'none';
-                        document.getElementById('login-section').style.display = 'block';
                         msgDiv.innerHTML = '<span class="error">❌ Could not retrieve Google ID Token. Please try again.</span>';
                     }
-                } else {
-                    // Fresh load, not redirected from Google yet. Start sign-in immediately.
-                    signInWithGoogle();
                 }
+                // else: fresh load — button is already shown, user clicks to start
             }).catch((error) => {
                 console.error('Redirect sign-in error:', error);
-                // Clear URL redirect parameters on error as well to prevent loops
                 if (window.location.search || window.location.hash) {
                     window.history.replaceState({}, document.title, window.location.pathname);
                 }
-                document.getElementById('connecting-state').style.display = 'none';
-                document.getElementById('login-section').style.display = 'block';
                 msgDiv.innerHTML = '<span class="error">❌ Sign-in failed: ' + error.message + '</span>';
             });
         });

@@ -479,6 +479,41 @@ function loginWithToken(token) {
     }
     lastProcessedToken = token;
 
+    // Detect if this is a student attendance flow (URL has ?code= param)
+    const isStudentFlow = new URLSearchParams(window.location.search).has('code');
+
+    if (isStudentFlow) {
+        // Student flow: use student-specific Capacitor modal and update student UI after login
+        const studentCapModal = document.getElementById('student-capacitor-login-modal');
+        const studentCapMsg = document.getElementById('student-cap-message');
+        
+        if (studentCapMsg) studentCapMsg.innerHTML = '<span style="color: var(--text-color);">🔄 Authenticating from browser...</span>';
+
+        try {
+            const credential = firebase.auth.GoogleAuthProvider.credential(token);
+            auth.signInWithCredential(credential)
+                .then((result) => {
+                    if (studentCapMsg) studentCapMsg.innerHTML = '<span style="color: #10b981;">✅ Signed in successfully!</span>';
+                    setTimeout(() => {
+                        if (studentCapModal) studentCapModal.classList.remove('active');
+                        // Update student auth UI with logged-in user
+                        if (typeof updateStudentAuthUI === 'function') {
+                            updateStudentAuthUI(result.user);
+                        }
+                    }, 1000);
+                })
+                .catch((error) => {
+                    console.error("Student token sign-in error:", error);
+                    if (studentCapMsg) studentCapMsg.innerHTML = '<span style="color: #ef4444;">❌ Invalid or expired login code. Please try again.</span>';
+                });
+        } catch (e) {
+            console.error("Student credential parse error:", e);
+            if (studentCapMsg) studentCapMsg.innerHTML = '<span style="color: #ef4444;">❌ Error parsing code.</span>';
+        }
+        return;
+    }
+
+    // CR / default flow: use the standard capacitor login modal
     const msgDiv = document.getElementById('capacitor-login-message') || document.getElementById('login-message');
     if (msgDiv) msgDiv.innerHTML = '<span style="color: var(--text-color);">🔄 Authenticating from browser...</span>';
     
