@@ -490,6 +490,29 @@
         .calendar-indicator-dot.present { background: #10b981; }
         .calendar-indicator-dot.absent { background: #ef4444; }
         .calendar-indicator-dot.pending { background: #f59e0b; }
+
+        @media (max-width: 480px) {
+            .calendar-section {
+                padding: 12px !important;
+            }
+            .calendar-day-cell {
+                padding: 4px 2px !important;
+                font-size: 11px !important;
+                min-height: unset !important;
+            }
+            #calendar-days-grid, .calendar-grid-header {
+                gap: 4px !important;
+            }
+            .calendar-indicator-dot {
+                width: 4px !important;
+                height: 4px !important;
+                margin: 0.5px !important;
+            }
+            #calendar-month-summary {
+                gap: 8px !important;
+                font-size: 11px !important;
+            }
+        }
     </style>
 </head>
 <body>
