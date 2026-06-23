@@ -1727,6 +1727,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
                     return;
                 }
 
+                const fragment = document.createDocumentFragment();
                 allStudents.forEach((student, index) => {
                     const name = (student.profile && student.profile.name && student.profile.name.fullName)
                         ? student.profile.name.fullName
@@ -1743,8 +1744,9 @@ Convert the student list from the attached file/image, or the text enclosed in t
                             <input type="text" id="roster-roll-${index}" value="" placeholder="e.g. 25/B09/${String(index+1).padStart(3,'0')}" style="padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); width: 155px; font-weight: 600;">
                         </td>
                     `;
-                    tbody.appendChild(row);
+                    fragment.appendChild(row);
                 });
+                tbody.appendChild(fragment);
 
                 document.getElementById('classroom-courses-section').style.display = 'none';
                 document.getElementById('classroom-roster-section').style.display = 'block';
@@ -3868,7 +3870,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
                 return;
             }
 
-            list.innerHTML = '';
+            const fragment = document.createDocumentFragment();
             currentUser.students.forEach((s) => {
                 const item = document.createElement('div');
                 item.className = 'list-item';
@@ -3886,15 +3888,17 @@ Convert the student list from the attached file/image, or the text enclosed in t
                     </div>
                 `;
                 setupDraggableItem(item, 'student');
-                list.appendChild(item);
+                fragment.appendChild(item);
             });
+            list.innerHTML = '';
+            list.appendChild(fragment);
         }
 
         function renderSubjects() {
             const list = document.getElementById('subjects-list-container'); // Need to ensure this ID exists
             if (!list || !currentUser.subjects) return;
 
-            list.innerHTML = '';
+            const fragment = document.createDocumentFragment();
             currentUser.subjects.forEach(sub => {
                 const item = document.createElement('div');
                 item.className = 'list-item';
@@ -3908,8 +3912,10 @@ Convert the student list from the attached file/image, or the text enclosed in t
                     </div>
                 `;
                 setupDraggableItem(item, 'subject');
-                list.appendChild(item);
+                fragment.appendChild(item);
             });
+            list.innerHTML = '';
+            list.appendChild(fragment);
         }
 
         function saveStudentOrder() {
