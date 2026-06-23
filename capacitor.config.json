@@ -5,6 +5,12 @@
   "bundledWebRuntime": false,
   "server": {
     "hostname": "qr-smart-attendance.web.app",
-    "androidScheme": "https"
+    "androidScheme": "https",
+    "allowNavigation": [
+      "docs.google.com",
+      "accounts.google.com",
+      "*.google.com",
+      "*.google.co.in"
+    ]
   }
 }
