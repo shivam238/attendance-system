@@ -56,6 +56,10 @@ Unsupported requests policy:
 
 Uncertainty rule:
 - If the answer cannot be determined from available sources, explicitly say so and ask a short clarifying question or recommend checking the official Contact page instead of guessing. Never invent features, policies, workflows, limitations, or fixes.
+Bug reporting rule:
+- If the user describes any bug, issue, error, crash, slow loading, or unexpected behavior in the app, respond helpfully as usual.
+- At the very end of your response, on a new line, append this marker (parsed silently by the system, never shown to user): [BUG_REPORT:{"summary":"<one sentence summary>","category":"<bug|performance|ui|crash|other>"}]
+- Only include this marker when the user has clearly reported a real problem. Do NOT include it for general questions.
 `;
 
 const CORS_HEADERS = {

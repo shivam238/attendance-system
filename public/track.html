@@ -2505,7 +2505,8 @@ Smart Planner:
 ${bunkBudgetInfo}
 == END DATA ==
 
-You are the ATTENDIFY AI Attendance Assistant. You have access to this student's real-time attendance data above. Answer their questions based on this data. Be concise, friendly, and use numbers precisely. Always reply in the same language or mix of languages (e.g., English, Hindi, Hinglish, etc.) that the student uses to ask their question. Always do the math correctly using the data provided.`;
+You are the ATTENDIFY AI Attendance Assistant. You have access to this student's real-time attendance data above. Answer their questions based on this data. Be concise, friendly, and use numbers precisely. Always reply in the same language or mix of languages (e.g., English, Hindi, Hinglish, etc.) that the student uses to ask their question. Always do the math correctly using the data provided.
+Bug reporting: If the student mentions any bug, error, crash, slow loading, or unexpected behavior in the app, respond helpfully. At the very end of your response, on a new line, append: [BUG_REPORT:{"summary":"<one sentence summary>","category":"<bug|performance|ui|crash|other>"}]. Only do this for real reported problems, not general questions.`;
         }
 
         function openAIAssistant() {
@@ -2648,8 +2649,8 @@ You are the ATTENDIFY AI Attendance Assistant. You have access to this student's
                 // Remove typing indicator
                 if (typingEl) typingEl.remove();
 
-                // Show bot reply
-                appendAIMessage('bot', replyText);
+                // Process reply (also handles silent bug reporting)
+                processAIReply(replyText, 'student');
                 aiChatHistory.push({ role: 'assistant', content: replyText });
 
             } catch (err) {
@@ -2663,6 +2664,57 @@ You are the ATTENDIFY AI Attendance Assistant. You have access to this student's
                 if (sendBtn) { sendBtn.disabled = false; sendBtn.style.opacity = '1'; }
             }
         }
+
+        // ===== SMART BUG REPORTING =====
+        function processAIReply(replyText, source) {
+            const markerRegex = /\[BUG_REPORT:\s*({[\s\S]*?})\]/;
+            const match = replyText.match(markerRegex);
+            const cleanText = replyText.replace(markerRegex, '').trim();
+            appendAIMessage('bot', cleanText);
+
+            if (match) {
+                try {
+                    const reportData = JSON.parse(match[1]);
+                    const reportEntry = {
+                        rating: 0,
+                        category: reportData.category || 'bug',
+                        text: reportData.summary || 'Unknown issue reported via AI',
+                        source: source || 'ai_chat',
+                        timestamp: Date.now()
+                    };
+                    db.ref('feedbacks').push(reportEntry);
+                    showBugToast('🐞 Issue logged! Our team will look into it. Thanks!');
+                } catch (e) {
+                    console.warn('Bug report parse failed:', e);
+                }
+            }
+        }
+
+        function showBugToast(msg) {
+            const existing = document.getElementById('bug-toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.id = 'bug-toast';
+            toast.textContent = msg;
+            toast.style.cssText = `
+                position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+                background: linear-gradient(135deg, #1a1a2e, #16213e);
+                color: #a78bfa; border: 1px solid #a78bfa44;
+                padding: 10px 20px; border-radius: 30px;
+                font-size: 13px; font-weight: 600;
+                box-shadow: 0 4px 20px rgba(167,139,250,0.25);
+                z-index: 99999; opacity: 0;
+                transition: opacity 0.3s ease;
+                white-space: nowrap;
+            `;
+            document.body.appendChild(toast);
+            requestAnimationFrame(() => { toast.style.opacity = '1'; });
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 400);
+            }, 3500);
+        }
+        // ===== END SMART BUG REPORTING =====
 
         // Show FAB when dashboard is visible (called from fetchAndBuildDashboard)
         function showAIFAB() {
