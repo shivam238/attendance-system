@@ -945,6 +945,208 @@
         </div>
     </div>
 
+    <!-- ===== AI ATTENDANCE ASSISTANT BUTTON + POPUP ===== -->
+    <!-- Floating trigger button (only shown after student logs in) -->
+    <button id="ai-assistant-fab" onclick="openAIAssistant()" aria-label="Open AI Attendance Assistant">
+        🤖
+    </button>
+
+    <!-- Chat Popup Overlay -->
+    <div id="ai-chat-overlay" onclick="closeAIAssistant()" style="
+        display: none;
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 1099;
+        backdrop-filter: blur(4px);
+    "></div>
+
+    <!-- Chat Popup Panel -->
+    <div id="ai-chat-panel" style="
+        display: none;
+        position: fixed;
+        bottom: 90px;
+        right: 16px;
+        width: min(380px, calc(100vw - 32px));
+        height: min(520px, calc(100vh - 120px));
+        z-index: 1100;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+        background: var(--card-bg, #1a1a2e);
+        border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+        display: none;
+        flex-direction: column;
+        animation: aiSlideUp 0.28s cubic-bezier(0.34,1.56,0.64,1) both;
+    ">
+        <!-- Header -->
+        <div style="
+            padding: 14px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex; align-items: center; justify-content: space-between;
+            flex-shrink: 0;
+        ">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 22px;">🤖</span>
+                <div>
+                    <div style="font-size: 14px; font-weight: 800; color: #fff;">Attendance AI</div>
+                    <div style="font-size: 10px; color: rgba(255,255,255,0.75); font-weight: 500;">Powered by Gemini · Knows your data</div>
+                </div>
+            </div>
+            <button onclick="closeAIAssistant()" style="background: rgba(255,255,255,0.15); border: none; color: #fff; width: 30px; height: 30px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"
+                onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">✕</button>
+        </div>
+
+        <!-- Quick suggestion chips -->
+        <div id="ai-chips" style="
+            display: flex; gap: 6px; padding: 10px 12px 6px 12px;
+            overflow-x: auto; flex-shrink: 0;
+            scrollbar-width: none;
+        ">
+            <button class="ai-chip" onclick="sendAIChip('Kitni classes aur bunk kar sakta hoon?')">🛋️ Bunk budget</button>
+            <button class="ai-chip" onclick="sendAIChip('Meri attendance ka risk kya hai?')">⚠️ Risk check</button>
+            <button class="ai-chip" onclick="sendAIChip('75% attendance ke liye mujhe kitni classes attend karni hogi?')">🎯 75% goal</button>
+            <button class="ai-chip" onclick="sendAIChip('Konsa subject sabse zyada risk mein hai?')">📊 Worst subject</button>
+        </div>
+
+        <!-- Messages container -->
+        <div id="ai-messages" style="
+            flex: 1; overflow-y: auto; padding: 8px 12px;
+            display: flex; flex-direction: column; gap: 10px;
+            scroll-behavior: smooth;
+        "></div>
+
+        <!-- Input row -->
+        <div style="
+            padding: 10px 12px;
+            border-top: 1px solid var(--border-color, rgba(255,255,255,0.08));
+            display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0;
+            background: var(--card-bg, #1a1a2e);
+        ">
+            <textarea id="ai-input" rows="1" placeholder="Apna sawaal poochho..." style="
+                flex: 1; resize: none; border-radius: 12px;
+                background: var(--tab-bg, rgba(255,255,255,0.05));
+                border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+                color: var(--text-color, #f1f5f9);
+                padding: 10px 12px; font-size: 13px; font-family: inherit;
+                outline: none; max-height: 100px; line-height: 1.4;
+                transition: border-color 0.2s;
+            " onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage();}"
+               oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';"
+               onfocus="this.style.borderColor='var(--primary-color)'" onblur="this.style.borderColor='var(--border-color)'"></textarea>
+            <button onclick="sendAIMessage()" id="ai-send-btn" style="
+                width: 40px; height: 40px; border-radius: 12px; border: none;
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                color: #fff; font-size: 16px; cursor: pointer; flex-shrink: 0;
+                transition: transform 0.15s, opacity 0.15s;
+                display: flex; align-items: center; justify-content: center;
+            " onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">➤</button>
+        </div>
+    </div>
+
+    <style>
+        @keyframes aiSlideUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to   { opacity: 1; transform: translateY(0)   scale(1); }
+        }
+        .ai-chip {
+            white-space: nowrap;
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color, rgba(255,255,255,0.12));
+            background: var(--tab-bg, rgba(255,255,255,0.05));
+            color: var(--text-color, #f1f5f9);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+        .ai-chip:hover {
+            background: rgba(102,126,234,0.15);
+            border-color: #667eea;
+            color: #818cf8;
+        }
+        .ai-msg {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+            animation: aiSlideUp 0.2s ease both;
+        }
+        .ai-msg.user { flex-direction: row-reverse; }
+        .ai-msg .ai-bubble {
+            max-width: 82%;
+            padding: 9px 12px;
+            border-radius: 14px;
+            font-size: 13px;
+            line-height: 1.55;
+            font-weight: 500;
+        }
+        .ai-msg.bot .ai-bubble {
+            background: var(--tab-bg, rgba(255,255,255,0.06));
+            border: 1px solid var(--border-color, rgba(255,255,255,0.08));
+            color: var(--text-color, #f1f5f9);
+            border-radius: 4px 14px 14px 14px;
+        }
+        .ai-msg.user .ai-bubble {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            border-radius: 14px 4px 14px 14px;
+        }
+        .ai-avatar {
+            width: 28px; height: 28px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; flex-shrink: 0;
+        }
+        .ai-avatar.bot  { background: linear-gradient(135deg,#667eea,#764ba2); }
+        .ai-avatar.user { background: rgba(255,255,255,0.1); }
+        .ai-typing {
+            display: flex; gap: 4px; padding: 4px 2px;
+        }
+        .ai-typing span {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--text-muted, #94a3b8);
+            animation: aiTypingDot 1.2s infinite;
+        }
+        .ai-typing span:nth-child(2) { animation-delay: 0.2s; }
+        .ai-typing span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes aiTypingDot {
+            0%,60%,100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-5px); opacity: 1; }
+        }
+        #ai-messages::-webkit-scrollbar { width: 4px; }
+        #ai-messages::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
+        #ai-chips::-webkit-scrollbar { display: none; }
+
+        /* AI FAB button base styles */
+        #ai-assistant-fab {
+            display: none;
+            position: fixed;
+            bottom: 24px;
+            right: 22px;
+            z-index: 1100;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            font-size: 22px;
+            cursor: pointer;
+            box-shadow: 0 6px 24px rgba(102, 126, 234, 0.45);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            align-items: center;
+            justify-content: center;
+        }
+        #ai-assistant-fab.ai-fab-visible {
+            display: flex !important;
+        }
+        #ai-assistant-fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.6);
+        }
+    </style>
+    <!-- ===== END AI ASSISTANT ===== -->
+
     <!-- Toast Notifications Container -->
     <div id="toast-container" class="toast-container"></div>
     <!-- Firebase Core (must load before app scripts) -->
@@ -1653,6 +1855,8 @@
                 document.getElementById('portal-auth-card').style.display = 'none';
                 document.getElementById('portal-dashboard').style.display = 'block';
                 document.getElementById('portal-logout-btn').style.display = 'block';
+                // Show AI Assistant FAB
+                showAIFAB();
             }).catch(err => {
                 document.getElementById('loading-screen').classList.add('fade-out');
                 alert("Failed to fetch attendance records: " + err.message);
@@ -2237,8 +2441,233 @@
                 
                 document.getElementById('portal-roll-no').value = '';
                 clearAuthError();
+
+                // Hide AI FAB on logout
+                const fab = document.getElementById('ai-assistant-fab');
+                if (fab) fab.classList.remove('ai-fab-visible');
+                closeAIAssistant();
             }
         }
+
+        // ===== AI ATTENDANCE ASSISTANT =====
+        const AI_WORKER_URL = 'https://attendify-support-worker.sm3165599.workers.dev';
+        let aiChatHistory = []; // { role: 'user'|'assistant', content: '' }
+        let aiIsLoading = false;
+
+        function buildAttendanceContext() {
+            const subjectStats = window.studentSubjectStats;
+            const studentName = currentStudent ? currentStudent.name : 'Student';
+            const rollNo = currentRollNo || 'N/A';
+            const classId = currentClassId || 'N/A';
+
+            if (!subjectStats) return '';
+
+            let totalAttended = 0, totalClasses = 0;
+            const lines = [];
+
+            Object.entries(subjectStats).forEach(([sub, s]) => {
+                totalAttended += s.attended;
+                totalClasses += s.total;
+                const pct = s.total > 0 ? (s.attended / s.total * 100).toFixed(1) : '0.0';
+                lines.push(`  - ${sub}: ${s.attended}/${s.total} classes attended (${pct}%)`);
+            });
+
+            const overallPct = totalClasses > 0 ? (totalAttended / totalClasses * 100).toFixed(1) : '0.0';
+
+            const threshInput = document.getElementById('attendance-threshold');
+            const target = threshInput ? (parseInt(threshInput.value) || 75) : 75;
+            const targetFraction = target / 100;
+
+            let bunkBudgetInfo = '';
+            if (totalClasses > 0) {
+                const currentPct = totalAttended / totalClasses;
+                if (currentPct >= targetFraction) {
+                    const bunkable = Math.floor(totalAttended / targetFraction - totalClasses);
+                    bunkBudgetInfo = `Bunk Budget: Can skip ${bunkable} more class(es) and stay at/above ${target}%.`;
+                } else {
+                    const needed = Math.ceil((targetFraction * totalClasses - totalAttended) / (1 - targetFraction));
+                    bunkBudgetInfo = `Recovery: Needs to attend ${needed} consecutive class(es) to reach ${target}%.`;
+                }
+                const futurePct = (totalAttended / (totalClasses + 3) * 100).toFixed(1);
+                bunkBudgetInfo += ` Risk: Missing next 3 classes would bring attendance to ${futurePct}%.`;
+            }
+
+            return `
+== STUDENT ATTENDANCE DATA (LIVE) ==
+Student: ${studentName} | Roll No: ${rollNo} | Class ID: ${classId}
+Overall Attendance: ${totalAttended}/${totalClasses} classes (${overallPct}%)
+Target Threshold: ${target}%
+
+Subject-wise Breakdown:
+${lines.join('\n')}
+
+Smart Planner:
+${bunkBudgetInfo}
+== END DATA ==
+
+You are the ATTENDIFY AI Attendance Assistant. You have access to this student's real-time attendance data above. Answer their questions based on this data. Be concise, friendly, and use numbers precisely. You can respond in Hinglish (Hindi + English mix) if the student writes in Hinglish. Always do the math correctly using the data provided.`;
+        }
+
+        function openAIAssistant() {
+            const panel = document.getElementById('ai-chat-panel');
+            const overlay = document.getElementById('ai-chat-overlay');
+            if (!panel || !overlay) return;
+            panel.style.display = 'flex';
+            overlay.style.display = 'block';
+
+            // Show welcome message only once
+            const msgs = document.getElementById('ai-messages');
+            if (msgs && msgs.children.length === 0) {
+                const name = currentStudent ? currentStudent.name.split(' ')[0] : 'Student';
+                appendAIMessage('bot', `Namaste ${name}! 👋 Main tumhara Attendance AI hoon.\n\nMain tumhara real-time attendance data jaanta hoon — bunk budget, risk, subject-wise status — sab kuch. Kya poochna hai?`);
+            }
+
+            // Focus input
+            setTimeout(() => {
+                const inp = document.getElementById('ai-input');
+                if (inp) inp.focus();
+            }, 300);
+        }
+
+        function closeAIAssistant() {
+            const panel = document.getElementById('ai-chat-panel');
+            const overlay = document.getElementById('ai-chat-overlay');
+            if (panel) panel.style.display = 'none';
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        function appendAIMessage(role, text) {
+            const msgs = document.getElementById('ai-messages');
+            if (!msgs) return;
+
+            const wrapper = document.createElement('div');
+            wrapper.className = `ai-msg ${role}`;
+
+            const avatar = document.createElement('div');
+            avatar.className = `ai-avatar ${role}`;
+            avatar.textContent = role === 'bot' ? '🤖' : '🎓';
+
+            const bubble = document.createElement('div');
+            bubble.className = 'ai-bubble';
+            // Convert newlines to <br> and basic markdown bold
+            bubble.innerHTML = text
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+
+            wrapper.appendChild(avatar);
+            wrapper.appendChild(bubble);
+            msgs.appendChild(wrapper);
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+
+        function appendTypingIndicator() {
+            const msgs = document.getElementById('ai-messages');
+            if (!msgs) return null;
+            const wrapper = document.createElement('div');
+            wrapper.className = 'ai-msg bot';
+            wrapper.id = 'ai-typing-indicator';
+            wrapper.innerHTML = `
+                <div class="ai-avatar bot">🤖</div>
+                <div class="ai-bubble" style="padding: 10px 14px;">
+                    <div class="ai-typing"><span></span><span></span><span></span></div>
+                </div>`;
+            msgs.appendChild(wrapper);
+            msgs.scrollTop = msgs.scrollHeight;
+            return wrapper;
+        }
+
+        function sendAIChip(text) {
+            const input = document.getElementById('ai-input');
+            if (input) { input.value = text; input.style.height = 'auto'; }
+            sendAIMessage();
+        }
+
+        async function sendAIMessage() {
+            if (aiIsLoading) return;
+            const input = document.getElementById('ai-input');
+            const sendBtn = document.getElementById('ai-send-btn');
+            if (!input) return;
+
+            const text = input.value.trim();
+            if (!text) return;
+
+            // Clear input
+            input.value = '';
+            input.style.height = 'auto';
+
+            // Show user message
+            appendAIMessage('user', text);
+
+            // Add to history
+            aiChatHistory.push({ role: 'user', content: text });
+
+            // Limit history to last 10 messages to avoid token overflow
+            if (aiChatHistory.length > 10) aiChatHistory = aiChatHistory.slice(-10);
+
+            // Show loading
+            aiIsLoading = true;
+            if (sendBtn) { sendBtn.disabled = true; sendBtn.style.opacity = '0.5'; }
+            const typingEl = appendTypingIndicator();
+
+            try {
+                // Build messages with context injected in first user message
+                const contextNote = buildAttendanceContext();
+                const messages = aiChatHistory.map((m, i) => {
+                    if (i === 0 && m.role === 'user') {
+                        return { role: 'user', content: contextNote + '\n\nStudent question: ' + m.content };
+                    }
+                    return { role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content };
+                });
+
+                const response = await fetch(AI_WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ messages })
+                });
+
+                if (!response.ok) throw new Error(`Server error ${response.status}`);
+
+                const raw = await response.text();
+                let replyText = '';
+
+                // Parse SSE stream
+                raw.split('\n').forEach(line => {
+                    if (line.startsWith('data: ') && !line.includes('[DONE]')) {
+                        try {
+                            const parsed = JSON.parse(line.slice(6));
+                            if (parsed.text) replyText = parsed.text;
+                        } catch (_) {}
+                    }
+                });
+
+                if (!replyText) throw new Error('Empty response from AI');
+
+                // Remove typing indicator
+                if (typingEl) typingEl.remove();
+
+                // Show bot reply
+                appendAIMessage('bot', replyText);
+                aiChatHistory.push({ role: 'assistant', content: replyText });
+
+            } catch (err) {
+                console.error('AI error:', err);
+                if (typingEl) typingEl.remove();
+                appendAIMessage('bot', '❌ Kuch gadbad ho gayi. Thodi der baad try karo ya internet check karo.');
+                // Remove failed user message from history
+                aiChatHistory.pop();
+            } finally {
+                aiIsLoading = false;
+                if (sendBtn) { sendBtn.disabled = false; sendBtn.style.opacity = '1'; }
+            }
+        }
+
+        // Show FAB when dashboard is visible (called from fetchAndBuildDashboard)
+        function showAIFAB() {
+            const fab = document.getElementById('ai-assistant-fab');
+            if (fab) fab.classList.add('ai-fab-visible');
+        }
+        // ===== END AI ASSISTANT =====
     </script>
 </body>
 </html>
