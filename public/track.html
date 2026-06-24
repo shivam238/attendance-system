@@ -806,12 +806,20 @@
             try {
                 if (url && url.includes('attendify://')) {
                     const urlObj = new URL(url.replace('attendify://', 'https://dummy-domain/'));
+                    const path = urlObj.hostname; // 'student-login', 'login', 'classroom'
                     const token = urlObj.searchParams.get('token') || urlObj.searchParams.get('classroom_token');
                     const role = urlObj.searchParams.get('role');
-                    
+                    const uid = urlObj.searchParams.get('uid');
+
+                    // ✅ Student Google login auto-complete (from login-app.html?flow=student)
+                    if (path === 'student-login' && uid) {
+                        autoCompleteStudentGoogleLogin(uid);
+                        return;
+                    }
+
+                    // Classroom token for student (Google Classroom integration)
                     if (token && role === 'student') {
                         studentClassroomToken = token;
-                        // Save to localStorage so it persists for the session
                         localStorage.setItem('student_classroom_token', token);
                         
                         document.getElementById('classroom-connect-banner').style.display = 'none';
@@ -828,6 +836,46 @@
             } catch (e) {
                 console.error("Failed to parse deep link URL:", e);
             }
+        }
+
+        // ✅ Auto-complete student Google login using Firebase UID from deep link
+        function autoCompleteStudentGoogleLogin(uid) {
+            const msgDiv = document.getElementById('portal-auth-message');
+            const loadingEl = document.getElementById('loading-screen');
+
+            if (msgDiv) msgDiv.innerHTML = '<div class="message info" style="margin:0; padding:10px; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.3); border-radius:8px; color:var(--text-color);">🔄 Verifying your Google account...</div>';
+            if (loadingEl) loadingEl.classList.remove('fade-out');
+
+            db.ref('google_user_links/' + uid).once('value', (snapshot) => {
+                if (!snapshot.exists()) {
+                    if (loadingEl) loadingEl.classList.add('fade-out');
+                    if (msgDiv) msgDiv.innerHTML = '<div class="message error" style="margin:0; padding:10px; color:#ef4444; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); border-radius:8px;">❌ No linked student profile found for this Google account.<br><small style="opacity:0.8;">Login manually once first to link your account.</small></div>';
+                    return;
+                }
+
+                const links = snapshot.val();
+                const classIds = Object.keys(links);
+
+                if (classIds.length === 0) {
+                    if (loadingEl) loadingEl.classList.add('fade-out');
+                    if (msgDiv) msgDiv.innerHTML = '<div class="message error" style="margin:0; padding:10px; color:#ef4444;">❌ No class linked. Login manually first.</div>';
+                    return;
+                }
+
+                if (classIds.length === 1) {
+                    const session = { classId: classIds[0], rollNo: links[classIds[0]] };
+                    localStorage.setItem('student_session', JSON.stringify(session));
+                    if (msgDiv) msgDiv.innerHTML = '<div class="message success" style="margin:0; padding:10px; color:#10b981; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.2); border-radius:8px;">✅ Signed in! Loading your dashboard...</div>';
+                    setTimeout(() => autoLogin(session.classId, session.rollNo), 600);
+                } else {
+                    if (loadingEl) loadingEl.classList.add('fade-out');
+                    renderClassSelection(links);
+                }
+            }).catch((err) => {
+                console.error('Auto student login error:', err);
+                if (loadingEl) loadingEl.classList.add('fade-out');
+                if (msgDiv) msgDiv.innerHTML = '<div class="message error" style="margin:0; padding:10px; color:#ef4444;">❌ Error verifying account. Please try again.</div>';
+            });
         }
 
         function verifyCapacitorStudentClassroomToken() {
@@ -1195,26 +1243,11 @@
         function loginWithGoogle() {
             const msgDiv = document.getElementById('portal-auth-message');
             
-            // In Capacitor (Android app) — popup is blocked in WebView, open system browser instead
+            // In Capacitor (Android app) — open login-app.html in system browser with student flow flag
             if (window.Capacitor) {
-                msgDiv.innerHTML = '<div class="message info" style="margin: 0; padding: 10px; color: var(--text-color); background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px;">⚡ Opening Google Sign-In in browser...</div>';
-                window.open('https://firstfile-c763521e.firebaseapp.com/login-app.html', '_system');
-                
-                // Show manual token input as fallback after a short delay
-                setTimeout(() => {
-                    msgDiv.innerHTML = `
-                        <div style="background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-top: 10px;">
-                            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px; line-height: 1.5;">
-                                🌐 A browser window has opened. Sign in with Google there.<br>
-                                If you're not redirected back automatically, copy the login code and paste it below.
-                            </p>
-                            <textarea id="track-cap-token-input" rows="3" placeholder="Paste the login code here..." 
-                                style="width: 100%; border-radius: 8px; padding: 10px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: var(--text-color); font-family: monospace; font-size: 11px; resize: none; box-sizing: border-box; margin-bottom: 10px;"></textarea>
-                            <button class="btn btn-primary" onclick="verifyTrackCapacitorToken()" style="width: 100%; height: 42px; font-size: 13px; font-weight: 700;">
-                                🔑 Verify &amp; Log In
-                            </button>
-                        </div>`;
-                }, 2000);
+                msgDiv.innerHTML = '<div class="message info" style="margin: 0; padding: 10px; color: var(--text-color); background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px;">⚡ Opening Google Sign-In... Please complete sign-in in the browser window.</div>';
+                // ?flow=student tells login-app.html to send attendify://student-login?uid=... back
+                window.open('https://firstfile-c763521e.firebaseapp.com/login-app.html?flow=student', '_system');
                 return;
             }
             

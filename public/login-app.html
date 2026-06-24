@@ -244,6 +244,8 @@
 
     <script>
         let signingIn = false;
+        const urlParams = new URLSearchParams(window.location.search);
+        const isStudentFlow = urlParams.get('flow') === 'student';
 
         function signInWithGoogle() {
             if (signingIn) return;
@@ -259,14 +261,19 @@
 
             // signInWithPopup works reliably in system browser (Chrome) — no redirect loop
             auth.signInWithPopup(provider).then((result) => {
-                const idToken = result.credential ? result.credential.idToken : null;
-                if (idToken) {
-                    handleSuccessfulLogin(idToken);
+                if (isStudentFlow) {
+                    // ✅ Student flow: send uid-based deep link — no token copy-paste needed
+                    handleStudentFlow(result.user);
                 } else {
-                    // Fallback: get idToken from user directly
-                    return result.user.getIdToken().then((token) => {
-                        handleSuccessfulLogin(token);
-                    });
+                    // CR/Teacher flow: send idToken for auth
+                    const idToken = result.credential ? result.credential.idToken : null;
+                    if (idToken) {
+                        handleSuccessfulLogin(idToken);
+                    } else {
+                        return result.user.getIdToken().then((token) => {
+                            handleSuccessfulLogin(token);
+                        });
+                    }
                 }
             }).catch((error) => {
                 console.error('Sign-in error:', error);
@@ -275,6 +282,21 @@
                 document.getElementById('login-section').style.display = 'block';
                 msgDiv.innerHTML = '<span class="error">❌ Sign-in failed: ' + error.message + '</span>';
             });
+        }
+
+        // ✅ Student flow: deep link with UID — app auto-verifies and logs in
+        function handleStudentFlow(user) {
+            const msgDiv = document.getElementById('message');
+            document.getElementById('connecting-state').style.display = 'none';
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('token-section').style.display = 'block';
+            document.getElementById('token-display').value = '✅ Signed in as: ' + user.displayName + '\nRedirecting back to app...';
+            msgDiv.innerHTML = '';
+
+            // Send uid-based deep link back to app — app handles rest automatically
+            setTimeout(() => {
+                window.location.href = 'attendify://student-login?uid=' + encodeURIComponent(user.uid);
+            }, 400);
         }
 
         // Show the sign-in button immediately on load — no auto-redirect
