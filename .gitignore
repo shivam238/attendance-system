@@ -49,3 +49,6 @@ jdk21/
 ATTENDIFY.apk
 .redo_stack
 .current_version
+
+# Security Notes
+future_updates/
