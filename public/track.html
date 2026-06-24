@@ -811,11 +811,7 @@
                     const role = urlObj.searchParams.get('role');
                     const uid = urlObj.searchParams.get('uid');
 
-                    // ✅ Student Google login auto-complete (from login-app.html?flow=student)
-                    if (path === 'student-login' && uid) {
-                        autoCompleteStudentGoogleLogin(uid);
-                        return;
-                    }
+
 
                     // Classroom token for student (Google Classroom integration)
                     if (token && role === 'student') {
