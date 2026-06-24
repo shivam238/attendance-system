@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- jsQR for QR code scanning from camera -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,6 +7,7 @@
     <meta name="description" content="ATTENDIFY Student Portal — Track your subject-wise attendance percentage, history, and approval status in real time.">
     <title>Student Portal | ATTENDIFY</title>
     <link rel="icon" type="image/webp" href="logo.webp">
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <link rel="apple-touch-icon" href="logo-opt.png">
     
     <!-- App Styles -->
@@ -648,6 +650,203 @@
         .calendar-indicator-dot.absent { background: #ef4444; }
         .calendar-indicator-dot.pending { background: #f59e0b; }
 
+        /* ===== QR SCANNER MODAL ===== */
+        #qr-scanner-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            background: #000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        #qr-scanner-modal.active {
+            display: flex;
+        }
+        #qr-scanner-header {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            background: rgba(0,0,0,0.6);
+            position: absolute;
+            top: 0;
+            z-index: 10;
+            box-sizing: border-box;
+        }
+        #qr-scanner-header h3 {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #qr-close-btn {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        #qr-close-btn:hover { background: rgba(255,255,255,0.28); }
+        #qr-video-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        #qr-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        #qr-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        #qr-scan-frame {
+            width: min(260px, 65vw);
+            height: min(260px, 65vw);
+            border: 3px solid rgba(255,255,255,0.9);
+            border-radius: 24px;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.55);
+            position: relative;
+        }
+        #qr-scan-line {
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            top: 50%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #6ee7b7, #34d399, #6ee7b7, transparent);
+            box-shadow: 0 0 8px #34d399;
+            animation: qrScanLine 2s ease-in-out infinite;
+        }
+        @keyframes qrScanLine {
+            0%   { top: 12%; }
+            50%  { top: 88%; }
+            100% { top: 12%; }
+        }
+        .qr-corner {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-color: #34d399;
+            border-style: solid;
+        }
+        .qr-corner.tl { top: -3px; left: -3px; border-width: 4px 0 0 4px; border-radius: 8px 0 0 0; }
+        .qr-corner.tr { top: -3px; right: -3px; border-width: 4px 4px 0 0; border-radius: 0 8px 0 0; }
+        .qr-corner.bl { bottom: -3px; left: -3px; border-width: 0 0 4px 4px; border-radius: 0 0 0 8px; }
+        .qr-corner.br { bottom: -3px; right: -3px; border-width: 0 4px 4px 0; border-radius: 0 0 8px 0; }
+        #qr-status-msg {
+            position: absolute;
+            bottom: 90px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            padding: 10px 20px;
+            background: rgba(0,0,0,0.55);
+            border-radius: 20px;
+            max-width: 80%;
+            letter-spacing: 0.2px;
+        }
+        /* QR scanner button in header */
+        #qr-scan-nav-btn {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, #34d399, #059669);
+            border: none;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 8px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 10px rgba(52,211,153,0.35);
+        }
+        #qr-scan-nav-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(52,211,153,0.45);
+        }
+        #qr-scan-nav-btn.visible { display: flex; }
+        /* AI attachment preview */
+        #ai-attachment-preview {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(52,211,153,0.08);
+            border-top: 1px solid rgba(52,211,153,0.2);
+            flex-shrink: 0;
+        }
+        #ai-attachment-preview img {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        #ai-attachment-preview span {
+            font-size: 11px;
+            color: #34d399;
+            font-weight: 600;
+            flex: 1;
+        }
+        #ai-attachment-preview button {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: background 0.15s;
+        }
+        #ai-attachment-preview button:hover { background: rgba(239,68,68,0.1); }
+        #ai-attach-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+            background: var(--tab-bg, rgba(255,255,255,0.05));
+            color: var(--text-muted, #94a3b8);
+            font-size: 16px;
+            cursor: pointer;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+        #ai-attach-btn:hover {
+            background: rgba(52,211,153,0.12);
+            border-color: #34d399;
+            color: #34d399;
+        }
+        /* ===== END QR SCANNER ===== */
+
         @media (max-width: 768px) {
             .card {
                 padding: 16px !important;
@@ -723,6 +922,19 @@
                 </a>
             </div>
             <div class="header-controls-right">
+                <!-- QR Scanner button — only visible once logged in -->
+                <button id="qr-scan-nav-btn" onclick="openQRScanner()" title="Scan QR to mark attendance" aria-label="Scan QR Code">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1"/>
+                        <rect x="14" y="14" width="3" height="3" rx="0.5"/>
+                        <rect x="18" y="14" width="3" height="3" rx="0.5"/>
+                        <rect x="14" y="18" width="3" height="3" rx="0.5"/>
+                        <rect x="18" y="18" width="3" height="3" rx="0.5"/>
+                    </svg>
+                    Scan QR
+                </button>
                 <button class="theme-btn" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode"></button>
                 <button class="logout-btn" id="portal-logout-btn" onclick="exitPortal()" style="display: none;">Logout</button>
             </div>
@@ -966,6 +1178,28 @@
         </div>
     </div>
 
+    <!-- ===== QR SCANNER MODAL ===== -->
+    <div id="qr-scanner-modal" role="dialog" aria-modal="true" aria-label="QR Attendance Scanner">
+        <div id="qr-scanner-header">
+            <h3>📷 Scan Attendance QR</h3>
+            <button id="qr-close-btn" onclick="closeQRScanner()" aria-label="Close scanner">✕</button>
+        </div>
+        <div id="qr-video-wrapper">
+            <video id="qr-video" autoplay playsinline muted></video>
+            <div id="qr-overlay">
+                <div id="qr-scan-frame">
+                    <div class="qr-corner tl"></div>
+                    <div class="qr-corner tr"></div>
+                    <div class="qr-corner bl"></div>
+                    <div class="qr-corner br"></div>
+                    <div id="qr-scan-line"></div>
+                </div>
+            </div>
+            <div id="qr-status-msg">Point camera at the QR code shown by your CR</div>
+        </div>
+    </div>
+    <!-- ===== END QR SCANNER MODAL ===== -->
+
     <!-- ===== AI ATTENDANCE ASSISTANT BUTTON + POPUP ===== -->
     <!-- Floating trigger button (only shown after student logs in) -->
     <button id="ai-assistant-fab" onclick="handleAIFABClick(event)" aria-label="Open AI Attendance Assistant">
@@ -1036,6 +1270,13 @@
             scroll-behavior: smooth;
         "></div>
 
+        <!-- Attachment preview bar (shown when an image is attached) -->
+        <div id="ai-attachment-preview">
+            <img id="ai-attach-thumb" src="" alt="Attachment preview">
+            <span id="ai-attach-name">Image attached</span>
+            <button onclick="clearAIAttachment()" title="Remove attachment">✕</button>
+        </div>
+
         <!-- Input row -->
         <div style="
             padding: 10px 12px;
@@ -1043,6 +1284,9 @@
             display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0;
             background: var(--card-bg, #1a1a2e);
         ">
+            <!-- Hidden file input for image attachment -->
+            <input type="file" id="ai-file-input" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="handleAIAttachment(event)">
+            <button id="ai-attach-btn" onclick="document.getElementById('ai-file-input').click()" title="Attach image" aria-label="Attach an image">📎</button>
             <textarea id="ai-input" rows="1" placeholder="Ask a question..." style="
                 flex: 1; resize: none; border-radius: 12px;
                 background: var(--tab-bg, rgba(255,255,255,0.05));
@@ -1053,7 +1297,8 @@
                 transition: border-color 0.2s;
             " onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage();}"
                oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';"
-               onfocus="this.style.borderColor='var(--primary-color)'" onblur="this.style.borderColor='var(--border-color)'"></textarea>
+               onfocus="this.style.borderColor='var(--primary-color)'" onblur="this.style.borderColor='var(--border-color)'">
+            </textarea>
             <button onclick="sendAIMessage()" id="ai-send-btn" style="
                 width: 40px; height: 40px; border-radius: 12px; border: none;
                 background: linear-gradient(135deg, #667eea, #764ba2);
@@ -2723,17 +2968,30 @@ Bug reporting: If the student mentions any bug, error, crash, slow loading, or u
             if (!input) return;
 
             const text = input.value.trim();
-            if (!text) return;
+            // Must have text OR an attachment
+            if (!text && !aiPendingAttachment) return;
+
+            // Capture and clear pending attachment
+            const attachmentToSend = aiPendingAttachment || null;
+            clearAIAttachment();
 
             // Clear input
             input.value = '';
             input.style.height = 'auto';
 
-            // Show user message
-            appendAIMessage('user', text);
+            // Show user message (with thumbnail if image attached)
+            if (attachmentToSend) {
+                appendAIMessageWithImage('user', text || '(Image attached)', attachmentToSend.thumb);
+            } else {
+                appendAIMessage('user', text);
+            }
 
-            // Add to history
-            aiChatHistory.push({ role: 'user', content: text });
+            // Build history entry with optional attachment
+            const userEntry = { role: 'user', content: text || '(Image attached)' };
+            if (attachmentToSend) {
+                userEntry.attachment = { mimeType: attachmentToSend.mimeType, base64: attachmentToSend.base64 };
+            }
+            aiChatHistory.push(userEntry);
 
             // Limit history to last 10 messages to avoid token overflow
             if (aiChatHistory.length > 10) aiChatHistory = aiChatHistory.slice(-10);
@@ -2747,10 +3005,12 @@ Bug reporting: If the student mentions any bug, error, crash, slow loading, or u
                 // Build messages with context injected in first user message
                 const contextNote = buildAttendanceContext();
                 const messages = aiChatHistory.map((m, i) => {
+                    const out = { role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content };
                     if (i === 0 && m.role === 'user') {
-                        return { role: 'user', content: contextNote + '\n\nStudent question: ' + m.content };
+                        out.content = contextNote + '\n\nStudent question: ' + (m.content || '(see attached image)');
                     }
-                    return { role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content };
+                    if (m.attachment) out.attachment = m.attachment;
+                    return out;
                 });
 
                 const response = await fetch(AI_WORKER_URL, {
@@ -2846,14 +3106,241 @@ Bug reporting: If the student mentions any bug, error, crash, slow loading, or u
         }
         // ===== END SMART BUG REPORTING =====
 
-        // Show FAB when dashboard is visible (called from fetchAndBuildDashboard)
+        // Show FAB and QR scan button when dashboard is visible (called from fetchAndBuildDashboard)
         function showAIFAB() {
             const fab = document.getElementById('ai-assistant-fab');
             if (fab) {
                 fab.classList.add('ai-fab-visible');
                 setupAIFABDrag();
             }
+            // Show QR scanner button
+            const qrBtn = document.getElementById('qr-scan-nav-btn');
+            if (qrBtn) qrBtn.classList.add('visible');
         }
+
+        // ===== AI IMAGE ATTACHMENT =====
+        let aiPendingAttachment = null; // { mimeType, base64, thumb }
+
+        function handleAIAttachment(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const allowed = ['image/png', 'image/jpeg', 'image/webp'];
+            if (!allowed.includes(file.type)) {
+                appendAIMessage('bot', '❌ Only PNG, JPEG, or WebP images are supported.');
+                return;
+            }
+            if (file.size > 4 * 1024 * 1024) {
+                appendAIMessage('bot', '❌ Image is too large. Please use an image under 4 MB.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const dataUrl = e.target.result;
+                const base64 = dataUrl.split(',')[1];
+                aiPendingAttachment = { mimeType: file.type, base64, thumb: dataUrl };
+
+                // Show preview
+                const preview = document.getElementById('ai-attachment-preview');
+                const thumb = document.getElementById('ai-attach-thumb');
+                const name = document.getElementById('ai-attach-name');
+                if (preview) preview.style.display = 'flex';
+                if (thumb) thumb.src = dataUrl;
+                if (name) name.textContent = file.name || 'Image attached';
+            };
+            reader.readAsDataURL(file);
+
+            // Reset file input so the same file can be picked again
+            event.target.value = '';
+        }
+
+        function clearAIAttachment() {
+            aiPendingAttachment = null;
+            const preview = document.getElementById('ai-attachment-preview');
+            const thumb = document.getElementById('ai-attach-thumb');
+            if (preview) preview.style.display = 'none';
+            if (thumb) thumb.src = '';
+        }
+
+        function appendAIMessageWithImage(role, text, thumbSrc) {
+            const msgs = document.getElementById('ai-messages');
+            if (!msgs) return;
+            const wrapper = document.createElement('div');
+            wrapper.className = `ai-msg ${role}`;
+            const avatar = document.createElement('div');
+            avatar.className = `ai-avatar ${role}`;
+            avatar.textContent = role === 'bot' ? '🤖' : '🎓';
+            const bubble = document.createElement('div');
+            bubble.className = 'ai-bubble';
+            bubble.style.display = 'flex';
+            bubble.style.flexDirection = 'column';
+            bubble.style.gap = '6px';
+            if (thumbSrc) {
+                const img = document.createElement('img');
+                img.src = thumbSrc;
+                img.style.cssText = 'width:100%; max-height:120px; object-fit:cover; border-radius:8px;';
+                bubble.appendChild(img);
+            }
+            if (text) {
+                const p = document.createElement('span');
+                p.innerHTML = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+                bubble.appendChild(p);
+            }
+            wrapper.appendChild(avatar);
+            wrapper.appendChild(bubble);
+            msgs.appendChild(wrapper);
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+        // ===== END AI IMAGE ATTACHMENT =====
+
+        // ===== QR SCANNER =====
+        let qrStream = null;
+        let qrAnimFrame = null;
+        let qrCanvas = null;
+        let qrCtx = null;
+        let qrLastDetected = '';
+
+        function openQRScanner() {
+            const modal = document.getElementById('qr-scanner-modal');
+            if (!modal) return;
+            modal.classList.add('active');
+            qrLastDetected = '';
+            setQRStatus('Point camera at the QR code shown by your CR');
+            requestCameraAndStartScan();
+        }
+
+        function closeQRScanner() {
+            const modal = document.getElementById('qr-scanner-modal');
+            if (modal) modal.classList.remove('active');
+            stopQRScan();
+        }
+
+        function setQRStatus(msg) {
+            const el = document.getElementById('qr-status-msg');
+            if (el) el.textContent = msg;
+        }
+
+        function stopQRScan() {
+            if (qrAnimFrame) { cancelAnimationFrame(qrAnimFrame); qrAnimFrame = null; }
+            if (qrStream) {
+                qrStream.getTracks().forEach(t => t.stop());
+                qrStream = null;
+            }
+            const video = document.getElementById('qr-video');
+            if (video) video.srcObject = null;
+        }
+
+        async function requestCameraAndStartScan() {
+            const video = document.getElementById('qr-video');
+            if (!video) return;
+
+            try {
+                qrStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+                });
+                video.srcObject = qrStream;
+                video.onloadedmetadata = () => {
+                    video.play();
+                    // Lazy-create canvas
+                    if (!qrCanvas) {
+                        qrCanvas = document.createElement('canvas');
+                        qrCtx = qrCanvas.getContext('2d');
+                    }
+                    scheduleScan();
+                };
+            } catch (err) {
+                console.error('Camera error:', err);
+                if (err.name === 'NotAllowedError') {
+                    setQRStatus('⛔ Camera permission denied. Please allow camera access in your browser settings and try again.');
+                } else {
+                    setQRStatus('❌ Could not access camera: ' + (err.message || err.name));
+                }
+            }
+        }
+
+        function scheduleScan() {
+            qrAnimFrame = requestAnimationFrame(scanQRFrame);
+        }
+
+        function scanQRFrame() {
+            const video = document.getElementById('qr-video');
+            if (!video || !qrCanvas || video.readyState < 2) {
+                scheduleScan();
+                return;
+            }
+
+            qrCanvas.width = video.videoWidth;
+            qrCanvas.height = video.videoHeight;
+            qrCtx.drawImage(video, 0, 0, qrCanvas.width, qrCanvas.height);
+
+            const imageData = qrCtx.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+
+            if (code && code.data) {
+                const scannedData = code.data;
+
+                // Prevent processing the same QR twice rapidly
+                if (scannedData === qrLastDetected) {
+                    scheduleScan();
+                    return;
+                }
+
+                // Only accept Attendify attendance QR codes
+                // Valid formats:
+                //   https://qr-smart-attendance.web.app/attendance.html?id=...
+                //   https://qr-smart-attendance.web.app/?code=...
+                //   https://qr-smart-attendance.web.app/index.html?code=...
+                //   (bare code string like CR_DATE_SUBJECT)
+                let attendanceURL = null;
+
+                try {
+                    const url = new URL(scannedData);
+                    const isAttendifyHost = url.hostname === 'qr-smart-attendance.web.app' ||
+                                           url.hostname === 'firstfile-c763521e.web.app';
+
+                    if (isAttendifyHost) {
+                        const idParam = url.searchParams.get('id');
+                        const codeParam = url.searchParams.get('code');
+
+                        if (idParam) {
+                            // Legacy attendance.html format — redirect to index.html?code=
+                            attendanceURL = `${window.location.origin}/index.html?code=${encodeURIComponent(idParam)}`;
+                        } else if (codeParam) {
+                            // Direct ?code= format
+                            attendanceURL = scannedData;
+                        }
+                    }
+                } catch (e) {
+                    // Not a URL — might be a bare code string (CR_DATE_SUBJECT)
+                    // Bare codes have at least 2 underscores
+                    const parts = scannedData.split('_');
+                    if (parts.length >= 3) {
+                        attendanceURL = `${window.location.origin}/index.html?code=${encodeURIComponent(scannedData)}`;
+                    }
+                }
+
+                if (attendanceURL) {
+                    qrLastDetected = scannedData;
+                    setQRStatus('✅ QR detected! Marking attendance...');
+                    if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
+                    stopQRScan();
+                    setTimeout(() => {
+                        closeQRScanner();
+                        window.location.href = attendanceURL;
+                    }, 600);
+                    return;
+                } else {
+                    // Not an Attendify QR
+                    setQRStatus('⚠️ This is not an ATTENDIFY QR code. Please scan the QR shown by your CR.');
+                    qrLastDetected = scannedData; // Avoid repeating the same warning immediately
+                    setTimeout(() => { qrLastDetected = ''; }, 2000);
+                }
+            }
+
+            scheduleScan();
+        }
+        // ===== END QR SCANNER =====
         // ===== END AI ASSISTANT =====
     </script>
 </body>

@@ -1149,6 +1149,26 @@
             scroll-behavior: smooth;
         "></div>
 
+        <!-- Attachment preview bar -->
+        <div id="ai-attachment-preview" style="
+            display: none; align-items: center; gap: 8px;
+            padding: 6px 12px;
+            background: rgba(59,130,246,0.08);
+            border-top: 1px solid rgba(59,130,246,0.2);
+            flex-shrink: 0;
+        ">
+            <img id="ai-attach-thumb" src="" alt="Attachment preview" style="
+                width: 40px; height: 40px; border-radius: 8px;
+                object-fit: cover; border: 1px solid rgba(255,255,255,0.15);
+            ">
+            <span id="ai-attach-name" style="font-size: 11px; color: #3b82f6; font-weight: 600; flex: 1;">Image attached</span>
+            <button onclick="clearCRAIAttachment()" title="Remove attachment" style="
+                background: none; border: none; color: #ef4444;
+                cursor: pointer; font-size: 16px; padding: 2px 4px;
+                border-radius: 4px;
+            ">✕</button>
+        </div>
+
         <!-- Input row -->
         <div style="
             padding: 10px 12px;
@@ -1156,6 +1176,16 @@
             display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0;
             background: var(--card-bg, #1a1a2e);
         ">
+            <input type="file" id="ai-file-input" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="handleCRAIAttachment(event)">
+            <button id="ai-attach-btn" onclick="document.getElementById('ai-file-input').click()" title="Attach image" aria-label="Attach an image" style="
+                width: 36px; height: 36px; border-radius: 10px;
+                border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+                background: var(--tab-bg, rgba(255,255,255,0.05));
+                color: var(--text-muted, #94a3b8);
+                font-size: 16px; cursor: pointer; flex-shrink: 0;
+                display: flex; align-items: center; justify-content: center;
+                transition: all 0.15s;
+            ">📎</button>
             <textarea id="ai-input" rows="1" placeholder="Ask a question..." style="
                 flex: 1; resize: none; border-radius: 12px;
                 background: var(--tab-bg, rgba(255,255,255,0.05));
@@ -5023,6 +5053,39 @@ ${requestLines || '  (No requests found)'}
             sendAIMessage();
         }
 
+        // ===== CR AI ATTACHMENT =====
+        let crAIPendingAttachment = null;
+
+        function handleCRAIAttachment(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const allowed = ['image/png', 'image/jpeg', 'image/webp'];
+            if (!allowed.includes(file.type)) { appendAIMessage('bot', '❌ Only PNG, JPEG, or WebP images are supported.'); return; }
+            if (file.size > 4 * 1024 * 1024) { appendAIMessage('bot', '❌ Image too large. Use an image under 4 MB.'); return; }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const dataUrl = e.target.result;
+                crAIPendingAttachment = { mimeType: file.type, base64: dataUrl.split(',')[1], thumb: dataUrl };
+                const preview = document.getElementById('ai-attachment-preview');
+                const thumb = document.getElementById('ai-attach-thumb');
+                const name = document.getElementById('ai-attach-name');
+                if (preview) preview.style.display = 'flex';
+                if (thumb) thumb.src = dataUrl;
+                if (name) name.textContent = file.name || 'Image attached';
+            };
+            reader.readAsDataURL(file);
+            event.target.value = '';
+        }
+
+        function clearCRAIAttachment() {
+            crAIPendingAttachment = null;
+            const preview = document.getElementById('ai-attachment-preview');
+            const thumb = document.getElementById('ai-attach-thumb');
+            if (preview) preview.style.display = 'none';
+            if (thumb) thumb.src = '';
+        }
+        // ===== END CR AI ATTACHMENT =====
+
         async function sendAIMessage() {
             if (aiIsLoading) return;
             const input = document.getElementById('ai-input');
@@ -5030,13 +5093,47 @@ ${requestLines || '  (No requests found)'}
             if (!input) return;
 
             const text = input.value.trim();
-            if (!text) return;
+            const attachmentToSend = crAIPendingAttachment || null;
+            if (!text && !attachmentToSend) return;
 
+            clearCRAIAttachment();
             input.value = '';
             input.style.height = 'auto';
-            appendAIMessage('user', text);
 
-            aiChatHistory.push({ role: 'user', content: text });
+            // Show user message
+            if (attachmentToSend) {
+                // Append image thumbnail + text in bubble
+                const msgs = document.getElementById('ai-messages');
+                if (msgs) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'ai-msg user';
+                    const avatar = document.createElement('div');
+                    avatar.className = 'ai-avatar user';
+                    avatar.textContent = '👨‍💼';
+                    const bubble = document.createElement('div');
+                    bubble.className = 'ai-bubble';
+                    bubble.style.cssText = 'display:flex;flex-direction:column;gap:6px;';
+                    const img = document.createElement('img');
+                    img.src = attachmentToSend.thumb;
+                    img.style.cssText = 'width:100%;max-height:120px;object-fit:cover;border-radius:8px;';
+                    bubble.appendChild(img);
+                    if (text) {
+                        const p = document.createElement('span');
+                        p.innerHTML = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+                        bubble.appendChild(p);
+                    }
+                    wrapper.appendChild(avatar);
+                    wrapper.appendChild(bubble);
+                    msgs.appendChild(wrapper);
+                    msgs.scrollTop = msgs.scrollHeight;
+                }
+            } else {
+                appendAIMessage('user', text);
+            }
+
+            const userEntry = { role: 'user', content: text || '(Image attached)' };
+            if (attachmentToSend) userEntry.attachment = { mimeType: attachmentToSend.mimeType, base64: attachmentToSend.base64 };
+            aiChatHistory.push(userEntry);
             if (aiChatHistory.length > 10) aiChatHistory = aiChatHistory.slice(-10);
 
             aiIsLoading = true;
@@ -5044,11 +5141,11 @@ ${requestLines || '  (No requests found)'}
             const typingEl = appendTypingIndicator();
 
             try {
-                // Inject context only in first message of the batch
-                const messages = aiChatHistory.map((m, i) => ({
-                    role: m.role === 'assistant' ? 'assistant' : 'user',
-                    content: m.content
-                }));
+                const messages = aiChatHistory.map((m) => {
+                    const out = { role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content };
+                    if (m.attachment) out.attachment = m.attachment;
+                    return out;
+                });
 
                 const systemInstruction = buildCRSystemInstruction();
 
