@@ -12,6 +12,7 @@ let shouldShowLandingTopOnLaunch = false;
 try {
     const url = new URL(window.location.href);
     shouldShowLandingTopOnLaunch = url.searchParams.get('showLanding') === '1';
+    window.attendifyShowLandingTopOnLaunch = shouldShowLandingTopOnLaunch;
     if (shouldShowLandingTopOnLaunch) {
         url.searchParams.delete('showLanding');
         const cleanPath = `${url.pathname}${url.search}${url.hash}`;
@@ -19,6 +20,7 @@ try {
     }
 } catch (e) {
     shouldShowLandingTopOnLaunch = false;
+    window.attendifyShowLandingTopOnLaunch = false;
 }
 
 function consumeLandingTopLaunchRequest() {
