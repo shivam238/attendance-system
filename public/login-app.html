@@ -188,6 +188,7 @@
     <!-- Firebase CDN SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="assets/js/firebase-config.js?v=5"></script>
 </head>
 <body>
@@ -284,19 +285,41 @@
             });
         }
 
-        // ✅ Student flow: deep link with UID — app auto-verifies and logs in
+        // ✅ Student flow: write uid to Firebase session — track.html listener picks it up automatically
         function handleStudentFlow(user) {
             const msgDiv = document.getElementById('message');
+            const sk = urlParams.get('sk');
+
             document.getElementById('connecting-state').style.display = 'none';
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('token-section').style.display = 'block';
-            document.getElementById('token-display').value = '✅ Signed in as: ' + user.displayName + '\nRedirecting back to app...';
+            document.getElementById('token-display').value = '✅ Signed in as: ' + user.displayName + '\n⏳ Sending you back to the app...';
             msgDiv.innerHTML = '';
 
-            // Send uid-based deep link back to app — app handles rest automatically
-            setTimeout(() => {
-                window.location.href = 'attendify://student-login?uid=' + encodeURIComponent(user.uid);
-            }, 400);
+            if (sk) {
+                // Write uid to Firebase — track.html Firebase listener will auto-login immediately
+                const db = firebase.database();
+                db.ref('student_auth_sessions/' + sk).set({
+                    uid: user.uid,
+                    ts: Date.now()
+                }).then(() => {
+                    // Also fire deep link as backup (in case app is in foreground)
+                    setTimeout(() => {
+                        window.location.href = 'attendify://student-login?uid=' + encodeURIComponent(user.uid) + '&sk=' + encodeURIComponent(sk);
+                    }, 800);
+                }).catch((err) => {
+                    console.error('Session write error:', err);
+                    // Fallback to deep link even if Firebase write fails
+                    setTimeout(() => {
+                        window.location.href = 'attendify://student-login?uid=' + encodeURIComponent(user.uid);
+                    }, 400);
+                });
+            } else {
+                // No session key — fall back to deep link
+                setTimeout(() => {
+                    window.location.href = 'attendify://student-login?uid=' + encodeURIComponent(user.uid);
+                }, 400);
+            }
         }
 
         // Show the sign-in button immediately on load — no auto-redirect

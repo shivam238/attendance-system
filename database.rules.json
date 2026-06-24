@@ -59,6 +59,13 @@
         ".write": "true",
         ".validate": "newData.hasChildren(['rating', 'category', 'text', 'timestamp']) && newData.child('rating').isNumber() && newData.child('category').isString() && newData.child('text').isString() && newData.child('timestamp').isNumber()"
       }
+    },
+    "student_auth_sessions": {
+      "$session_key": {
+        ".read": true,
+        ".write": true,
+        ".validate": "!newData.exists() || (newData.hasChildren(['uid', 'ts']) && newData.child('uid').isString() && newData.child('ts').isNumber())"
+      }
     }
   }
 }

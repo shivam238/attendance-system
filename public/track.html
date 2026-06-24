@@ -1243,11 +1243,39 @@
         function loginWithGoogle() {
             const msgDiv = document.getElementById('portal-auth-message');
             
-            // In Capacitor (Android app) — open login-app.html in system browser with student flow flag
+            // In Capacitor (Android app) — use Firebase session relay (no deep links needed)
             if (window.Capacitor) {
-                msgDiv.innerHTML = '<div class="message info" style="margin: 0; padding: 10px; color: var(--text-color); background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px;">⚡ Opening Google Sign-In... Please complete sign-in in the browser window.</div>';
-                // ?flow=student tells login-app.html to send attendify://student-login?uid=... back
-                window.open('https://firstfile-c763521e.firebaseapp.com/login-app.html?flow=student', '_system');
+                // 1. Generate unique session key
+                const sk = 'sk_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                window._studentLoginSK = sk;
+
+                msgDiv.innerHTML = '<div class="message info" style="margin:0; padding:10px; color:var(--text-color); background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.3); border-radius:8px;">⚡ Opening Google Sign-In in browser...<br><small style="opacity:0.7;">Sign in there and you\'ll be logged in here automatically.</small></div>';
+
+                // 2. Set up Firebase listener BEFORE opening browser
+                let sessionListenerRef = db.ref('student_auth_sessions/' + sk);
+                const onSession = sessionListenerRef.on('value', (snap) => {
+                    if (snap.exists()) {
+                        const data = snap.val();
+                        // Clean up listener and session
+                        sessionListenerRef.off('value', onSession);
+                        sessionListenerRef.remove();
+                        window._studentLoginSK = null;
+                        // Auto-login!
+                        autoCompleteStudentGoogleLogin(data.uid);
+                    }
+                });
+
+                // 3. Auto-cleanup listener after 5 minutes
+                setTimeout(() => {
+                    if (window._studentLoginSK === sk) {
+                        sessionListenerRef.off('value', onSession);
+                        window._studentLoginSK = null;
+                        msgDiv.innerHTML = '<div class="message error" style="margin:0; padding:10px; color:#ef4444;">⌛ Sign-in timed out. Please try again.</div>';
+                    }
+                }, 5 * 60 * 1000);
+
+                // 4. Open browser with session key
+                window.open('https://firstfile-c763521e.firebaseapp.com/login-app.html?flow=student&sk=' + sk, '_system');
                 return;
             }
             
