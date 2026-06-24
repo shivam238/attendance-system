@@ -142,6 +142,7 @@ public class MockLocationChecker extends Plugin {
         JSObject ret = new JSObject();
         ret.put("latitude", location != null ? location.getLatitude() : 0);
         ret.put("longitude", location != null ? location.getLongitude() : 0);
+        ret.put("accuracy", location != null && location.hasAccuracy() ? location.getAccuracy() : 0);
         ret.put("isMock", isMock);
         call.resolve(ret);
     }

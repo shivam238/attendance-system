@@ -548,6 +548,23 @@ function autoExportClosedSession(sessionKey) {
     });
 }
 
+function canShareAttendanceReport() {
+    if (!navigator.share || !navigator.canShare || !window.File || !window.Blob) {
+        return false;
+    }
+
+    try {
+        const testFile = new File(
+            [''],
+            'Attendance_Report.xlsx',
+            { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }
+        );
+        return navigator.canShare({ files: [testFile] });
+    } catch (e) {
+        return false;
+    }
+}
+
 function showAutoExportPrompt(records, date, subject) {
     const existing = document.getElementById('auto-export-prompt-modal');
     if (existing) existing.remove();
@@ -558,6 +575,7 @@ function showAutoExportPrompt(records, date, subject) {
     modal.style.zIndex = '10000';
 
     const recordsCount = Object.keys(records).length;
+    const showShareButton = canShareAttendanceReport();
 
     modal.innerHTML = `
         <div class="modal-content" style="max-width: 400px; text-align: center; border-top: 5px solid var(--primary-color);">
@@ -568,9 +586,11 @@ function showAutoExportPrompt(records, date, subject) {
                 Date: ${date} | Present: <strong>${recordsCount}</strong> students
             </p>
             <div style="display: flex; flex-direction: column; gap: 10px;">
-                <button class="btn btn-primary" id="btn-auto-share" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0;">
-                    📤 Share Report
-                </button>
+                ${showShareButton ? `
+                    <button class="btn btn-primary" id="btn-auto-share" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0;">
+                        📤 Share Report
+                    </button>
+                ` : ''}
                 <button class="btn btn-success" id="btn-auto-download" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0;">
                     📥 Download Excel
                 </button>
@@ -583,7 +603,10 @@ function showAutoExportPrompt(records, date, subject) {
 
     document.body.appendChild(modal);
 
-    document.getElementById('btn-auto-share').onclick = () => triggerSessionExport(records, date, subject, 'share');
+    const shareButton = document.getElementById('btn-auto-share');
+    if (shareButton) {
+        shareButton.onclick = () => triggerSessionExport(records, date, subject, 'share');
+    }
     document.getElementById('btn-auto-download').onclick = () => triggerSessionExport(records, date, subject, 'download');
 }
 

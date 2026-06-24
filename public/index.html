@@ -1313,7 +1313,7 @@
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/ui.js?v=18"></script>
     <script src="assets/js/history.js?v=10"></script>
-    <script src="assets/js/export.js?v=10"></script>
+    <script src="assets/js/export.js?v=11"></script>
 
     <script>
         // Redirect to student portal if student session exists
@@ -3753,6 +3753,61 @@ Convert the student list from the attached file/image, or the text enclosed in t
             return R * c; // in meters
         }
 
+        const MAX_ACCEPTABLE_GPS_ACCURACY = 100;
+        const MAX_LOCATION_RETRY_ATTEMPTS = 2;
+        let activeLocationRetryHandler = null;
+
+        function retryLocationVerification() {
+            if (typeof activeLocationRetryHandler === 'function') {
+                activeLocationRetryHandler();
+            }
+        }
+
+        function verifyStudentGeofenceLocation(student, subject, key, currentTime, isWithin5Minutes, session, locationResult, retryLocationCheck) {
+            const sessionLoc = session.location;
+            const studentLat = locationResult.latitude;
+            const studentLng = locationResult.longitude;
+            const accuracy = Number(locationResult.accuracy || 0);
+            const distance = calculateDistance(studentLat, studentLng, sessionLoc.lat, sessionLoc.lng);
+            const relaxedRadius = Math.min(sessionLoc.radius * 1.8, sessionLoc.radius + 60);
+
+            if (distance > sessionLoc.radius && accuracy > MAX_ACCEPTABLE_GPS_ACCURACY) {
+                const attempts = Number(student.locationRetryAttempts || 0);
+                if (attempts < MAX_LOCATION_RETRY_ATTEMPTS) {
+                    student.locationRetryAttempts = attempts + 1;
+                    const retryLabel = student.locationRetryAttempts >= MAX_LOCATION_RETRY_ATTEMPTS ? 'Try Again One Last Time' : 'Retry Location';
+                    const msgDiv = document.getElementById('modal-message');
+                    if (msgDiv) {
+                        msgDiv.innerHTML = `
+                            <div class="message warning">
+                                ⚠️ GPS accuracy is low (±${Math.round(accuracy)}m). Please move near a window/open area, keep precise location on, then retry.
+                                <br><br>
+                                <button class="btn btn-primary btn-small" type="button" onclick="${retryLocationCheck}()" style="margin: 0;">
+                                    📍 ${retryLabel}
+                                </button>
+                            </div>
+                        `;
+                    }
+                    return;
+                }
+
+                submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, Math.round(distance), false);
+                return;
+            }
+
+            if (distance > sessionLoc.radius) {
+                if (distance <= relaxedRadius) {
+                    student.geofenceRelaxed = true;
+                    student.actualDistance = Math.round(distance);
+                    proceedWithAttendanceSave(student, subject, key, currentTime, isWithin5Minutes, session);
+                } else {
+                    submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, Math.round(distance), false);
+                }
+            } else {
+                proceedWithAttendanceSave(student, subject, key, currentTime, isWithin5Minutes, session);
+            }
+        }
+
         function getDeviceId() {
             let id = null;
             try {
@@ -4068,43 +4123,30 @@ Convert the student list from the attached file/image, or the text enclosed in t
                                 const sessionLoc = session.location;
 
                                 if (sessionLoc) {
-                                    // Geofencing enabled for session
-                                    msgDiv.innerHTML = '<div class="message info" style="color: var(--primary-color);">📍 Verifying classroom location... Please allow GPS access.</div>';
+                                    const runLocationCheck = () => {
+                                        msgDiv.innerHTML = '<div class="message info" style="color: var(--primary-color);">📍 Verifying classroom location... Please allow GPS access.</div>';
 
-                                    // Try native Capacitor plugin MockLocationChecker first for Android security
-                                    if (window.Capacitor && window.Capacitor.Plugins.MockLocationChecker) {
-                                        const { MockLocationChecker } = window.Capacitor.Plugins;
-                                        MockLocationChecker.getCurrentPosition().then((result) => {
-                                            if (result.isMock) {
-                                                msgDiv.innerHTML = '<div class="message error">❌ Fake/Mock Location detected! Please disable mock GPS apps.</div>';
-                                                alert("❌ Proxy/Fake GPS detected. Your device has been flagged!");
-                                                logAnalyticsEvent("fake_gps_detected", {
-                                                    rollNo: student.rollNo,
-                                                    subject: subject
-                                                });
-                                            } else {
-                                                const studentLat = result.latitude;
-                                                const studentLng = result.longitude;
-                                                const distance = calculateDistance(studentLat, studentLng, sessionLoc.lat, sessionLoc.lng);
-                                                const relaxedRadius = Math.min(sessionLoc.radius * 1.8, sessionLoc.radius + 60);
-
-                                                if (distance > sessionLoc.radius) {
-                                                    if (distance <= relaxedRadius) {
-                                                        student.geofenceRelaxed = true;
-                                                        student.actualDistance = Math.round(distance);
-                                                        proceedWithAttendanceSave(student, subject, key, currentTime, isWithin5Minutes, session);
-                                                    } else {
-                                                        submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, Math.round(distance), false);
-                                                    }
+                                        // Try native Capacitor plugin MockLocationChecker first for Android security
+                                        if (window.Capacitor && window.Capacitor.Plugins.MockLocationChecker) {
+                                            const { MockLocationChecker } = window.Capacitor.Plugins;
+                                            MockLocationChecker.getCurrentPosition().then((result) => {
+                                                if (result.isMock) {
+                                                    msgDiv.innerHTML = '<div class="message error">❌ Fake/Mock Location detected! Please disable mock GPS apps.</div>';
+                                                    alert("❌ Proxy/Fake GPS detected. Your device has been flagged!");
+                                                    logAnalyticsEvent("fake_gps_detected", {
+                                                        rollNo: student.rollNo,
+                                                        subject: subject
+                                                    });
                                                 } else {
-                                                    proceedWithAttendanceSave(student, subject, key, currentTime, isWithin5Minutes, session);
+                                                    verifyStudentGeofenceLocation(student, subject, key, currentTime, isWithin5Minutes, session, result, 'retryLocationVerification');
                                                 }
-                                            }
-                                        }).catch((error) => {
-                                            console.error("Native location error:", error);
-                                            submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, null, true);
-                                        });
-                                    } else {
+                                            }).catch((error) => {
+                                                console.error("Native location error:", error);
+                                                submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, null, true);
+                                            });
+                                            return;
+                                        }
+
                                         // Web fallback (standard navigator.geolocation)
                                         if (!navigator.geolocation) {
                                             submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, null, true);
@@ -4113,29 +4155,21 @@ Convert the student list from the attached file/image, or the text enclosed in t
 
                                         navigator.geolocation.getCurrentPosition(
                                             (position) => {
-                                                const studentLat = position.coords.latitude;
-                                                const studentLng = position.coords.longitude;
-                                                const distance = calculateDistance(studentLat, studentLng, sessionLoc.lat, sessionLoc.lng);
-                                                const relaxedRadius = Math.min(sessionLoc.radius * 1.8, sessionLoc.radius + 60);
-
-                                                if (distance > sessionLoc.radius) {
-                                                    if (distance <= relaxedRadius) {
-                                                        student.geofenceRelaxed = true;
-                                                        student.actualDistance = Math.round(distance);
-                                                        proceedWithAttendanceSave(student, subject, key, currentTime, isWithin5Minutes, session);
-                                                    } else {
-                                                        submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, Math.round(distance), false);
-                                                    }
-                                                } else {
-                                                    proceedWithAttendanceSave(student, subject, key, currentTime, isWithin5Minutes, session);
-                                                }
+                                                verifyStudentGeofenceLocation(student, subject, key, currentTime, isWithin5Minutes, session, {
+                                                    latitude: position.coords.latitude,
+                                                    longitude: position.coords.longitude,
+                                                    accuracy: position.coords.accuracy
+                                                }, 'retryLocationVerification');
                                             },
                                             (error) => {
                                                 submitLocationMismatchRequest(student, subject, key, currentTime, isWithin5Minutes, session, null, true);
                                             },
-                                            { enableHighAccuracy: true, timeout: 5000 }
+                                            { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
                                         );
-                                    }
+                                    };
+
+                                    activeLocationRetryHandler = runLocationCheck;
+                                    runLocationCheck();
                                 } else {
                                     proceedWithAttendanceSave(student, subject, key, currentTime, isWithin5Minutes, session);
                                 }
