@@ -100,6 +100,13 @@ body {
     transform: translateX(-4px);
 }
 
+/* Instant theme switch — suppress transitions for 2 frames to eliminate repaint lag */
+body.theme-switching *,
+body.theme-switching *::before,
+body.theme-switching *::after {
+    transition: none !important;
+}
+
 #theme-toggle-btn {
     position: relative;
     width: 56px;

@@ -27,6 +27,12 @@ function applyTheme() {
 }
 
 function toggleDarkMode() {
+    // Suppress all CSS transitions for 2 frames — eliminates repaint lag on theme switch
+    document.body.classList.add('theme-switching');
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        document.body.classList.remove('theme-switching');
+    }));
+
     const isDark = document.body.classList.toggle('dark-mode');
     localStorage.setItem('darkMode', isDark);
     
