@@ -1,0 +1,44 @@
+ATTENDIFY Security Roadmap (Future Updates)
+===========================================
+
+This document outlines the remaining security and privacy vulnerabilities identified in the application, along with high-level guidelines on how to resolve them in a future major release without breaking backward compatibility.
+
+-------------------------------------------
+1. Database Public Read (High Risk)
+-------------------------------------------
+* Vulnerability: Paths like /users, /attendance, /requests, /qr_sessions, and /google_user_links have ".read: true" globally.
+* Risk: Anyone who knows the Firebase Database URL (visible in client code) can append .json to the URL (e.g., .../attendance.json) and download the entire attendance data or user list without authenticating.
+* Future Fix (Requires Architecture Change):
+  1. Implement Firebase Anonymous Authentication on the Student Portal (track.html).
+  2. Create a mapping logic or restrict rules such that a student can only read attendance nodes where the database path or record keys match their verified Class ID and Roll Number.
+  3. Alternatively, fetch attendance through a Cloud Function or Cloudflare Worker that validates a student's session token instead of direct Realtime Database reads.
+
+-------------------------------------------
+2. CR/Teacher JWT in Deep Link URL (Medium Risk)
+-------------------------------------------
+* Vulnerability: The Google idToken (JSON Web Token) is passed as a query parameter in the custom URI scheme deep link (attendify://login?token=<JWT>).
+* Risk: The token is active for 1 hour. If it is intercepted via system log files (logcat), local browser history, or an unsafe local environment, an attacker can hijack the CR session.
+* Future Fix (Requires App Update):
+  * Instead of deep-linking the raw JWT, use a Session Relay Pattern similar to the student login. 
+  * The browser writes a short-lived, encrypted sign-in state to Firebase, and the app reads it via a temporary session key, keeping the raw token out of the URL string.
+
+-------------------------------------------
+3. Classroom OAuth Token in Deep Link URL (Medium Risk)
+-------------------------------------------
+* Vulnerability: The Google Classroom access token is passed in the URL redirect (attendify://classroom?token=<TOKEN>&role=student).
+* Risk: Similar to the JWT leak, the access token grants access to Classroom APIs (assignments, announcement streams) and can be intercepted from URL parameters.
+* Future Fix (Requires App Update):
+  * Implement authorization code flow (OAuth 2.0 Authorization Code Grant) where only a one-time code is passed in the deep link. The app then exchanges this code for an access token via a secure server-side handler.
+
+-------------------------------------------
+4. Session Key (sk) Visible in Browser URL (Low-Medium Risk)
+-------------------------------------------
+* Vulnerability: The student session key is visible in the address bar (login-app.html?flow=student&sk=sk_xxxx).
+* Risk: If someone copies/shares the URL or checks browser history before the login is complete, they could get the session key. (Mitigated by our recent addition of !data.exists() and uid === auth.uid database rules, which prevent session hijacking/overwriting).
+* Future Fix:
+  * Use browser state APIs (history.replaceState) to strip out the sk parameter from the address bar immediately after the page loads.
+
+-------------------------------------------
+CRITICAL WARNING:
+-------------------------------------------
+Do not attempt to fix these rules by simply locking the Firebase rules, as it will immediately crash the live Student Portal (track.html). These must be resolved during a coordinated frontend/backend architecture overhaul.
