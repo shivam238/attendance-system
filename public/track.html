@@ -693,10 +693,31 @@
         <h2 style="color: #fff;">Fast as Light... ⚡</h2>
     </div>
 
+    <!-- Navigation Drawer (Hamburger Sidebar) -->
+    <div id="nav-drawer" class="nav-drawer">
+        <div class="nav-drawer-header">
+            <div class="nav-drawer-title"><span class="nav-drawer-icon">📱</span>Menu</div>
+            <button class="nav-drawer-close" id="nav-drawer-close" aria-label="Close navigation menu" onclick="toggleNavDrawer()">✕</button>
+        </div>
+        <div class="nav-drawer-links">
+            <a href="about.html" class="nav-drawer-item" onclick="toggleNavDrawer();"><span class="nav-drawer-icon">ℹ️</span>About</a>
+            <a href="contact.html" class="nav-drawer-item" onclick="toggleNavDrawer();"><span class="nav-drawer-icon">✉️</span>Contact</a>
+            <a href="manual.html" target="_blank" class="nav-drawer-item" onclick="toggleNavDrawer();"><span class="nav-drawer-icon">📖</span>User Manual</a>
+            <a href="feedback.html" class="nav-drawer-item" onclick="toggleNavDrawer();"><span class="nav-drawer-icon">💬</span>Feedback</a>
+            <a href="privacy-policy.html" class="nav-drawer-item" onclick="toggleNavDrawer();"><span class="nav-drawer-icon">🔒</span>Privacy & Policy</a>
+            <a href="terms.html" class="nav-drawer-item" onclick="toggleNavDrawer();"><span class="nav-drawer-icon">📄</span>Terms & Conditions</a>
+        </div>
+        <div class="nav-drawer-footer">© 2026 ATTENDIFY</div>
+    </div>
+    <div id="nav-drawer-overlay" class="nav-drawer-overlay" onclick="toggleNavDrawer()"></div>
+
     <div class="container portal-container">
         <!-- HEADER CONTROLS -->
         <div class="header-controls">
             <div class="header-controls-left">
+                <button class="hamburger-btn" onclick="toggleNavDrawer()" title="Menu" aria-label="Open navigation menu">
+                    <span></span><span></span><span></span>
+                </button>
                 <a href="index.html" style="text-decoration: none;">
                     <button class="home-nav-btn">🏠 Main App</button>
                 </a>
@@ -947,7 +968,7 @@
 
     <!-- ===== AI ATTENDANCE ASSISTANT BUTTON + POPUP ===== -->
     <!-- Floating trigger button (only shown after student logs in) -->
-    <button id="ai-assistant-fab" onclick="openAIAssistant()" aria-label="Open AI Attendance Assistant">
+    <button id="ai-assistant-fab" onclick="handleAIFABClick(event)" aria-label="Open AI Attendance Assistant">
         🤖
     </button>
 
@@ -1136,13 +1157,22 @@
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             align-items: center;
             justify-content: center;
+            touch-action: none;
+            user-select: none;
         }
         #ai-assistant-fab.ai-fab-visible {
             display: flex !important;
         }
+        #ai-assistant-fab.ai-fab-dragging {
+            transition: box-shadow 0.2s ease;
+            cursor: grabbing;
+        }
         #ai-assistant-fab:hover {
             transform: scale(1.1);
             box-shadow: 0 8px 32px rgba(102, 126, 234, 0.6);
+        }
+        #ai-assistant-fab.ai-fab-dragging:hover {
+            transform: none;
         }
     </style>
     <!-- ===== END AI ASSISTANT ===== -->
@@ -1155,7 +1185,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
     <script src="assets/js/firebase-config.js"></script>
-    <script src="assets/js/ui.js?v=10"></script>
+    <script src="assets/js/ui.js?v=11"></script>
     <script>
         // ===== GOOGLE CLASSROOM STUDENT FEED =====
         let studentClassroomToken = null;
@@ -2446,6 +2476,7 @@
                 const fab = document.getElementById('ai-assistant-fab');
                 if (fab) fab.classList.remove('ai-fab-visible');
                 closeAIAssistant();
+                window.location.href = 'index.html';
             }
         }
 
@@ -2453,6 +2484,105 @@
         const AI_WORKER_URL = 'https://attendify-support-worker.sm3165599.workers.dev';
         let aiChatHistory = []; // { role: 'user'|'assistant', content: '' }
         let aiIsLoading = false;
+        let aiFabDragReady = false;
+        let aiFabDragState = null;
+        let aiFabSuppressClickUntil = 0;
+
+        function handleAIFABClick(event) {
+            if (Date.now() < aiFabSuppressClickUntil) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
+            openAIAssistant();
+        }
+
+        function setupAIFABDrag() {
+            const fab = document.getElementById('ai-assistant-fab');
+            if (!fab || aiFabDragReady) return;
+            aiFabDragReady = true;
+
+            restoreAIFABPosition(fab);
+
+            fab.addEventListener('pointerdown', (event) => {
+                if (event.button !== undefined && event.button !== 0) return;
+                const rect = fab.getBoundingClientRect();
+                aiFabDragState = {
+                    pointerId: event.pointerId,
+                    startX: event.clientX,
+                    startY: event.clientY,
+                    offsetX: event.clientX - rect.left,
+                    offsetY: event.clientY - rect.top,
+                    moved: false
+                };
+                fab.classList.add('ai-fab-dragging');
+                fab.setPointerCapture(event.pointerId);
+            });
+
+            fab.addEventListener('pointermove', (event) => {
+                if (!aiFabDragState || aiFabDragState.pointerId !== event.pointerId) return;
+                const moveX = event.clientX - aiFabDragState.startX;
+                const moveY = event.clientY - aiFabDragState.startY;
+                if (Math.hypot(moveX, moveY) > 4) aiFabDragState.moved = true;
+                if (!aiFabDragState.moved) return;
+
+                event.preventDefault();
+                moveAIFABTo(fab, event.clientX - aiFabDragState.offsetX, event.clientY - aiFabDragState.offsetY);
+            });
+
+            const endDrag = (event) => {
+                if (!aiFabDragState || aiFabDragState.pointerId !== event.pointerId) return;
+                if (aiFabDragState.moved) {
+                    aiFabSuppressClickUntil = Date.now() + 350;
+                    saveAIFABPosition(fab);
+                }
+                fab.classList.remove('ai-fab-dragging');
+                aiFabDragState = null;
+            };
+
+            fab.addEventListener('pointerup', endDrag);
+            fab.addEventListener('pointercancel', endDrag);
+
+            window.addEventListener('resize', () => {
+                if (!fab.classList.contains('ai-fab-visible')) return;
+                const rect = fab.getBoundingClientRect();
+                moveAIFABTo(fab, rect.left, rect.top);
+                saveAIFABPosition(fab);
+            });
+        }
+
+        function moveAIFABTo(fab, left, top) {
+            const margin = 8;
+            const maxLeft = window.innerWidth - fab.offsetWidth - margin;
+            const maxTop = window.innerHeight - fab.offsetHeight - margin;
+            const nextLeft = Math.min(Math.max(left, margin), Math.max(margin, maxLeft));
+            const nextTop = Math.min(Math.max(top, margin), Math.max(margin, maxTop));
+
+            fab.style.left = `${nextLeft}px`;
+            fab.style.top = `${nextTop}px`;
+            fab.style.right = 'auto';
+            fab.style.bottom = 'auto';
+        }
+
+        function saveAIFABPosition(fab) {
+            const rect = fab.getBoundingClientRect();
+            localStorage.setItem('attendify_student_ai_fab_position', JSON.stringify({
+                xRatio: rect.left / Math.max(1, window.innerWidth - fab.offsetWidth),
+                yRatio: rect.top / Math.max(1, window.innerHeight - fab.offsetHeight)
+            }));
+        }
+
+        function restoreAIFABPosition(fab) {
+            try {
+                const saved = JSON.parse(localStorage.getItem('attendify_student_ai_fab_position') || 'null');
+                if (!saved) return;
+                const left = saved.xRatio * Math.max(1, window.innerWidth - fab.offsetWidth);
+                const top = saved.yRatio * Math.max(1, window.innerHeight - fab.offsetHeight);
+                moveAIFABTo(fab, left, top);
+            } catch (e) {
+                localStorage.removeItem('attendify_student_ai_fab_position');
+            }
+        }
 
         function buildAttendanceContext() {
             const subjectStats = window.studentSubjectStats;
@@ -2719,7 +2849,10 @@ Bug reporting: If the student mentions any bug, error, crash, slow loading, or u
         // Show FAB when dashboard is visible (called from fetchAndBuildDashboard)
         function showAIFAB() {
             const fab = document.getElementById('ai-assistant-fab');
-            if (fab) fab.classList.add('ai-fab-visible');
+            if (fab) {
+                fab.classList.add('ai-fab-visible');
+                setupAIFABDrag();
+            }
         }
         // ===== END AI ASSISTANT =====
     </script>

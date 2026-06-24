@@ -94,6 +94,8 @@ function verifyCapacitorLoginToken() {
 }
 
 function logoutUser() {
+    if (!confirm('Are you sure you want to logout?')) return;
+
     // Clear user profile cache to prevent instant-on page restoration
     if (auth.currentUser) {
         localStorage.removeItem('user_profile_' + auth.currentUser.uid);
@@ -102,6 +104,9 @@ function logoutUser() {
     // Cleanup active Firebase listeners to prevent Permission Denied errors
     if (typeof cleanupFirebaseListeners === 'function') {
         cleanupFirebaseListeners();
+    }
+    if (typeof hideCRAIFAB === 'function') {
+        hideCRAIFAB();
     }
 
     auth.signOut().catch(err => {
@@ -593,4 +598,3 @@ if (window.Capacitor) {
         }
     });
 }
-

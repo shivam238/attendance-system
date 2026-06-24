@@ -684,6 +684,11 @@
     <!-- STUDENT ATTENDANCE MODAL -->
     <div id="student-modal" class="modal">
         <div class="modal-content" style="max-width: 420px; text-align: center;">
+            <div style="display: flex; justify-content: flex-start; margin-bottom: 12px;">
+                <button class="hamburger-btn" onclick="toggleNavDrawer()" title="Menu" aria-label="Open navigation menu">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
             <h2 class="modal-header" style="text-align: center; margin-bottom: 20px;">🎓 Mark Attendance</h2>
             
             <div class="form-group" style="text-align: left;">
@@ -1076,7 +1081,7 @@
 
     <!-- ===== AI ATTENDANCE ASSISTANT BUTTON + POPUP ===== -->
     <!-- Floating trigger button (only shown after CR logs in) -->
-    <button id="ai-assistant-fab" onclick="openAIAssistant()" aria-label="Open AI Attendance Assistant">
+    <button id="ai-assistant-fab" onclick="handleAIFABClick(event)" aria-label="Open AI Attendance Assistant">
         🤖
     </button>
 
@@ -1265,13 +1270,22 @@
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             align-items: center;
             justify-content: center;
+            touch-action: none;
+            user-select: none;
         }
         #ai-assistant-fab.ai-fab-visible {
             display: flex !important;
         }
+        #ai-assistant-fab.ai-fab-dragging {
+            transition: box-shadow 0.2s ease;
+            cursor: grabbing;
+        }
         #ai-assistant-fab:hover {
             transform: scale(1.1);
             box-shadow: 0 8px 32px rgba(59, 130, 246, 0.6);
+        }
+        #ai-assistant-fab.ai-fab-dragging:hover {
+            transform: none;
         }
     </style>
     <!-- ===== END AI ASSISTANT ===== -->
@@ -1297,7 +1311,7 @@
     <!-- Core Logic Scripts -->
     <script src="assets/js/firebase-config.js?v=5"></script>
     <script src="assets/js/auth.js"></script>
-    <script src="assets/js/ui.js?v=16"></script>
+    <script src="assets/js/ui.js?v=17"></script>
     <script src="assets/js/history.js?v=10"></script>
     <script src="assets/js/export.js?v=10"></script>
 
@@ -1474,8 +1488,15 @@
         }
 
         function studentGoogleLogout() {
+            if (!confirm('Are you sure you want to logout?')) return;
+
             auth.signOut().then(() => {
                 updateStudentAuthUI(null);
+                activeStudentCode = null;
+                localStorage.removeItem('attendify_skip_landing');
+                const modal = document.getElementById('student-modal');
+                if (modal) modal.classList.remove('active');
+                window.location.href = window.location.origin + window.location.pathname;
             });
         }
 
@@ -4441,13 +4462,116 @@ Convert the student list from the attached file/image, or the text enclosed in t
 
         function showCRAIFAB() {
             const fab = document.getElementById('ai-assistant-fab');
-            if (fab) fab.classList.add('ai-fab-visible');
+            if (fab) {
+                fab.classList.add('ai-fab-visible');
+                setupAIFABDrag();
+            }
         }
 
         function hideCRAIFAB() {
             const fab = document.getElementById('ai-assistant-fab');
             if (fab) fab.classList.remove('ai-fab-visible');
             closeAIAssistant();
+        }
+
+        let aiFabDragReady = false;
+        let aiFabDragState = null;
+        let aiFabSuppressClickUntil = 0;
+
+        function handleAIFABClick(event) {
+            if (Date.now() < aiFabSuppressClickUntil) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
+            openAIAssistant();
+        }
+
+        function setupAIFABDrag() {
+            const fab = document.getElementById('ai-assistant-fab');
+            if (!fab || aiFabDragReady) return;
+            aiFabDragReady = true;
+
+            restoreAIFABPosition(fab);
+
+            fab.addEventListener('pointerdown', (event) => {
+                if (event.button !== undefined && event.button !== 0) return;
+                const rect = fab.getBoundingClientRect();
+                aiFabDragState = {
+                    pointerId: event.pointerId,
+                    startX: event.clientX,
+                    startY: event.clientY,
+                    offsetX: event.clientX - rect.left,
+                    offsetY: event.clientY - rect.top,
+                    moved: false
+                };
+                fab.classList.add('ai-fab-dragging');
+                fab.setPointerCapture(event.pointerId);
+            });
+
+            fab.addEventListener('pointermove', (event) => {
+                if (!aiFabDragState || aiFabDragState.pointerId !== event.pointerId) return;
+                const moveX = event.clientX - aiFabDragState.startX;
+                const moveY = event.clientY - aiFabDragState.startY;
+                if (Math.hypot(moveX, moveY) > 4) aiFabDragState.moved = true;
+                if (!aiFabDragState.moved) return;
+
+                event.preventDefault();
+                moveAIFABTo(fab, event.clientX - aiFabDragState.offsetX, event.clientY - aiFabDragState.offsetY);
+            });
+
+            const endDrag = (event) => {
+                if (!aiFabDragState || aiFabDragState.pointerId !== event.pointerId) return;
+                if (aiFabDragState.moved) {
+                    aiFabSuppressClickUntil = Date.now() + 350;
+                    saveAIFABPosition(fab);
+                }
+                fab.classList.remove('ai-fab-dragging');
+                aiFabDragState = null;
+            };
+
+            fab.addEventListener('pointerup', endDrag);
+            fab.addEventListener('pointercancel', endDrag);
+
+            window.addEventListener('resize', () => {
+                if (!fab.classList.contains('ai-fab-visible')) return;
+                const rect = fab.getBoundingClientRect();
+                moveAIFABTo(fab, rect.left, rect.top);
+                saveAIFABPosition(fab);
+            });
+        }
+
+        function moveAIFABTo(fab, left, top) {
+            const margin = 8;
+            const maxLeft = window.innerWidth - fab.offsetWidth - margin;
+            const maxTop = window.innerHeight - fab.offsetHeight - margin;
+            const nextLeft = Math.min(Math.max(left, margin), Math.max(margin, maxLeft));
+            const nextTop = Math.min(Math.max(top, margin), Math.max(margin, maxTop));
+
+            fab.style.left = `${nextLeft}px`;
+            fab.style.top = `${nextTop}px`;
+            fab.style.right = 'auto';
+            fab.style.bottom = 'auto';
+        }
+
+        function saveAIFABPosition(fab) {
+            const rect = fab.getBoundingClientRect();
+            localStorage.setItem('attendify_ai_fab_position', JSON.stringify({
+                xRatio: rect.left / Math.max(1, window.innerWidth - fab.offsetWidth),
+                yRatio: rect.top / Math.max(1, window.innerHeight - fab.offsetHeight)
+            }));
+        }
+
+        function restoreAIFABPosition(fab) {
+            try {
+                const saved = JSON.parse(localStorage.getItem('attendify_ai_fab_position') || 'null');
+                if (!saved) return;
+                const left = saved.xRatio * Math.max(1, window.innerWidth - fab.offsetWidth);
+                const top = saved.yRatio * Math.max(1, window.innerHeight - fab.offsetHeight);
+                moveAIFABTo(fab, left, top);
+            } catch (e) {
+                localStorage.removeItem('attendify_ai_fab_position');
+            }
         }
 
         // Pre-loads attendance + request data in background for snappy AI responses

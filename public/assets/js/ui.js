@@ -395,11 +395,11 @@ function closeGuideModal() {
 function toggleNavDrawer() {
     const drawer = document.getElementById('nav-drawer');
     const overlay = document.getElementById('nav-drawer-overlay');
-    const btn = document.getElementById('hamburger-btn');
+    const buttons = document.querySelectorAll('.hamburger-btn');
     if (drawer && overlay) {
         const isOpen = drawer.classList.toggle('open');
         overlay.classList.toggle('open', isOpen);
-        if (btn) btn.classList.toggle('open', isOpen);
+        buttons.forEach(btn => btn.classList.toggle('open', isOpen));
     }
 }
 
