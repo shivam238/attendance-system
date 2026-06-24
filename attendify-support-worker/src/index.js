@@ -109,9 +109,9 @@ function isRateLimitOrQuotaError(err) {
   );
 }
 
-async function callOpenRouter(openRouterKey, messages) {
+async function callOpenRouter(openRouterKey, messages, customSysInst) {
   const openAiMessages = [
-    { role: "system", content: systemInstruction },
+    { role: "system", content: customSysInst || systemInstruction },
     ...messages.map((msg) => ({
       role: msg.role === "assistant" || msg.role === "model" ? "assistant" : "user",
       content: msg.content || "(image attached — description unavailable in fallback mode)"
@@ -186,6 +186,7 @@ export default {
 
       const geminiKey = env.GEMINI_API_KEY;
       const openRouterKey = env.OPENROUTER_API_KEY;
+      const customSystemInstruction = parsed.systemInstruction || systemInstruction;
 
       if (!geminiKey) {
         return new Response(JSON.stringify({ error: "API Key Missing", message: "GEMINI_API_KEY env var is not configured." }), {
@@ -223,7 +224,7 @@ export default {
           body: JSON.stringify({
             contents,
             systemInstruction: {
-              parts: [{ text: systemInstruction }]
+              parts: [{ text: customSystemInstruction }]
             },
             generationConfig: {
               temperature: 0.2
@@ -252,7 +253,7 @@ export default {
           throw geminiErr;
         }
 
-        replyText = await callOpenRouter(openRouterKey, messages);
+        replyText = await callOpenRouter(openRouterKey, messages, customSystemInstruction);
         usedFallback = true;
       }
 
