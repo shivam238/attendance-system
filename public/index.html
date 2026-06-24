@@ -1325,6 +1325,8 @@
         let currentSubject = null;
         let currentQRCode = null;
         let qrExpireTime = null;
+        const QR_ABANDON_GRACE_MS = 30 * 1000;
+        let activeQRLeaveMarked = false;
         let editingStudent = null;
         let activeListeners = {}; // Track active listeners to prevent leaks
 
@@ -2395,6 +2397,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
             const lastTab = localStorage.getItem('lastActiveTab') || 'today';
             // Small delay to allow DOM to be ready
             setTimeout(() => switchAppTab(lastTab), 100);
+            setTimeout(() => restorePersistedQRSession(), 180);
 
             // Show AI Assistant FAB and load context data
             showCRAIFAB();
@@ -3032,12 +3035,14 @@ Convert the student list from the attached file/image, or the text enclosed in t
             const today = getLocalDateKey();
             const code = `${currentUser.username}_${today}_${currentSubject}`;
             const expiryTime = Date.now() + (5 * 60 * 1000); // 5 minutes
+            activeQRLeaveMarked = false;
 
             const baseURL = window.location.origin + window.location.pathname;
             const url = `${baseURL}?code=${code}`;
 
             currentQRCode = { code, url, expiryTime }; // expiryTime add kiya
             qrExpireTime = expiryTime; // Ye bhi add karo
+            persistActiveQRSession(code, currentSubject);
             const generationTime = Date.now();
 
             // Set up real-time listener for this session
@@ -3058,7 +3063,10 @@ Convert the student list from the attached file/image, or the text enclosed in t
                 generatedAt: Date.now(),
                 expiryTime: expiryTime,
                 subject: currentSubject,
-                username: currentUser.username
+                username: currentUser.username,
+                status: 'active',
+                abandonGraceUntil: null,
+                closedByAbandonment: false
             };
 
             if (locationData) {
@@ -3087,6 +3095,116 @@ Convert the student list from the attached file/image, or the text enclosed in t
         let qrTimerInterval;
         let fullscreenQRCodeInstance = null;
 
+        function getActiveQRStorageKey() {
+            return currentUser && currentUser.username ? `attendify_active_qr_${currentUser.username}` : null;
+        }
+
+        function persistActiveQRSession(code, subject) {
+            const key = getActiveQRStorageKey();
+            if (!key) return;
+            try {
+                localStorage.setItem(key, JSON.stringify({ code, subject }));
+            } catch (e) {}
+        }
+
+        function clearPersistedQRSession(code) {
+            const key = getActiveQRStorageKey();
+            if (!key) return;
+            try {
+                const saved = JSON.parse(localStorage.getItem(key) || 'null');
+                if (!code || !saved || saved.code === code) {
+                    localStorage.removeItem(key);
+                }
+            } catch (e) {
+                localStorage.removeItem(key);
+            }
+        }
+
+        function restorePersistedQRSession() {
+            if (!currentUser || currentQRCode) return;
+            const key = getActiveQRStorageKey();
+            if (!key) return;
+
+            let saved = null;
+            try {
+                saved = JSON.parse(localStorage.getItem(key) || 'null');
+            } catch (e) {
+                localStorage.removeItem(key);
+                return;
+            }
+
+            if (!saved || !saved.code || !saved.subject) return;
+
+            db.ref('qr_sessions/' + saved.code).once('value', (snapshot) => {
+                const session = snapshot.val();
+                if (!session || session.expiryTime <= Date.now() || session.status === 'closed' || (session.status === 'abandoning' && session.abandonGraceUntil && session.abandonGraceUntil <= Date.now())) {
+                    closeAbandonedQRSession(saved.code);
+                    clearPersistedQRSession(saved.code);
+                    return;
+                }
+
+                const select = document.getElementById('subject-select');
+                if (select && Array.from(select.options).some(opt => opt.value === saved.subject)) {
+                    select.value = saved.subject;
+                    currentSubject = saved.subject;
+                    switchAppTab('cr');
+                    updateAttendanceDisplay();
+                }
+            });
+        }
+
+        function closeAbandonedQRSession(code) {
+            if (!code) return;
+            const sessionRef = db.ref('qr_sessions/' + code);
+            sessionRef.once('value', (snapshot) => {
+                const session = snapshot.val();
+                const now = Date.now();
+                if (!session || session.status !== 'abandoning' || !session.abandonGraceUntil || session.abandonGraceUntil > now) {
+                    return;
+                }
+
+                sessionRef.update({
+                    status: 'closed',
+                    closedByAbandonment: true,
+                    closedAt: now
+                }).then(() => {
+                    clearPersistedQRSession(code);
+                });
+            });
+        }
+
+        function markActiveQRLeaveGrace() {
+            if (!currentQRCode || activeQRLeaveMarked) return;
+            const remaining = qrExpireTime - Date.now();
+            if (remaining <= 0) return;
+
+            activeQRLeaveMarked = true;
+            const abandonGraceUntil = Date.now() + QR_ABANDON_GRACE_MS;
+            const updates = {
+                status: 'abandoning',
+                abandonGraceUntil: abandonGraceUntil,
+                lastSeenAt: Date.now()
+            };
+            const ref = db.ref('qr_sessions/' + currentQRCode.code);
+
+            if (navigator.sendBeacon) {
+                ref.update(updates);
+            } else {
+                ref.update(updates);
+            }
+
+            setTimeout(() => closeAbandonedQRSession(currentQRCode && currentQRCode.code), QR_ABANDON_GRACE_MS + 1200);
+        }
+
+        function resumeActiveQRSession(code) {
+            activeQRLeaveMarked = false;
+            return db.ref('qr_sessions/' + code).update({
+                status: 'active',
+                abandonGraceUntil: null,
+                lastSeenAt: Date.now()
+            });
+        }
+
         function startQRTimer() {
             if (qrTimerInterval) clearInterval(qrTimerInterval);
             qrTimerInterval = setInterval(() => {
@@ -3113,6 +3231,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
                     clearInterval(qrTimerInterval);
                     if (currentQRCode) {
                         const closedCode = currentQRCode.code;
+                        clearPersistedQRSession(closedCode);
                         db.ref('qr_sessions/' + closedCode).remove().then(() => {
                             autoExportClosedSession(closedCode);
                         });
@@ -3211,6 +3330,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
         function resetQR(isManual = false) {
             if (currentQRCode) {
                 const closedCode = currentQRCode.code;
+                clearPersistedQRSession(closedCode);
                 if (isManual) {
                     db.ref('qr_sessions/' + closedCode).remove().then(() => {
                         showToast('🛑 QR Session revoked successfully.');
@@ -3237,11 +3357,22 @@ Convert the student list from the attached file/image, or the text enclosed in t
             db.ref('qr_sessions/' + code).once('value', (snapshot) => {
                 const session = snapshot.val();
                 if (session && session.expiryTime > Date.now()) {
+                    if (session.status === 'closed' || (session.status === 'abandoning' && session.abandonGraceUntil && session.abandonGraceUntil <= Date.now())) {
+                        closeAbandonedQRSession(code);
+                        document.getElementById('qr-section').style.display = 'none';
+                        document.getElementById('qrcode').innerHTML = '';
+                        currentQRCode = null;
+                        clearPersistedQRSession(code);
+                        return;
+                    }
+
                     const baseURL = window.location.origin + window.location.pathname;
                     const url = `${baseURL}?code=${code}`;
                     
                     currentQRCode = { code, url, expiryTime: session.expiryTime };
                     qrExpireTime = session.expiryTime;
+                    persistActiveQRSession(code, currentSubject);
+                    resumeActiveQRSession(code);
                     
                     document.getElementById('qrcode').innerHTML = '';
                     new QRCode(document.getElementById('qrcode'), {
@@ -3272,6 +3403,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
                     document.getElementById('qr-section').style.display = 'none';
                     document.getElementById('qrcode').innerHTML = '';
                     currentQRCode = null;
+                    clearPersistedQRSession(code);
                     if (window.currentQRListenerRef) {
                         window.currentQRListenerRef.off();
                         window.currentQRListenerRef = null;
@@ -3279,6 +3411,16 @@ Convert the student list from the attached file/image, or the text enclosed in t
                 }
             });
         }
+
+        window.addEventListener('pagehide', () => {
+            markActiveQRLeaveGrace();
+        });
+
+        window.addEventListener('beforeunload', (event) => {
+            if (!currentQRCode) return;
+            event.preventDefault();
+            event.returnValue = '';
+        });
 
         function updateAttendanceDisplay() {
             if (!currentSubject) {
@@ -3949,6 +4091,48 @@ Convert the student list from the attached file/image, or the text enclosed in t
             });
         }
 
+        function submitAbandonedQRRequest(student, subject, key, currentTime, session) {
+            const deviceId = getDeviceId();
+            const user = auth.currentUser;
+            const requestData = {
+                rollNo: student.rollNo,
+                name: student.name,
+                subject: subject,
+                requestTime: new Date().toLocaleTimeString('en-IN'),
+                timestamp: currentTime,
+                status: 'pending',
+                lateBy: 0,
+                deviceId: deviceId,
+                suspicious: true,
+                suspiciousReason: 'QR screen was closed by CR for more than 30 seconds'
+            };
+
+            if (user) {
+                requestData.googleUid = user.uid;
+                requestData.googleEmail = user.email;
+                requestData.googleName = user.displayName || "";
+            }
+
+            const classId = key.split('_')[0];
+
+            checkProxySession(key, student.rollNo, deviceId, (isProxy, originalRollNo) => {
+                if (isProxy) {
+                    requestData.suspiciousReason += `; device shared with ${originalRollNo}`;
+                }
+
+                db.ref('requests/' + key).push(requestData).then(() => {
+                    logAnalyticsEvent("attendance_submitted", {
+                        subject: subject,
+                        status: "qr_abandoned_pending",
+                        suspicious: true
+                    });
+
+                    const reviewURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject)}&time=${encodeURIComponent(requestData.requestTime)}&late=true&lateBy=0&class=${encodeURIComponent(classId)}&suspicious=true`;
+                    window.location.href = reviewURL;
+                });
+            });
+        }
+
         function proceedWithAttendanceSave(student, subject, key, currentTime, isWithin5Minutes, session) {
             const deviceId = getDeviceId();
             const user = auth.currentUser;
@@ -4124,6 +4308,18 @@ Convert the student list from the attached file/image, or the text enclosed in t
 
                                 if (!session) {
                                     msgDiv.innerHTML = '<div class="message error">❌ Invalid or expired session</div>';
+                                    return;
+                                }
+
+                                if (session.status === 'closed' || (session.status === 'abandoning' && session.abandonGraceUntil && session.abandonGraceUntil <= currentTime)) {
+                                    if (session.status !== 'closed') {
+                                        db.ref('qr_sessions/' + code).update({
+                                            status: 'closed',
+                                            closedByAbandonment: true,
+                                            closedAt: currentTime
+                                        });
+                                    }
+                                    submitAbandonedQRRequest(student, subject, key, currentTime, session);
                                     return;
                                 }
 
