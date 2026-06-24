@@ -2514,6 +2514,7 @@ You are the ATTENDIFY AI Attendance Assistant. You have access to this student's
             if (!panel || !overlay) return;
             panel.style.display = 'flex';
             overlay.style.display = 'block';
+            document.body.style.overflow = 'hidden';
 
             // Show welcome message only once
             const msgs = document.getElementById('ai-messages');
@@ -2534,6 +2535,7 @@ You are the ATTENDIFY AI Attendance Assistant. You have access to this student's
             const overlay = document.getElementById('ai-chat-overlay');
             if (panel) panel.style.display = 'none';
             if (overlay) overlay.style.display = 'none';
+            document.body.style.overflow = '';
         }
 
         function appendAIMessage(role, text) {

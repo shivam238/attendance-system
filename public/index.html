@@ -4587,6 +4587,7 @@ ${requestLines || '  (No requests found)'}
             if (!panel || !overlay) return;
             panel.style.display = 'flex';
             overlay.style.display = 'block';
+            document.body.style.overflow = 'hidden';
 
             // Welcome message on first open
             const msgs = document.getElementById('ai-messages');
@@ -4609,6 +4610,7 @@ ${requestLines || '  (No requests found)'}
             const overlay = document.getElementById('ai-chat-overlay');
             if (panel) panel.style.display = 'none';
             if (overlay) overlay.style.display = 'none';
+            document.body.style.overflow = '';
         }
 
         function appendAIMessage(role, text) {
