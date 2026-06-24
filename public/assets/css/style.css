@@ -2035,11 +2035,24 @@
             transition: color 0.2s;
             line-height: 1;
             z-index: 100;
-            background: var(--card-bg);
+            /* Fully opaque so content doesn't bleed through when sticky-scrolling */
+            background: var(--modal-close-bg, var(--card-bg));
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
             padding: 4px 8px;
             border-radius: 50%;
             margin-top: -10px;
             margin-right: -10px;
+        }
+
+        /* Light mode: solid white background */
+        body:not(.dark-mode) .modal-close {
+            --modal-close-bg: #ffffff;
+        }
+
+        /* Dark mode: solid dark background — prevents content bleed-through */
+        body.dark-mode .modal-close {
+            --modal-close-bg: #141a2a;
         }
 
         .modal-close:hover {
