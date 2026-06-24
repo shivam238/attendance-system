@@ -293,44 +293,39 @@
             document.getElementById('connecting-state').style.display = 'none';
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('token-section').style.display = 'block';
-            document.getElementById('token-display').value = '✅ Signed in as: ' + user.displayName + '\n⏳ Returning to app...';
+            document.getElementById('token-display').value = '✅ Signed in as: ' + user.displayName + '\n⏳ Sending you back to the app...';
             msgDiv.innerHTML = '';
 
             if (sk) {
-                // Write uid to Firebase — track.html Firebase listener auto-logins the student
+                // Write uid to Firebase — track.html Firebase listener will auto-login immediately
                 const db = firebase.database();
                 db.ref('student_auth_sessions/' + sk).set({
                     uid: user.uid,
                     ts: Date.now()
                 }).then(() => {
-                    // ✅ Firebase relay done — just close this tab, no deep link needed
-                    // (avoids the Android "Continue to ATTENDIFY?" system dialog)
+                    // Also fire deep link as backup (in case app is in foreground)
                     setTimeout(() => {
-                        try { window.close(); } catch(e) {}
-                        // If window.close() doesn't work, try history back
-                        setTimeout(() => { try { history.back(); } catch(e) {} }, 300);
-                    }, 600);
+                        window.location.href = 'attendify://student-login?uid=' + encodeURIComponent(user.uid) + '&sk=' + encodeURIComponent(sk);
+                    }, 800);
                 }).catch((err) => {
                     console.error('Session write error:', err);
-                    // On error, show message — user can manually switch back
-                    document.getElementById('token-display').value = '⚠️ Could not auto-return. Please switch back to the ATTENDIFY app manually.';
+                    // Fallback to deep link even if Firebase write fails
+                    setTimeout(() => {
+                        window.location.href = 'attendify://student-login?uid=' + encodeURIComponent(user.uid);
+                    }, 400);
                 });
             } else {
-                // No session key — just close
-                setTimeout(() => { try { window.close(); } catch(e) {} }, 400);
+                // No session key — fall back to deep link
+                setTimeout(() => {
+                    window.location.href = 'attendify://student-login?uid=' + encodeURIComponent(user.uid);
+                }, 400);
             }
         }
 
-        // Show the sign-in button on load
-        // If flow=student: auto-trigger Google sign-in (no manual tap needed)
+        // Show the sign-in button immediately on load — no auto-redirect
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('connecting-state').style.display = 'none';
             document.getElementById('login-section').style.display = 'block';
-
-            if (isStudentFlow) {
-                // Small delay to ensure Firebase is fully initialized
-                setTimeout(signInWithGoogle, 800);
-            }
         });
 
         function handleSuccessfulLogin(idToken) {
