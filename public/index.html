@@ -1302,6 +1302,11 @@
     <script src="assets/js/export.js?v=10"></script>
 
     <script>
+        // Redirect to student portal if student session exists
+        if (localStorage.getItem('student_session')) {
+            window.location.replace('track.html');
+        }
+
         let currentUser = null;
         let currentSubject = null;
         let currentQRCode = null;
