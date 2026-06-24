@@ -7,6 +7,28 @@
 })();
 
 let isBypassingScrollLock = false;
+let shouldShowLandingTopOnLaunch = false;
+
+try {
+    const url = new URL(window.location.href);
+    shouldShowLandingTopOnLaunch = url.searchParams.get('showLanding') === '1';
+    if (shouldShowLandingTopOnLaunch) {
+        url.searchParams.delete('showLanding');
+        const cleanPath = `${url.pathname}${url.search}${url.hash}`;
+        window.history.replaceState(null, '', cleanPath || url.pathname);
+    }
+} catch (e) {
+    shouldShowLandingTopOnLaunch = false;
+}
+
+function consumeLandingTopLaunchRequest() {
+    if (!shouldShowLandingTopOnLaunch) {
+        return false;
+    }
+
+    shouldShowLandingTopOnLaunch = false;
+    return true;
+}
 
 function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -34,9 +56,11 @@ function showScreen(screenId) {
         if (landingPage) {
             landingPage.classList.toggle('is-hidden', screenId !== 'login-screen');
             if (screenId === 'login-screen') {
-                if (isNative || localStorage.getItem('attendify_skip_landing') === 'true') {
+                const showLandingTop = consumeLandingTopLaunchRequest();
+                if ((isNative || localStorage.getItem('attendify_skip_landing') === 'true') && !showLandingTop) {
                     landingPage.classList.add('login-locked');
                 } else {
+                    document.body.classList.remove('native-login-active');
                     landingPage.classList.remove('login-locked');
                     scheduleLandingReveal();
                     window.addEventListener('scroll', handleLandingScroll, { passive: true });

@@ -392,10 +392,14 @@
         detailsContainer.innerHTML = detailsHTML;
 
         function closeWindow() {
-            window.close();
-            setTimeout(() => {
-                window.location.href = 'about:blank';
-            }, 100);
+            const landingURL = 'index.html?showLanding=1';
+            if (window.opener && !window.opener.closed) {
+                window.opener.location.href = landingURL;
+                window.close();
+                return;
+            }
+
+            window.location.replace(landingURL);
         }
 
 function openFeedback() {
