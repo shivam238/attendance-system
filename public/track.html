@@ -3308,11 +3308,13 @@ Bug reporting: If the student mentions any bug, error, crash, slow loading, or u
 
                     // Only accept Attendify attendance QR codes
                     // Valid formats:
-                    //   https://qr-smart-attendance.web.app/attendance.html?id=...
-                    //   https://qr-smart-attendance.web.app/?code=...
                     //   https://qr-smart-attendance.web.app/index.html?code=...
                     //   (bare code string like CR_DATE_SUBJECT)
                     let attendanceURL = null;
+
+                    // Always use absolute production URL — inside Capacitor,
+                    // window.location.origin is 'https://localhost', not the real domain.
+                    const ATTENDIFY_BASE = 'https://qr-smart-attendance.web.app';
 
                     try {
                         const url = new URL(scannedData);
@@ -3324,19 +3326,18 @@ Bug reporting: If the student mentions any bug, error, crash, slow loading, or u
                             const codeParam = url.searchParams.get('code');
 
                             if (idParam) {
-                                // Legacy attendance.html format — redirect to index.html?code=
-                                attendanceURL = `${window.location.origin}/index.html?code=${encodeURIComponent(idParam)}`;
+                                // Legacy id= format → rewrite to standard code= URL
+                                attendanceURL = `${ATTENDIFY_BASE}/index.html?code=${encodeURIComponent(idParam)}`;
                             } else if (codeParam) {
-                                // Direct ?code= format
-                                attendanceURL = scannedData;
+                                // Already a valid attendance URL — normalise to production base
+                                attendanceURL = `${ATTENDIFY_BASE}/index.html?code=${encodeURIComponent(codeParam)}`;
                             }
                         }
                     } catch (e) {
-                        // Not a URL — might be a bare code string (CR_DATE_SUBJECT)
-                        // Bare codes have at least 2 underscores
+                        // Not a URL — bare code string like CR_DATE_SUBJECT (≥2 underscores)
                         const parts = scannedData.split('_');
                         if (parts.length >= 3) {
-                            attendanceURL = `${window.location.origin}/index.html?code=${encodeURIComponent(scannedData)}`;
+                            attendanceURL = `${ATTENDIFY_BASE}/index.html?code=${encodeURIComponent(scannedData)}`;
                         }
                     }
 
