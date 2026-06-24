@@ -1118,7 +1118,7 @@
                 <span style="font-size: 22px;">🤖</span>
                 <div>
                     <div style="font-size: 14px; font-weight: 800; color: #fff;">Classroom AI Assistant</div>
-                    <div style="font-size: 10px; color: rgba(255,255,255,0.9); font-weight: 500;">Powered by Gemini · Knows all student logs</div>
+                    <div style="font-size: 10px; color: rgba(255,255,255,0.9); font-weight: 500;">AI · Knows all student logs</div>
                 </div>
             </div>
             <button onclick="closeAIAssistant()" style="background: rgba(255,255,255,0.15); border: none; color: #fff; width: 30px; height: 30px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"
@@ -1131,10 +1131,10 @@
             overflow-x: auto; flex-shrink: 0;
             scrollbar-width: none;
         ">
-            <button class="ai-chip" onclick="sendAIChip('Kaun kaun se bachhe aaj absent hain?')">❌ Absentees today</button>
-            <button class="ai-chip" onclick="sendAIChip('Kin bachhon ki attendance 75% se kam hai?')">⚠️ Low attendance</button>
-            <button class="ai-chip" onclick="sendAIChip('Kya koi pending request bachi hai approval ke liye?')">📋 Pending requests</button>
-            <button class="ai-chip" onclick="sendAIChip('Pure class ki attendance report do')">📊 Class summary</button>
+            <button class="ai-chip" onclick="sendAIChip('Who is absent today?')">❌ Absentees today</button>
+            <button class="ai-chip" onclick="sendAIChip('Which students have attendance below 75%?')">⚠️ Low attendance</button>
+            <button class="ai-chip" onclick="sendAIChip('Are there any pending attendance requests?')">📋 Pending requests</button>
+            <button class="ai-chip" onclick="sendAIChip('Give me the full class attendance summary.')">📊 Class summary</button>
         </div>
 
         <!-- Messages container -->
@@ -1151,7 +1151,7 @@
             display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0;
             background: var(--card-bg, #1a1a2e);
         ">
-            <textarea id="ai-input" rows="1" placeholder="Apna sawaal poochho..." style="
+            <textarea id="ai-input" rows="1" placeholder="Ask a question..." style="
                 flex: 1; resize: none; border-radius: 12px;
                 background: var(--tab-bg, rgba(255,255,255,0.05));
                 border: 1px solid var(--border-color, rgba(255,255,255,0.1));
@@ -4570,7 +4570,7 @@ ${requestLines || '  (No requests found)'}
 - Answer the CR's questions using ONLY the data above. Do NOT invent records.
 - Calculate attendance percentages accurately.
 - Be concise, direct, and use bullet points or tables where helpful.
-- You can reply in Hinglish (Hindi+English mix) if the CR writes in Hinglish.
+- Always respond in English only.
 - For "who is absent today", find students NOT present in today's attendance.
 - For low-attendance alerts, flag anyone below 75% in any subject.
 - Always use exact names and roll numbers from the data provided.`;
@@ -4587,7 +4587,7 @@ ${requestLines || '  (No requests found)'}
             const msgs = document.getElementById('ai-messages');
             if (msgs && msgs.children.length === 0) {
                 const crName = currentUser ? (currentUser.displayName || 'CR').split(' ')[0] : 'CR';
-                appendAIMessage('bot', `Namaste ${crName}! 👋 Main tumhara Classroom AI hoon.\n\nMujhe tumhari poori class ka attendance data pata hai — koi absent hai, kisi ki attendance kam hai, koi pending request hai — sab kuch. Kya jaanna chahte ho?`);
+                appendAIMessage('bot', `Hello ${crName}! 👋 I'm your Classroom AI Assistant.\n\nI have full access to your class attendance data — who's absent today, who's below 75%, pending requests, and more. What would you like to know?`);
             }
 
             // Refresh context data on open for latest info

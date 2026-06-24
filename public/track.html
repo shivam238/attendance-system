@@ -989,7 +989,7 @@
                 <span style="font-size: 22px;">🤖</span>
                 <div>
                     <div style="font-size: 14px; font-weight: 800; color: #fff;">Attendance AI</div>
-                    <div style="font-size: 10px; color: rgba(255,255,255,0.75); font-weight: 500;">Powered by Gemini · Knows your data</div>
+                    <div style="font-size: 10px; color: rgba(255,255,255,0.75); font-weight: 500;">AI · Knows your attendance data</div>
                 </div>
             </div>
             <button onclick="closeAIAssistant()" style="background: rgba(255,255,255,0.15); border: none; color: #fff; width: 30px; height: 30px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"
@@ -1002,10 +1002,10 @@
             overflow-x: auto; flex-shrink: 0;
             scrollbar-width: none;
         ">
-            <button class="ai-chip" onclick="sendAIChip('Kitni classes aur bunk kar sakta hoon?')">🛋️ Bunk budget</button>
-            <button class="ai-chip" onclick="sendAIChip('Meri attendance ka risk kya hai?')">⚠️ Risk check</button>
-            <button class="ai-chip" onclick="sendAIChip('75% attendance ke liye mujhe kitni classes attend karni hogi?')">🎯 75% goal</button>
-            <button class="ai-chip" onclick="sendAIChip('Konsa subject sabse zyada risk mein hai?')">📊 Worst subject</button>
+            <button class="ai-chip" onclick="sendAIChip('How many more classes can I bunk?')">&#x1F6CB;&#xFE0F; Bunk budget</button>
+            <button class="ai-chip" onclick="sendAIChip('What is my attendance risk?')">⚠️ Risk check</button>
+            <button class="ai-chip" onclick="sendAIChip('How many classes do I need to reach 75% attendance?')">🎯 75% goal</button>
+            <button class="ai-chip" onclick="sendAIChip('Which subject has the worst attendance?')">📊 Worst subject</button>
         </div>
 
         <!-- Messages container -->
@@ -1022,7 +1022,7 @@
             display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0;
             background: var(--card-bg, #1a1a2e);
         ">
-            <textarea id="ai-input" rows="1" placeholder="Apna sawaal poochho..." style="
+            <textarea id="ai-input" rows="1" placeholder="Ask a question..." style="
                 flex: 1; resize: none; border-radius: 12px;
                 background: var(--tab-bg, rgba(255,255,255,0.05));
                 border: 1px solid var(--border-color, rgba(255,255,255,0.1));
@@ -2505,7 +2505,7 @@ Smart Planner:
 ${bunkBudgetInfo}
 == END DATA ==
 
-You are the ATTENDIFY AI Attendance Assistant. You have access to this student's real-time attendance data above. Answer their questions based on this data. Be concise, friendly, and use numbers precisely. You can respond in Hinglish (Hindi + English mix) if the student writes in Hinglish. Always do the math correctly using the data provided.`;
+You are the ATTENDIFY AI Attendance Assistant. You have access to this student's real-time attendance data above. Answer their questions based on this data. Be concise, friendly, and use numbers precisely. Always respond in English only. Always do the math correctly using the data provided.`;
         }
 
         function openAIAssistant() {
@@ -2519,7 +2519,7 @@ You are the ATTENDIFY AI Attendance Assistant. You have access to this student's
             const msgs = document.getElementById('ai-messages');
             if (msgs && msgs.children.length === 0) {
                 const name = currentStudent ? currentStudent.name.split(' ')[0] : 'Student';
-                appendAIMessage('bot', `Namaste ${name}! 👋 Main tumhara Attendance AI hoon.\n\nMain tumhara real-time attendance data jaanta hoon — bunk budget, risk, subject-wise status — sab kuch. Kya poochna hai?`);
+                appendAIMessage('bot', `Hello ${name}! 👋 I'm your Attendance AI Assistant.\n\nI have access to your real-time attendance data — bunk budget, risk analysis, subject-wise status, and more. What would you like to know?`);
             }
 
             // Focus input
@@ -2653,7 +2653,7 @@ You are the ATTENDIFY AI Attendance Assistant. You have access to this student's
             } catch (err) {
                 console.error('AI error:', err);
                 if (typingEl) typingEl.remove();
-                appendAIMessage('bot', '❌ Kuch gadbad ho gayi. Thodi der baad try karo ya internet check karo.');
+                appendAIMessage('bot', '❌ Something went wrong. Please check your internet connection and try again.');
                 // Remove failed user message from history
                 aiChatHistory.pop();
             } finally {
