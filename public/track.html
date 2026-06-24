@@ -649,149 +649,6 @@
         .calendar-indicator-dot.absent { background: #ef4444; }
         .calendar-indicator-dot.pending { background: #f59e0b; }
 
-        /* ===== QR SCANNER MODAL ===== */
-        #qr-scanner-modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 2000;
-            background: #000;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-        }
-        #qr-scanner-modal.active {
-            display: flex;
-        }
-        #qr-scanner-header {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 18px;
-            background: rgba(0,0,0,0.6);
-            position: absolute;
-            top: 0;
-            z-index: 10;
-            box-sizing: border-box;
-        }
-        #qr-scanner-header h3 {
-            color: #fff;
-            font-size: 16px;
-            font-weight: 700;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        #qr-close-btn {
-            background: rgba(255,255,255,0.15);
-            border: none;
-            color: #fff;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            font-size: 18px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-        #qr-close-btn:hover { background: rgba(255,255,255,0.28); }
-        #qr-video-wrapper {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-        #qr-video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        #qr-overlay {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none;
-        }
-        #qr-scan-frame {
-            width: min(260px, 65vw);
-            height: min(260px, 65vw);
-            border: 3px solid rgba(255,255,255,0.9);
-            border-radius: 24px;
-            box-shadow: 0 0 0 9999px rgba(0,0,0,0.55);
-            position: relative;
-        }
-        #qr-scan-line {
-            position: absolute;
-            left: 10px;
-            right: 10px;
-            top: 0;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, #34d399, #6ee7b7, #34d399, transparent);
-            box-shadow: 0 0 10px #34d399, 0 0 4px #059669;
-            animation: qrScanLine 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-            will-change: transform;
-        }
-        @keyframes qrScanLine {
-            0%   { transform: translateY(min(30px, 8vw)); }
-            50%  { transform: translateY(calc(min(260px, 65vw) - min(30px, 8vw))); }
-            100% { transform: translateY(min(30px, 8vw)); }
-        }
-        .qr-corner {
-            position: absolute;
-            width: 24px;
-            height: 24px;
-            border-color: #34d399;
-            border-style: solid;
-        }
-        .qr-corner.tl { top: -3px; left: -3px; border-width: 4px 0 0 4px; border-radius: 8px 0 0 0; }
-        .qr-corner.tr { top: -3px; right: -3px; border-width: 4px 4px 0 0; border-radius: 0 8px 0 0; }
-        .qr-corner.bl { bottom: -3px; left: -3px; border-width: 0 0 4px 4px; border-radius: 0 0 0 8px; }
-        .qr-corner.br { bottom: -3px; right: -3px; border-width: 0 4px 4px 0; border-radius: 0 0 8px 0; }
-        #qr-status-msg {
-            position: absolute;
-            bottom: 90px;
-            color: #fff;
-            font-size: 14px;
-            font-weight: 600;
-            text-align: center;
-            padding: 10px 20px;
-            background: rgba(0,0,0,0.55);
-            border-radius: 20px;
-            max-width: 80%;
-            letter-spacing: 0.2px;
-        }
-        /* QR scanner button in header */
-        #qr-scan-nav-btn {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #34d399, #059669);
-            border: none;
-            color: #fff;
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 2px 10px rgba(52,211,153,0.35);
-            flex-shrink: 0;
-            padding: 0;
-        }
-        #qr-scan-nav-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 16px rgba(52,211,153,0.45);
-        }
-        #qr-scan-nav-btn.visible { display: inline-flex; }
         /* AI attachment preview */
         #ai-attachment-preview {
             display: none;
@@ -923,17 +780,7 @@
                 </a>
             </div>
             <div class="header-controls-right">
-                <button id="qr-scan-nav-btn" onclick="openQRScanner()" title="Scan QR to mark attendance" aria-label="Scan QR Code">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="3" width="7" height="7" rx="1"/>
-                        <rect x="14" y="3" width="7" height="7" rx="1"/>
-                        <rect x="3" y="14" width="7" height="7" rx="1"/>
-                        <rect x="14" y="14" width="3" height="3" rx="0.5"/>
-                        <rect x="18" y="14" width="3" height="3" rx="0.5"/>
-                        <rect x="14" y="18" width="3" height="3" rx="0.5"/>
-                        <rect x="18" y="18" width="3" height="3" rx="0.5"/>
-                    </svg>
-                </button>
+
                 <button class="theme-btn" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode"></button>
                 <button class="logout-btn" id="portal-logout-btn" onclick="exitPortal()" style="display: none;">Logout</button>
             </div>
@@ -1177,27 +1024,7 @@
         </div>
     </div>
 
-    <!-- ===== QR SCANNER MODAL ===== -->
-    <div id="qr-scanner-modal" role="dialog" aria-modal="true" aria-label="QR Attendance Scanner">
-        <div id="qr-scanner-header">
-            <h3>📷 Scan Attendance QR</h3>
-            <button id="qr-close-btn" onclick="closeQRScanner()" aria-label="Close scanner">✕</button>
-        </div>
-        <div id="qr-video-wrapper">
-            <video id="qr-video" autoplay playsinline muted></video>
-            <div id="qr-overlay">
-                <div id="qr-scan-frame">
-                    <div class="qr-corner tl"></div>
-                    <div class="qr-corner tr"></div>
-                    <div class="qr-corner bl"></div>
-                    <div class="qr-corner br"></div>
-                    <div id="qr-scan-line"></div>
-                </div>
-            </div>
-            <div id="qr-status-msg">Point camera at the QR code shown by your CR</div>
-        </div>
-    </div>
-    <!-- ===== END QR SCANNER MODAL ===== -->
+
 
     <!-- ===== AI ATTENDANCE ASSISTANT BUTTON + POPUP ===== -->
     <!-- Floating trigger button (only shown after student logs in) -->
@@ -3105,16 +2932,13 @@ Bug reporting: If the student mentions any bug, error, crash, slow loading, or u
         }
         // ===== END SMART BUG REPORTING =====
 
-        // Show FAB and QR scan button when dashboard is visible (called from fetchAndBuildDashboard)
+        // Show FAB when dashboard is visible (called from fetchAndBuildDashboard)
         function showAIFAB() {
             const fab = document.getElementById('ai-assistant-fab');
             if (fab) {
                 fab.classList.add('ai-fab-visible');
                 setupAIFABDrag();
             }
-            // Show QR scanner button
-            const qrBtn = document.getElementById('qr-scan-nav-btn');
-            if (qrBtn) qrBtn.classList.add('visible');
         }
 
         // ===== AI IMAGE ATTACHMENT =====
@@ -3193,189 +3017,7 @@ Bug reporting: If the student mentions any bug, error, crash, slow loading, or u
         }
         // ===== END AI IMAGE ATTACHMENT =====
 
-        // ===== QR SCANNER =====
-        let qrStream = null;
-        let qrAnimFrame = null;
-        let qrCanvas = null;
-        let qrCtx = null;
-        let qrLastDetected = '';
-        let qrLastScanTime = 0;
-
-        function openQRScanner() {
-            const modal = document.getElementById('qr-scanner-modal');
-            if (!modal) return;
-            modal.classList.add('active');
-            qrLastDetected = '';
-
-            if (typeof jsQR === 'undefined') {
-                setQRStatus('Loading scanner engine...');
-                const script = document.createElement('script');
-                script.src = "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js";
-                script.onload = () => {
-                    setQRStatus('Point camera at the QR code shown by your CR');
-                    requestCameraAndStartScan();
-                };
-                script.onerror = () => {
-                    setQRStatus('❌ Failed to load scanner engine. Please check your internet connection.');
-                };
-                document.body.appendChild(script);
-            } else {
-                setQRStatus('Point camera at the QR code shown by your CR');
-                requestCameraAndStartScan();
-            }
-        }
-
-        function closeQRScanner() {
-            const modal = document.getElementById('qr-scanner-modal');
-            if (modal) modal.classList.remove('active');
-            stopQRScan();
-        }
-
-        function setQRStatus(msg) {
-            const el = document.getElementById('qr-status-msg');
-            if (el) el.textContent = msg;
-        }
-
-        function stopQRScan() {
-            if (qrAnimFrame) { cancelAnimationFrame(qrAnimFrame); qrAnimFrame = null; }
-            if (qrStream) {
-                qrStream.getTracks().forEach(t => t.stop());
-                qrStream = null;
-            }
-            const video = document.getElementById('qr-video');
-            if (video) video.srcObject = null;
-        }
-
-        async function requestCameraAndStartScan() {
-            const video = document.getElementById('qr-video');
-            if (!video) return;
-
-            try {
-                qrStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
-                });
-                video.srcObject = qrStream;
-                video.onloadedmetadata = () => {
-                    video.play();
-                    // Lazy-create canvas
-                    if (!qrCanvas) {
-                        qrCanvas = document.createElement('canvas');
-                        qrCtx = qrCanvas.getContext('2d');
-                    }
-                    scheduleScan();
-                };
-            } catch (err) {
-                console.error('Camera error:', err);
-                if (err.name === 'NotAllowedError') {
-                    setQRStatus('⛔ Camera permission denied. Please allow camera access in your browser settings and try again.');
-                } else {
-                    setQRStatus('❌ Could not access camera: ' + (err.message || err.name));
-                }
-            }
-        }
-
-        function scheduleScan() {
-            qrAnimFrame = requestAnimationFrame(scanQRFrame);
-        }
-
-        function scanQRFrame() {
-            const video = document.getElementById('qr-video');
-            if (!video || !qrCanvas || video.readyState < 2) {
-                scheduleScan();
-                return;
-            }
-
-            const now = Date.now();
-            // Throttle decoding to run at most once every 120ms to save CPU
-            if (now - qrLastScanTime > 120) {
-                qrLastScanTime = now;
-
-                qrCanvas.width = video.videoWidth;
-                qrCanvas.height = video.videoHeight;
-                qrCtx.drawImage(video, 0, 0, qrCanvas.width, qrCanvas.height);
-
-                const imageData = qrCtx.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
-                const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
-
-                if (code && code.data) {
-                    const scannedData = code.data;
-
-                    // Prevent processing the same QR twice rapidly
-                    if (scannedData === qrLastDetected) {
-                        scheduleScan();
-                        return;
-                    }
-
-                    // Only accept Attendify attendance QR codes
-                    // Valid formats:
-                    //   https://qr-smart-attendance.web.app/index.html?code=...
-                    //   (bare code string like CR_DATE_SUBJECT)
-                    let attendanceURL = null;
-
-                    // Always use absolute production URL — inside Capacitor,
-                    // window.location.origin is 'https://localhost', not the real domain.
-                    const ATTENDIFY_BASE = 'https://qr-smart-attendance.web.app';
-
-                    try {
-                        const url = new URL(scannedData);
-                        const isAttendifyHost = url.hostname === 'qr-smart-attendance.web.app' ||
-                                               url.hostname === 'firstfile-c763521e.web.app';
-
-                        if (isAttendifyHost) {
-                            const idParam = url.searchParams.get('id');
-                            const codeParam = url.searchParams.get('code');
-
-                            if (idParam) {
-                                // Legacy id= format → rewrite to standard code= URL
-                                attendanceURL = `${ATTENDIFY_BASE}/index.html?code=${encodeURIComponent(idParam)}`;
-                            } else if (codeParam) {
-                                // Already a valid attendance URL — normalise to production base
-                                attendanceURL = `${ATTENDIFY_BASE}/index.html?code=${encodeURIComponent(codeParam)}`;
-                            }
-                        }
-                    } catch (e) {
-                        // Not a URL — bare code string like CR_DATE_SUBJECT (≥2 underscores)
-                        const parts = scannedData.split('_');
-                        if (parts.length >= 3) {
-                            attendanceURL = `${ATTENDIFY_BASE}/index.html?code=${encodeURIComponent(scannedData)}`;
-                        }
-                    }
-
-                    if (attendanceURL) {
-                        qrLastDetected = scannedData;
-                        setQRStatus('✅ QR detected! Marking attendance...');
-                        if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
-                        stopQRScan();
-                        setTimeout(() => {
-                            closeQRScanner();
-                            window.location.href = attendanceURL;
-                        }, 600);
-                        return;
-                    } else {
-                        // Not an Attendify QR
-                        setQRStatus('⚠️ This is not an ATTENDIFY QR code. Please scan the QR shown by your CR.');
-                        qrLastDetected = scannedData; // Avoid repeating the same warning immediately
-                        setTimeout(() => { qrLastDetected = ''; }, 2000);
-                    }
-                }
-            }
-
-            scheduleScan();
-        }
-
-        // Prefetch jsQR quietly in background after initial page resources load
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                if (typeof jsQR === 'undefined') {
-                    const link = document.createElement('link');
-                    link.rel = 'preload';
-                    link.as = 'script';
-                    link.href = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
-                    document.head.appendChild(link);
-                }
-            }, 3000);
-        });
-        // ===== END QR SCANNER =====
+        // ===== END AI ASSISTANT =====
         // ===== END AI ASSISTANT =====
     </script>
 </body>
