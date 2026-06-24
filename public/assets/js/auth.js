@@ -95,6 +95,7 @@ function verifyCapacitorLoginToken() {
 
 function logoutUser() {
     if (!confirm('Are you sure you want to logout?')) return;
+    window.attendifyIntentionalLogout = true;
 
     // Clear user profile cache to prevent instant-on page restoration
     if (auth.currentUser) {
@@ -109,16 +110,20 @@ function logoutUser() {
         hideCRAIFAB();
     }
 
+    let logoutFinished = false;
     auth.signOut().catch(err => {
         console.error("Logout error:", err);
     }).then(() => {
+        logoutFinished = true;
         window.location.reload();
     });
 
-    // Fallback: Force reload after 150ms in case of hung promises or unhandled exceptions
+    // Fallback: Force reload only if sign-out hangs.
     setTimeout(() => {
-        window.location.reload();
-    }, 150);
+        if (!logoutFinished) {
+            window.location.reload();
+        }
+    }, 1200);
 }
 
 function initiateDeleteAccount() {

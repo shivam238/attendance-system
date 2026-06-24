@@ -1310,7 +1310,7 @@
 
     <!-- Core Logic Scripts -->
     <script src="assets/js/firebase-config.js?v=5"></script>
-    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/auth.js?v=2"></script>
     <script src="assets/js/ui.js?v=19"></script>
     <script src="assets/js/history.js?v=10"></script>
     <script src="assets/js/export.js?v=11"></script>
@@ -3418,6 +3418,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
 
         window.addEventListener('beforeunload', (event) => {
             if (!currentQRCode) return;
+            if (window.attendifyIntentionalLogout) return;
             event.preventDefault();
             event.returnValue = '';
         });
