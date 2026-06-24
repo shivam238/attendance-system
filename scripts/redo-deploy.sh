@@ -1,14 +1,16 @@
 #!/bin/bash
 # ============================================================
 #  REDO-DEPLOY  —  Ctrl+Y for your deployments
-#  Restores files to the "newer" version after an undo,
-#  and runs the full deploy pipeline.
+#  Pops from the redo stack — can redo MULTIPLE times.
+#  Run multiple times to keep going forward.
 # ============================================================
 
 set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-REDO_FILE="$SCRIPT_DIR/.redo_point"
+
+REDO_STACK="$SCRIPT_DIR/.redo_stack"
+CURRENT_VER_FILE="$SCRIPT_DIR/.current_version"
 
 cd "$PROJECT_ROOT"
 
@@ -18,40 +20,62 @@ echo "║            REDO DEPLOY  (Ctrl+Y)             ║"
 echo "╚══════════════════════════════════════════════╝"
 echo ""
 
-# ── Check redo point exists ───────────────────────────────
-if [ ! -f "$REDO_FILE" ]; then
+# ── Check redo stack has entries
+if [ ! -s "$REDO_STACK" ]; then
     echo "  ❌ Nothing to redo."
     echo "     Run  scripts/undo-deploy.sh  first."
     echo ""
     exit 1
 fi
 
-REDO_COMMIT=$(cat "$REDO_FILE")
-REDO_MSG=$(git log -1 --pretty="%s" "$REDO_COMMIT" 2>/dev/null) || {
-    echo "  ❌ Redo commit not found in history: $REDO_COMMIT"
+# ── Pop the top entry from redo stack (last line)
+REDO_COMMIT=$(tail -1 "$REDO_STACK")
+
+# Validate the commit exists
+git rev-parse --verify "$REDO_COMMIT" > /dev/null 2>&1 || {
+    echo "  ❌ Redo commit not found: $REDO_COMMIT"
+    sed -i '$ d' "$REDO_STACK"
     exit 1
 }
 
-CURRENT=$(git rev-parse HEAD)
-CURRENT_MSG=$(git log -1 --pretty="%s" HEAD)
+REDO_MSG=$(git log -1 --pretty="%s" "$REDO_COMMIT" 2>/dev/null || echo "unknown")
 
-echo "  Current : $(echo $CURRENT | cut -c1-7)  →  $CURRENT_MSG"
-echo "  Restoring to:"
-echo "  Newer   : $(echo $REDO_COMMIT | cut -c1-7)  →  $REDO_MSG"
+# ── Current state
+if [ -f "$CURRENT_VER_FILE" ]; then
+    CURRENT=$(cat "$CURRENT_VER_FILE")
+else
+    CURRENT=$(git rev-parse HEAD)
+fi
+CURRENT_MSG=$(git log -1 --pretty="%s" "$CURRENT" 2>/dev/null || echo "unknown")
+
+echo "  FROM : $(echo $CURRENT     | cut -c1-7)  →  $CURRENT_MSG"
+echo "  TO   : $(echo $REDO_COMMIT | cut -c1-7)  →  $REDO_MSG"
 echo ""
 
-# ── Restore files to redo commit ──────────────────────────
-git checkout "$REDO_COMMIT" -- .
+# ── Remove the popped entry from redo stack
+sed -i '$ d' "$REDO_STACK"
 
-# ── Clear redo point ──────────────────────────────────────
-rm "$REDO_FILE"
+# ── Update current version tracker
+echo "$REDO_COMMIT" > "$CURRENT_VER_FILE"
+echo "  ✔ Version pointer moved forward"
+
+# ── Restore files to redo commit
+git checkout "$REDO_COMMIT" -- .
 echo "  ✔ Files restored to newer version"
 echo ""
 
-# ── Deploy ────────────────────────────────────────────────
-bash "$SCRIPT_DIR/../deploy-all.sh" "redo: restored to → $REDO_MSG"
+# ── Deploy
+bash "$PROJECT_ROOT/deploy-all.sh" "redo: restored to → $REDO_MSG"
 
 echo ""
-echo "✅ REDO complete! App is back on the NEWER version."
-echo "   Run  scripts/undo-deploy.sh  to go back again."
+echo "✅ REDO complete!"
+
+# Check if more redos available
+REMAINING=$(wc -l < "$REDO_STACK" 2>/dev/null || echo 0)
+if [ "$REMAINING" -gt 0 ]; then
+    echo "   Run again to go forward another version."
+else
+    echo "   (No more redo history available)"
+fi
+echo "   Run  scripts/undo-deploy.sh  to go back."
 echo ""

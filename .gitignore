@@ -47,3 +47,5 @@ ui-debug.log*
 www/
 jdk21/
 ATTENDIFY.apk
+.redo_stack
+.current_version
