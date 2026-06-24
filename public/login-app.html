@@ -319,42 +319,5 @@
             });
         }
     </script>
-
-        function handleSuccessfulLogin(idToken) {
-            const msgDiv = document.getElementById('message');
-            document.getElementById('connecting-state').style.display = 'none';
-            document.getElementById('login-section').style.display = 'none';
-            document.getElementById('token-section').style.display = 'block';
-            document.getElementById('token-display').value = idToken;
-            msgDiv.innerHTML = '';
-
-            // Attempt to deep link redirect back to app
-            setTimeout(() => {
-                window.location.href = "attendify://login?token=" + encodeURIComponent(idToken);
-            }, 500);
-        }
-
-        function showManualTokenFallback() {
-            document.getElementById('manual-fallback-container').style.display = 'block';
-        }
-
-        function copyToken() {
-            const tokenDisplay = document.getElementById('token-display');
-            tokenDisplay.select();
-            tokenDisplay.setSelectionRange(0, 99999);
-
-            navigator.clipboard.writeText(tokenDisplay.value).then(() => {
-                const copyBtn = document.getElementById('copy-btn');
-                copyBtn.textContent = "✅ Copied to Clipboard!";
-                copyBtn.className = "btn btn-success";
-                setTimeout(() => {
-                    copyBtn.textContent = "📋 Copy Login Code";
-                    copyBtn.className = "btn btn-primary";
-                }, 2000);
-            }).catch(err => {
-                console.error("Failed to copy:", err);
-            });
-        }
-    </script>
 </body>
 </html>

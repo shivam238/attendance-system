@@ -1153,11 +1153,18 @@
                 
                 classUserData = userData;
 
-                // Check if student exists in the list
-                const student = userData.students.find(s => s.rollNo.toUpperCase() === rollNo);
+                // Check if student exists in the list (handle both array and object formats)
+                const studentsRaw = userData.students;
+                let studentsArray = [];
+                if (Array.isArray(studentsRaw)) {
+                    studentsArray = studentsRaw;
+                } else if (studentsRaw && typeof studentsRaw === 'object') {
+                    studentsArray = Object.values(studentsRaw);
+                }
+                const student = studentsArray.find(s => s && s.rollNo && s.rollNo.toUpperCase() === rollNo);
                 if (!student) {
                     document.getElementById('loading-screen').classList.add('fade-out');
-                    showAuthError(`Roll Number not found in Class ${classId}.`);
+                    showAuthError(`Roll Number "${rollNo}" not found in Class ${classId}. Check your roll number and try again.`);
                     return;
                 }
 
@@ -1355,7 +1362,15 @@
                 });
                 classUserData = userData;
 
-                const student = userData.students.find(s => s.rollNo.toUpperCase() === rollNo);
+                // Handle both array and object formats for students
+                const studentsRawAuto = userData.students;
+                let studentsArrayAuto = [];
+                if (Array.isArray(studentsRawAuto)) {
+                    studentsArrayAuto = studentsRawAuto;
+                } else if (studentsRawAuto && typeof studentsRawAuto === 'object') {
+                    studentsArrayAuto = Object.values(studentsRawAuto);
+                }
+                const student = studentsArrayAuto.find(s => s && s.rollNo && s.rollNo.toUpperCase() === rollNo);
                 if (!student) {
                     localStorage.removeItem('student_session');
                     document.getElementById('loading-screen').classList.add('fade-out');
