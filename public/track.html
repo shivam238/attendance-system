@@ -301,6 +301,126 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
         }
 
+        /* ===== SMART PLANNER CARD ===== */
+        .smart-planner-card {
+            margin-top: 20px;
+            background: var(--tab-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .smart-planner-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 18px 10px 18px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .smart-planner-header h4 {
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .smart-planner-body {
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .planner-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .planner-icon-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .planner-icon-box.green  { background: rgba(16, 185, 129, 0.12); }
+        .planner-icon-box.red    { background: rgba(239, 68, 68, 0.12); }
+        .planner-icon-box.amber  { background: rgba(245, 158, 11, 0.12); }
+        .planner-icon-box.purple { background: rgba(139, 92, 246, 0.12); }
+
+        .planner-text {
+            flex: 1;
+        }
+
+        .planner-text .planner-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .planner-text .planner-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-color);
+            line-height: 1.4;
+        }
+
+        .planner-text .planner-value.highlight-green  { color: #10b981; }
+        .planner-text .planner-value.highlight-red    { color: #ef4444; }
+        .planner-text .planner-value.highlight-amber  { color: #f59e0b; }
+        .planner-text .planner-value.highlight-purple { color: #8b5cf6; }
+
+        .planner-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 2px 0;
+        }
+
+        .planner-target-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .planner-target-row label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .planner-goal-input {
+            width: 55px;
+            padding: 5px 8px;
+            border-radius: 8px;
+            background: var(--tab-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            font-weight: 700;
+            font-size: 13px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .planner-goal-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        }
+
         /* ===== CLASSROOM FEED STYLES ===== */
         .classroom-section {
             margin-top: 32px;
@@ -667,6 +787,60 @@
                     <input type="number" id="attendance-threshold" class="threshold-input" value="75" min="0" max="100" onchange="updateThreshold()">
                     <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">%</span>
                 </div>
+
+                <!-- ===== SMART ATTENDANCE PLANNER ===== -->
+                <div class="smart-planner-card" id="smart-planner-card" style="display: none;">
+                    <div class="smart-planner-header">
+                        <span style="font-size: 20px;">🧠</span>
+                        <h4>Smart Attendance Planner</h4>
+                    </div>
+                    <div class="smart-planner-body">
+
+                        <!-- Bunk Planner Row -->
+                        <div class="planner-row" id="planner-bunk-row">
+                            <div class="planner-icon-box green">🛋️</div>
+                            <div class="planner-text">
+                                <div class="planner-label">Bunk Budget</div>
+                                <div class="planner-value" id="planner-bunk-value">—</div>
+                            </div>
+                        </div>
+
+                        <div class="planner-divider"></div>
+
+                        <!-- Recovery Row -->
+                        <div class="planner-row" id="planner-recover-row">
+                            <div class="planner-icon-box red">🎯</div>
+                            <div class="planner-text">
+                                <div class="planner-label">Recovery Needed</div>
+                                <div class="planner-value" id="planner-recover-value">—</div>
+                            </div>
+                        </div>
+
+                        <div class="planner-divider"></div>
+
+                        <!-- Risk Predictor Row -->
+                        <div class="planner-row">
+                            <div class="planner-icon-box purple" id="planner-risk-icon">⚠️</div>
+                            <div class="planner-text">
+                                <div class="planner-label">Risk Predictor</div>
+                                <div class="planner-value" id="planner-risk-value">—</div>
+                            </div>
+                        </div>
+
+                        <div class="planner-divider"></div>
+
+                        <!-- Goal Mode Row -->
+                        <div class="planner-target-row">
+                            <label for="planner-goal-input">🏁 My Semester Goal:</label>
+                            <input type="number" id="planner-goal-input" class="planner-goal-input" value="75" min="0" max="100" oninput="updateSmartPlanner()">
+                            <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">%</span>
+                        </div>
+                        <div class="planner-value" id="planner-goal-value" style="font-size: 13px; color: var(--text-muted); padding: 0 2px;">—</div>
+
+                    </div>
+                </div>
+                <!-- ===== END SMART PLANNER ===== -->
+
             </div>
 
             <!-- Subject-wise stats cards -->
@@ -1662,6 +1836,9 @@
             // Save subject statistics globally to use for logs
             window.studentSubjectStats = subjectStats;
             renderDetailedLogs();
+
+            // Render Smart Planner
+            updateSmartPlanner();
         }
 
         function updateThreshold() {
@@ -1684,6 +1861,119 @@
                 console.warn("Cannot re-render: currentClassId or currentRollNo is null");
             }
         }
+
+        // ===== SMART ATTENDANCE PLANNER =====
+        function updateSmartPlanner() {
+            const subjectStats = window.studentSubjectStats;
+            if (!subjectStats) return;
+
+            // Read overall numbers
+            let totalAttended = 0, totalClasses = 0;
+            Object.values(subjectStats).forEach(s => {
+                totalAttended += s.attended;
+                totalClasses += s.total;
+            });
+
+            if (totalClasses === 0) return; // No data yet
+
+            const plannerCard = document.getElementById('smart-planner-card');
+            if (plannerCard) plannerCard.style.display = 'block';
+
+            // Read target threshold
+            const threshInput = document.getElementById('attendance-threshold');
+            const target = threshInput ? (parseInt(threshInput.value) || 75) : 75;
+            const targetFraction = target / 100;
+
+            const currentPct = totalAttended / totalClasses * 100;
+
+            // ---- BUNK PLANNER ----
+            // How many classes can you miss and still stay >= target%?
+            // Formula: (attended) / (total + x) >= target/100
+            // => x <= (attended - target*total) / target
+            // But we also consider future classes (we use total as base)
+            // Simpler: find max absences allowed from now keeping >= target
+            // If already below target, bunkable = 0
+            const bunkRow   = document.getElementById('planner-bunk-row');
+            const bunkVal   = document.getElementById('planner-bunk-value');
+            const recoverRow  = document.getElementById('planner-recover-row');
+            const recoverVal  = document.getElementById('planner-recover-value');
+
+            if (currentPct >= target) {
+                // Can bunk some classes
+                // (attended) / (total + x) = target/100  => x = attended/target*100 - total
+                const maxBunkable = Math.floor(totalAttended / targetFraction - totalClasses);
+                if (bunkRow)  bunkRow.querySelector('.planner-icon-box').className  = 'planner-icon-box green';
+                if (bunkVal)  bunkVal.className = 'planner-value highlight-green';
+                if (bunkVal)  bunkVal.textContent = maxBunkable > 0
+                    ? `You can safely skip ${maxBunkable} more class${maxBunkable === 1 ? '' : 'es'} and still stay at ${target}%.`
+                    : `You're exactly at ${target}%. One more absence will push you below!`;
+
+                if (recoverRow) recoverRow.style.display = 'none'; // Not needed
+            } else {
+                // Below target — need to attend more
+                // (attended + x) / (total + x) = target/100
+                // => x*(1 - target/100) = target/100*total - attended
+                // => x = (target*total/100 - attended) / (1 - target/100)
+                const needed = Math.ceil((targetFraction * totalClasses - totalAttended) / (1 - targetFraction));
+                if (bunkRow)  bunkRow.style.display = 'none'; // Not relevant
+                if (recoverRow) recoverRow.style.display = 'flex';
+                if (recoverRow) recoverRow.querySelector('.planner-icon-box').className = 'planner-icon-box red';
+                if (recoverVal) recoverVal.className = 'planner-value highlight-red';
+                if (recoverVal) recoverVal.textContent = `Attend the next ${needed} class${needed === 1 ? '' : 'es'} consecutively to reach ${target}% attendance.`;
+            }
+
+            // ---- RISK PREDICTOR ----
+            // Predict: if you miss the next N classes, where will you be?
+            const riskVal  = document.getElementById('planner-risk-value');
+            const riskIcon = document.getElementById('planner-risk-icon');
+            const MISS_AHEAD = 3; // predict missing next 3 classes
+            const futureTotal = totalClasses + MISS_AHEAD;
+            const futurePct   = totalAttended / futureTotal * 100;
+
+            if (riskVal && riskIcon) {
+                if (futurePct < target) {
+                    riskIcon.className = 'planner-icon-box red';
+                    riskVal.className  = 'planner-value highlight-red';
+                    riskVal.textContent = `⚠️ If you miss the next ${MISS_AHEAD} classes, your attendance will drop to ${futurePct.toFixed(1)}% — below your ${target}% target!`;
+                } else if (futurePct - target < 5) {
+                    riskIcon.className = 'planner-icon-box amber';
+                    riskVal.className  = 'planner-value highlight-amber';
+                    riskVal.textContent = `⚡ Careful! Missing ${MISS_AHEAD} more classes would put you at ${futurePct.toFixed(1)}% — dangerously close to ${target}%.`;
+                } else {
+                    riskIcon.className = 'planner-icon-box purple';
+                    riskVal.className  = 'planner-value highlight-purple';
+                    riskVal.textContent = `✅ Even if you miss ${MISS_AHEAD} classes, you'd still be at ${futurePct.toFixed(1)}%. You're in a good spot!`;
+                }
+            }
+
+            // ---- GOAL MODE ----
+            const goalInput = document.getElementById('planner-goal-input');
+            const goalValue = document.getElementById('planner-goal-value');
+            if (!goalInput || !goalValue) return;
+
+            const savedGoal = localStorage.getItem('planner_goal');
+            if (savedGoal && !goalInput._initialized) {
+                goalInput.value = savedGoal;
+                goalInput._initialized = true;
+            }
+
+            const goal = parseInt(goalInput.value) || 75;
+            localStorage.setItem('planner_goal', goal);
+            const goalFraction = goal / 100;
+
+            if (currentPct >= goal) {
+                const canSkip = Math.floor(totalAttended / goalFraction - totalClasses);
+                goalValue.className = 'planner-value highlight-green';
+                goalValue.textContent = canSkip > 0
+                    ? `🎯 Goal of ${goal}% is achievable! You can skip ${canSkip} more class${canSkip === 1 ? '' : 'es'} and still hit it.`
+                    : `🎯 You're right at your ${goal}% goal. Stay consistent!`;
+            } else {
+                const needForGoal = Math.ceil((goalFraction * totalClasses - totalAttended) / (1 - goalFraction));
+                goalValue.className = 'planner-value highlight-amber';
+                goalValue.textContent = `📈 To reach your ${goal}% goal, attend the next ${needForGoal} consecutive class${needForGoal === 1 ? '' : 'es'}.`;
+            }
+        }
+        // ===== END SMART PLANNER =====
 
         function renderDetailedLogs() {
             const subjectStats = window.studentSubjectStats;
