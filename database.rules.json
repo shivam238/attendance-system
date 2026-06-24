@@ -63,7 +63,7 @@
     "student_auth_sessions": {
       "$session_key": {
         ".read": "auth != null",
-        ".write": "auth != null",
+        ".write": "auth != null && !data.exists()",
         ".validate": "!newData.exists() || (newData.hasChildren(['uid', 'ts']) && newData.child('uid').isString() && newData.child('uid').val() === auth.uid && newData.child('ts').isNumber())"
       }
     }

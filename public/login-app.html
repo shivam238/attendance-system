@@ -289,24 +289,13 @@
             <div id="token-section" class="token-container" style="text-align: center; padding: 20px 0;">
                 <div class="spinner" style="margin-bottom: 20px;"></div>
                 <h3 style="margin-bottom: 8px; font-weight: 700; color: var(--text-color);">🎉 Sign-in Successful!</h3>
-                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px; line-height: 1.5;">
+                <p id="token-display" style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px; line-height: 1.5;">
                     Redirecting you back to the <strong>ATTENDIFY</strong> app...
                 </p>
                 <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 16px;">
-                    <a href="javascript:void(0)" onclick="showManualTokenFallback()" style="color: var(--text-muted); font-size: 12px; text-decoration: underline; font-weight: 500;">
-                        Not redirecting? Click here to show manual code
-                    </a>
-                </div>
-                
-                <!-- Hidden manual fallback container -->
-                <div id="manual-fallback-container" style="display: none; margin-top: 20px; text-align: left;">
-                    <div class="instruction-box" style="margin-bottom: 12px;">
-                        Copy the login code below, return to the <strong>ATTENDIFY</strong> app and paste it to log in.
-                    </div>
-                    <textarea id="token-display" class="token-area" readonly></textarea>
-                    <button id="copy-btn" class="btn btn-primary" onclick="copyToken()" style="width: 100%;">
-                        📋 Copy Login Code
-                    </button>
+                    <p style="color: var(--text-muted); font-size: 12px; font-weight: 500;">
+                        If the app did not open, please close this page and reopen from ATTENDIFY.
+                    </p>
                 </div>
             </div>
 
@@ -374,22 +363,17 @@
                     uid: user.uid,
                     ts: Date.now()
                 }).then(() => {
-                    // Also fire deep link as backup (in case app is in foreground)
-                    setTimeout(() => {
-                        window.location.href = 'attendify://student-login?uid=' + encodeURIComponent(user.uid) + '&sk=' + encodeURIComponent(sk);
-                    }, 800);
+                    // Session written — app listener will pick it up automatically
+                    document.getElementById('token-display').value = '✅ Signed in as: ' + user.displayName + '\n✅ Please return to the ATTENDIFY app.';
                 }).catch((err) => {
                     console.error('Session write error:', err);
-                    // Fallback to deep link even if Firebase write fails
-                    setTimeout(() => {
-                        window.location.href = 'attendify://student-login?uid=' + encodeURIComponent(user.uid);
-                    }, 400);
+                    document.getElementById('token-section').style.display = 'none';
+                    document.getElementById('message').innerHTML = '<span class="error">❌ Session error. Please close this page and try again.</span>';
                 });
             } else {
-                // No session key — fall back to deep link
-                setTimeout(() => {
-                    window.location.href = 'attendify://student-login?uid=' + encodeURIComponent(user.uid);
-                }, 400);
+                // No session key — show error, cannot proceed without sk
+                document.getElementById('token-section').style.display = 'none';
+                document.getElementById('message').innerHTML = '<span class="error">❌ Invalid session link. Please reopen from the ATTENDIFY app.</span>';
             }
         }
 
@@ -416,27 +400,7 @@
             }, 500);
         }
 
-        function showManualTokenFallback() {
-            document.getElementById('manual-fallback-container').style.display = 'block';
-        }
 
-        function copyToken() {
-            const tokenDisplay = document.getElementById('token-display');
-            tokenDisplay.select();
-            tokenDisplay.setSelectionRange(0, 99999);
-
-            navigator.clipboard.writeText(tokenDisplay.value).then(() => {
-                const copyBtn = document.getElementById('copy-btn');
-                copyBtn.textContent = "✅ Copied to Clipboard!";
-                copyBtn.className = "btn btn-success";
-                setTimeout(() => {
-                    copyBtn.textContent = "📋 Copy Login Code";
-                    copyBtn.className = "btn btn-primary";
-                }, 2000);
-            }).catch(err => {
-                console.error("Failed to copy:", err);
-            });
-        }
     </script>
 </body>
 </html>
