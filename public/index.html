@@ -4964,6 +4964,10 @@ ${Object.entries(subjectSessionCounts).map(([s, c]) => `  ${s}: ${c} session(s) 
 === ATTENDANCE REQUESTS LOG (${pendingCount} pending) ===
 ${requestLines || '  (No requests found)'}
 
+=== GOOGLE CLASSROOM INTEGRATION STATUS ===
+Coursework/Assignment Sync: Disabled (Architecture Hook Ready)
+Submissions/Timestamps/Top Performers: Not available in current session database.
+
 === INSTRUCTIONS ===
 - Answer the CR's questions using ONLY the data above. Do NOT invent records.
 - Calculate attendance percentages accurately.
@@ -4972,6 +4976,7 @@ ${requestLines || '  (No requests found)'}
 - For "who is absent today", find students NOT present in today's attendance.
 - For low-attendance alerts, flag anyone below 75% in any subject.
 - Always use exact names and roll numbers from the data provided.
+- For CR/Teacher Queries regarding "Assignment submissions", "Missing submissions", "Top performers (assignment-wise)", "Submission timestamps", or "Classroom assignment statistics", politely explain that Google Classroom Coursework Sync is currently disabled/inactive in this session, and only student attendance and registration rosters are currently synchronized. Do NOT hallucinate any submission data. You may, however, answer attendance-related statistics (e.g. top attendance performers).
 - Bug reporting: If the CR mentions any bug, error, crash, or unexpected behavior in the app, respond helpfully. At the very end of your response, on a new line, append: [BUG_REPORT:{"summary":"<one sentence summary>","category":"<bug|performance|ui|crash|other>"}]. Only do this for real reported problems, not general questions.`;
         }
 

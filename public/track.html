@@ -2669,11 +2669,14 @@
             Object.entries(subjectStats).forEach(([sub, s]) => {
                 totalAttended += s.attended;
                 totalClasses += s.total;
+                const missed = s.total - s.attended;
                 const pct = s.total > 0 ? (s.attended / s.total * 100).toFixed(1) : '0.0';
-                lines.push(`  - ${sub}: ${s.attended}/${s.total} classes attended (${pct}%)`);
+                lines.push(`  - ${sub}: ${s.attended}/${s.total} classes attended (${missed} missed, ${pct}%)`);
             });
 
             const overallPct = totalClasses > 0 ? (totalAttended / totalClasses * 100).toFixed(1) : '0.0';
+            const totalMissed = totalClasses - totalAttended;
+            const joinedSubjects = Object.keys(subjectStats).join(', ');
 
             const threshInput = document.getElementById('attendance-threshold');
             const target = threshInput ? (parseInt(threshInput.value) || 75) : 75;
@@ -2696,8 +2699,9 @@
             return `
 == STUDENT ATTENDANCE DATA (LIVE) ==
 Student: ${studentName} | Roll No: ${rollNo} | Class ID: ${classId}
-Overall Attendance: ${totalAttended}/${totalClasses} classes (${overallPct}%)
+Overall Attendance: ${totalAttended}/${totalClasses} classes (${overallPct}%, ${totalMissed} missed in total)
 Target Threshold: ${target}%
+Subjects Joined: ${joinedSubjects}
 
 Subject-wise Breakdown:
 ${lines.join('\n')}
@@ -2706,7 +2710,15 @@ Smart Planner:
 ${bunkBudgetInfo}
 == END DATA ==
 
-You are the ATTENDIFY AI Attendance Assistant. You have access to this student's real-time attendance data above. Answer their questions based on this data. Be concise, friendly, and use numbers precisely. Always reply in the same language or mix of languages (e.g., English, Hindi, Hinglish, etc.) that the student uses to ask their question. Always do the math correctly using the data provided.
+You are the ATTENDIFY AI Attendance Assistant. You have access to this student's real-time attendance data above. 
+Answer their questions precisely and honestly based on this data:
+1. "My attendance percentage": Show overall percentage (${overallPct}%) and subject-wise percentages.
+2. "Missing classes": Show total missed classes (${totalMissed}) and subject-wise breakdown of missed classes.
+3. "Subjects joined": List all joined subjects: ${joinedSubjects}.
+4. "Attendance summary": Provide a brief clear summary of their status.
+5. "Attendance required to reach target %": Use the Smart Planner recovery details (${bunkBudgetInfo}).
+
+Security & Privacy: You are only allowed to see and talk about the current student's private data. You must never invent or share data about other students. Always reply in the same language or mix of languages (e.g., English, Hindi, Hinglish, etc.) that the student uses.
 Bug reporting: If the student mentions any bug, error, crash, slow loading, or unexpected behavior in the app, respond helpfully. At the very end of your response, on a new line, append: [BUG_REPORT:{"summary":"<one sentence summary>","category":"<bug|performance|ui|crash|other>"}]. Only do this for real reported problems, not general questions.`;
         }
 
