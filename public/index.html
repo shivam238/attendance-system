@@ -3514,6 +3514,11 @@ Convert the student list from the attached file/image, or the text enclosed in t
                 clearInterval(qrTimerInterval);
                 qrTimerInterval = null;
             }
+            // Also cancel any pending abandon-grace timer to prevent stale closures
+            if (_abandonGraceTimerId !== null) {
+                clearTimeout(_abandonGraceTimerId);
+                _abandonGraceTimerId = null;
+            }
             activeQRLeaveMarked = false;
 
             if (currentQRCode) {
