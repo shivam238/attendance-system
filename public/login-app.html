@@ -353,7 +353,7 @@
             document.getElementById('connecting-state').style.display = 'none';
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('token-section').style.display = 'block';
-            document.getElementById('token-display').value = '✅ Signed in as: ' + user.displayName + '\n⏳ Sending you back to the app...';
+            document.getElementById('token-display').textContent = '✅ Signed in as: ' + user.displayName + ' (Sending you back to the app...)';
             msgDiv.innerHTML = '';
 
             if (sk) {
@@ -364,7 +364,11 @@
                     ts: Date.now()
                 }).then(() => {
                     // Session written — app listener will pick it up automatically
-                    document.getElementById('token-display').value = '✅ Signed in as: ' + user.displayName + '\n✅ Please return to the ATTENDIFY app.';
+                    document.getElementById('token-display').textContent = '✅ Signed in as: ' + user.displayName + ' (Please return to the ATTENDIFY app.)';
+                    // Deep link redirect to bring the app back to foreground
+                    setTimeout(() => {
+                        window.location.href = "attendify://login?flow=student";
+                    }, 500);
                 }).catch((err) => {
                     console.error('Session write error:', err);
                     document.getElementById('token-section').style.display = 'none';
@@ -391,7 +395,7 @@
             document.getElementById('connecting-state').style.display = 'none';
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('token-section').style.display = 'block';
-            document.getElementById('token-display').value = idToken;
+            document.getElementById('token-display').textContent = idToken;
             msgDiv.innerHTML = '';
 
             // Attempt to deep link redirect back to app

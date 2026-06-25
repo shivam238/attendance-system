@@ -1233,11 +1233,16 @@
             gap: 10px;
         }
 
-        .student-list, #today-list, #history-content, #requests-container {
+        .student-list, #today-list, #requests-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 16px;
             justify-content: start; /* Don't stretch to fill the whole container */
+        }
+
+        /* History tab uses its own injected flex layout */
+        #history-content {
+            display: block;
         }
 
         .list-item {
@@ -1245,7 +1250,7 @@
         }
 
         @media (max-width: 768px) {
-            .student-list, #today-list, #history-content, #requests-container {
+            .student-list, #today-list, #requests-container {
                 grid-template-columns: 1fr;
             }
             .list-item {

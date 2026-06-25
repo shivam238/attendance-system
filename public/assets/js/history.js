@@ -34,18 +34,18 @@ let attendanceHistoryData = null;
             border: 1px solid var(--border-color, rgba(255,255,255,0.08));
             border-radius: 20px;
             padding: 20px;
-            margin-bottom: 24px;
+            margin-bottom: 0;
             box-shadow: var(--shadow, 0 8px 32px 0 rgba(0, 0, 0, 0.2));
         }
         .calendar-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
         .calendar-header h4 {
             margin: 0;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
             color: var(--text-color, #fff);
         }
@@ -53,9 +53,9 @@ let attendanceHistoryData = null;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: var(--text-color, #fff);
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -66,20 +66,19 @@ let attendanceHistoryData = null;
         .calendar-nav-btn:hover {
             background: var(--primary-color, #6366f1);
             border-color: var(--primary-color, #6366f1);
-            transform: translateY(-1px);
         }
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 8px;
+            gap: 4px;
             text-align: center;
         }
         .calendar-weekday {
             font-weight: 700;
-            font-size: 11px;
+            font-size: 10px;
             color: var(--text-muted, #94a3b8);
             text-transform: uppercase;
-            padding-bottom: 8px;
+            padding-bottom: 6px;
         }
         .calendar-day {
             aspect-ratio: 1;
@@ -87,13 +86,13 @@ let attendanceHistoryData = null;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border-radius: 10px;
-            font-size: 14px;
+            border-radius: 8px;
+            font-size: 12px;
             font-weight: 600;
             color: var(--text-color, #fff);
             cursor: pointer;
             position: relative;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
             border: 1px solid transparent;
             background: rgba(255, 255, 255, 0.02);
         }
@@ -113,18 +112,18 @@ let attendanceHistoryData = null;
         .calendar-day.has-attendance::after {
             content: '';
             position: absolute;
-            bottom: 6px;
-            width: 5px;
-            height: 5px;
+            bottom: 3px;
+            width: 4px;
+            height: 4px;
             border-radius: 50%;
             background-color: #6366f1;
-            box-shadow: 0 0 6px #6366f1;
+            box-shadow: 0 0 5px #6366f1;
         }
         .calendar-day.selected {
             background: var(--primary-color, #6366f1) !important;
             color: #fff !important;
             border-color: var(--primary-color, #6366f1) !important;
-            box-shadow: 0 0 12px rgba(99, 102, 241, 0.5);
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
         }
         .calendar-day.selected::after {
             background-color: #fff !important;
@@ -139,30 +138,6 @@ let attendanceHistoryData = null;
             padding: 20px;
             box-shadow: var(--shadow, 0 8px 32px 0 rgba(0, 0, 0, 0.2));
         }
-        .progress-bar-container {
-            background: rgba(255, 255, 255, 0.06);
-            border-radius: 8px;
-            height: 7px;
-            overflow: hidden;
-            margin: 10px 0;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .progress-bar-fill {
-            height: 100%;
-            border-radius: 8px;
-            background: linear-gradient(90deg, #6366f1, #a855f7);
-            transition: width 0.3s ease;
-        }
-        .details-subject-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 14px;
-            padding: 16px;
-            margin-bottom: 12px;
-        }
-        .details-subject-card:last-child {
-            margin-bottom: 0;
-        }
         .details-badge {
             display: inline-block;
             font-size: 11px;
@@ -171,24 +146,73 @@ let attendanceHistoryData = null;
             border-radius: 6px;
             margin-right: 6px;
         }
-        .details-badge.present {
-            background: rgba(16, 185, 129, 0.1);
-            color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.2);
+        .details-badge.present { background: rgba(16,185,129,0.1); color: #10b981; border: 1px solid rgba(16,185,129,0.2); }
+        .details-badge.absent  { background: rgba(239,68,68,0.1);  color: #ef4444; border: 1px solid rgba(239,68,68,0.2);  }
+        .details-badge.verification { background: rgba(245,158,11,0.1); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); }
+
+        /* ===== RESPONSIVE HISTORY LAYOUT ===== */
+        .history-layout {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            width: 100%;
         }
-        .details-badge.absent {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.2);
+        .history-calendar-col {
+            flex: 0 0 270px;
+            min-width: 0;
         }
-        .details-badge.verification {
-            background: rgba(245, 158, 11, 0.1);
-            color: #f59e0b;
-            border: 1px solid rgba(245, 158, 11, 0.2);
+        .history-calendar-col .calendar-wrapper {
+            position: sticky;
+            top: 16px;
+        }
+        .history-details-col {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+        }
+        @media (max-width: 820px) {
+            .history-layout { flex-direction: column; }
+            .history-calendar-col { flex: none; width: 100%; }
+            .history-calendar-col .calendar-wrapper { position: static; }
+            .history-details-col { width: 100%; }
+        }
+
+        /* ===== HISTORY TABLE — FIXED COLUMNS, NO HORIZONTAL SCROLL ===== */
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        .history-table th {
+            padding: 8px 8px;
+            font-size: 10px;
+            color: var(--text-muted, #94a3b8);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: left;
+        }
+        .history-table td {
+            padding: 8px 8px;
+            font-size: 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .history-table th:nth-child(1), .history-table td:nth-child(1) { width: 32%; font-weight: 600; color: var(--text-color); }
+        .history-table th:nth-child(2), .history-table td:nth-child(2) { width: 25%; color: var(--text-muted); }
+        .history-table th:nth-child(3), .history-table td:nth-child(3) { width: 22%; color: var(--text-muted); }
+        .history-table th:nth-child(4), .history-table td:nth-child(4) { width: 21%; text-align: right; }
+        @media (max-width: 480px) {
+            .history-table th:nth-child(3), .history-table td:nth-child(3) { display: none; }
+            .history-table th:nth-child(1), .history-table td:nth-child(1) { width: 40%; }
+            .history-table th:nth-child(2), .history-table td:nth-child(2) { width: 30%; }
+            .history-table th:nth-child(4), .history-table td:nth-child(4) { width: 30%; }
         }
     `;
     document.head.appendChild(style);
 })();
+
 
 function renderHistory() {
     const container = document.getElementById('history-content');
@@ -210,20 +234,26 @@ function renderHistory() {
             groupedDates[dateStr] = true;
         });
 
-        // Setup container layout
+        // Setup container layout — side-by-side on desktop, stacked on mobile
         container.innerHTML = `
-            <div class="calendar-wrapper">
-                <div class="calendar-header">
-                    <button class="calendar-nav-btn" onclick="changeCalendarMonth(-1)">‹</button>
-                    <h4 id="calendar-month-year-label"></h4>
-                    <button class="calendar-nav-btn" onclick="changeCalendarMonth(1)">›</button>
+            <div class="history-layout">
+                <div class="history-calendar-col">
+                    <div class="calendar-wrapper">
+                        <div class="calendar-header">
+                            <button class="calendar-nav-btn" onclick="changeCalendarMonth(-1)">‹</button>
+                            <h4 id="calendar-month-year-label"></h4>
+                            <button class="calendar-nav-btn" onclick="changeCalendarMonth(1)">›</button>
+                        </div>
+                        <div class="calendar-grid" id="calendar-days-grid"></div>
+                    </div>
                 </div>
-                <div class="calendar-grid" id="calendar-days-grid"></div>
-            </div>
-            <div id="calendar-date-details" class="date-details-wrapper">
-                <div class="empty-state" style="padding: 20px;">
-                    <div class="empty-icon">📅</div>
-                    <div>Select a date from the calendar to view attendance details</div>
+                <div class="history-details-col">
+                    <div id="calendar-date-details" class="date-details-wrapper">
+                        <div class="empty-state" style="padding: 20px;">
+                            <div class="empty-icon">📅</div>
+                            <div>Select a date from the calendar to view attendance details</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
@@ -419,10 +449,10 @@ function showDateDetails(dateStr) {
 
                 return `
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
-                        <td style="padding: 8px 10px; font-size: 13px; font-weight: 600; color: var(--text-color); white-space: nowrap;">${historyEscapeHtml(s.name)}</td>
-                        <td style="padding: 8px 10px; font-size: 12px; color: var(--text-muted);">${historyEscapeHtml(s.rollNo)}</td>
-                        <td style="padding: 8px 10px; font-size: 12px; color: var(--text-muted); white-space: nowrap;">${timeStr}</td>
-                        <td style="padding: 8px 10px; text-align: right;">${statusBadge}</td>
+                        <td style="font-weight: 600; color: var(--text-color);">${historyEscapeHtml(s.name)}</td>
+                        <td style="color: var(--text-muted);">${historyEscapeHtml(s.rollNo)}</td>
+                        <td style="color: var(--text-muted);">${timeStr}</td>
+                        <td style="text-align: right;">${statusBadge}</td>
                     </tr>`;
             }).join('');
 
@@ -452,15 +482,15 @@ function showDateDetails(dateStr) {
                         ` : ''}
                     </div>
 
-                    <!-- Organized Table -->
-                    <div style="overflow-x: auto; border-radius: 10px; border: 1px solid rgba(255,255,255,0.06);">
-                        <table style="width: 100%; border-collapse: collapse;">
+                    <!-- Organised Table (no horizontal scroll) -->
+                    <div style="border-radius: 10px; border: 1px solid rgba(255,255,255,0.06); overflow: hidden;">
+                        <table class="history-table">
                             <thead>
                                 <tr style="background: rgba(255,255,255,0.04);">
-                                    <th style="padding: 8px 10px; font-size: 11px; color: var(--text-muted); text-align: left; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Student</th>
-                                    <th style="padding: 8px 10px; font-size: 11px; color: var(--text-muted); text-align: left; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Roll No</th>
-                                    <th style="padding: 8px 10px; font-size: 11px; color: var(--text-muted); text-align: left; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Time Marked</th>
-                                    <th style="padding: 8px 10px; font-size: 11px; color: var(--text-muted); text-align: right; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Status</th>
+                                    <th>Student</th>
+                                    <th>Roll No</th>
+                                    <th>Time</th>
+                                    <th style="text-align:right;">Status</th>
                                 </tr>
                             </thead>
                             <tbody>${tableRows}</tbody>
