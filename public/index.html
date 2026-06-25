@@ -3491,6 +3491,14 @@ Convert the student list from the attached file/image, or the text enclosed in t
         }
 
         function resetQR(isManual = false) {
+            if (isManual && currentQRCode) {
+                const isVerification = currentQRCode.isVerification;
+                const msg = isVerification
+                    ? '⚠️ Close verification session?\n\nUnverified students will be moved to pending requests. Are you sure?'
+                    : '⚠️ Close QR session?\n\nStudents will no longer be able to mark attendance. Are you sure?';
+                if (!confirm(msg)) return;
+            }
+
             if (currentQRCode) {
                 const closedCode = currentQRCode.code;
                 const isVerification = currentQRCode.isVerification;
