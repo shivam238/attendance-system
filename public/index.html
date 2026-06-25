@@ -3404,6 +3404,21 @@ Convert the student list from the attached file/image, or the text enclosed in t
                 window.currentQRListenerRef.off();
                 window.currentQRListenerRef = null;
             }
+            if (window.currentVerificationListenerRef) {
+                window.currentVerificationListenerRef.off();
+                window.currentVerificationListenerRef = null;
+            }
+            window.activeVerifiedRolls = null;
+            // Always re-enable generate button and reset its state after QR ends
+            const generateBtn = document.getElementById('generate-qr-btn');
+            if (generateBtn) {
+                generateBtn.disabled = false;
+                generateBtn.textContent = '📲 Generate QR Code';
+                generateBtn.style.background = '';
+                generateBtn.onclick = generateQRCode;
+            }
+            // Re-run attendance display to correctly set button state (Generate vs Verify)
+            if (currentSubject) updateAttendanceDisplay();
         }
         // ===== QR TIMER SETTINGS =====
         let attendanceQRMinutes = parseInt(localStorage.getItem('attendanceQRMinutes') || '2');
@@ -3444,17 +3459,19 @@ Convert the student list from the attached file/image, or the text enclosed in t
             const durationMs = ((verificationQRMinutes * 60) + verificationQRSeconds) * 1000;
             const today = getLocalDateKey();
             const originalCode = `${currentUser.username}_${today}_${currentSubject}`;
-            const code = `${originalCode}_verify`;
-            const expiryTime = Date.now() + durationMs;
+            // Unique key per verification round using timestamp — allows multiple verifications
+            const verifyTs = Date.now();
+            const code = `${originalCode}_verify_${verifyTs}`;
+            const expiryTime = verifyTs + durationMs;
             const baseURL = window.location.origin + window.location.pathname.replace('index.html', '');
             const url = `${baseURL}index.html?code=${code}`;
 
-            currentQRCode = { code, url, expiryTime };
+            currentQRCode = { code, url, expiryTime, isVerification: true, originalAttendanceKey: originalCode };
             qrExpireTime = expiryTime;
             persistActiveQRSession(code, currentSubject);
 
             // Session data in Firebase
-            const sessionData = { generatedAt: Date.now(), expiryTime, subject: currentSubject, username: currentUser.username, status: 'active', isVerification: true };
+            const sessionData = { generatedAt: verifyTs, expiryTime, subject: currentSubject, username: currentUser.username, status: 'active', isVerification: true, originalAttendanceKey: originalCode };
             db.ref('qr_sessions/' + code).set(sessionData);
 
             // Render QR
@@ -3469,6 +3486,18 @@ Convert the student list from the attached file/image, or the text enclosed in t
                 generateBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
                 generateBtn.disabled = true;
             }
+
+            // Listen to verification records in real time
+            window.activeVerifiedRolls = new Set();
+            if (window.currentVerificationListenerRef) {
+                window.currentVerificationListenerRef.off();
+            }
+            window.currentVerificationListenerRef = db.ref('verification/' + code);
+            window.currentVerificationListenerRef.on('value', (verSnapshot) => {
+                const data = verSnapshot.val();
+                window.activeVerifiedRolls = new Set(data ? Object.values(data).map(v => v.rollNo.toUpperCase()) : []);
+                updateAttendanceDisplay();
+            });
 
             showToast('🛡️ Anti-Proxy Verification QR Generated!', 'success');
             startQRTimer();
@@ -3585,14 +3614,27 @@ Convert the student list from the attached file/image, or the text enclosed in t
                         const suspiciousStyle = isSuspicious 
                             ? 'border: 1.5px dashed #ef4444; background: rgba(239, 68, 68, 0.04);' 
                             : '';
-                        const suspiciousBadge = isSuspicious 
-                            ? `<span class="status-pill danger" style="font-size: 10px; margin-top: 4px; padding: 2px 6px; display: inline-block;">⚠️ Suspicious: ${escapeHtml(r.suspiciousReason || 'Proxy Device')}</span>` 
-                            : '';
+                        
+                        let badgeHtml = '';
+                        if (isSuspicious) {
+                            badgeHtml = `<span class="status-pill danger" style="font-size: 10px; margin-top: 4px; padding: 2px 6px; display: inline-block;">⚠️ Suspicious: ${escapeHtml(r.suspiciousReason || 'Proxy Device')}</span>`;
+                        }
+
+                        // Real-time Verification status pill
+                        if (currentQRCode && currentQRCode.isVerification) {
+                            const isVerified = window.activeVerifiedRolls && window.activeVerifiedRolls.has(r.rollNo.toUpperCase());
+                            if (isVerified) {
+                                badgeHtml += `<span class="status-pill success" style="font-size: 10px; margin-top: 4px; padding: 2px 6px; display: inline-block; background: rgba(16,185,129,0.1); color: #10b981; border: 1px solid rgba(16,185,129,0.2);">✓ Verified</span>`;
+                            } else {
+                                badgeHtml += `<span class="status-pill warning" style="font-size: 10px; margin-top: 4px; padding: 2px 6px; display: inline-block; background: rgba(245,158,11,0.1); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2);">⏳ Not Verified</span>`;
+                            }
+                        }
+
                         return `
                             <div class="list-item" style="margin-bottom: 8px; ${suspiciousStyle}">
                                 <div class="list-item-info">
                                     <div class="list-item-name">${escapeHtml(r.name)}</div>
-                                    <div class="list-item-roll">${escapeHtml(r.rollNo)} ${suspiciousBadge}</div>
+                                    <div class="list-item-roll">${escapeHtml(r.rollNo)} ${badgeHtml}</div>
                                     <div class="list-item-time">${escapeHtml(formatTime(r.time))}</div>
                                 </div>
                                 <div class="list-item-actions">
@@ -3611,7 +3653,13 @@ Convert the student list from the attached file/image, or the text enclosed in t
                     
                     const fsStats = document.getElementById('fullscreen-qr-stats');
                     if (fsStats) {
-                        fsStats.textContent = `Present: ${records.length} / ${currentUser.students.length}`;
+                        // If verification is active, update stats to show verified count
+                        if (currentQRCode && currentQRCode.isVerification) {
+                            const verifiedCount = window.activeVerifiedRolls ? window.activeVerifiedRolls.size : 0;
+                            fsStats.textContent = `Verified: ${verifiedCount} / ${records.length}`;
+                        } else {
+                            fsStats.textContent = `Present: ${records.length} / ${currentUser.students.length}`;
+                        }
                     }
                 }
 
@@ -4433,7 +4481,35 @@ Convert the student list from the attached file/image, or the text enclosed in t
                         db.ref('class_student_links/' + username + '/' + safeRollPath).set(user.uid);
                         db.ref('google_user_links/' + user.uid + '/' + username).set(student.rollNo);
 
-                        const key = code;
+                        // Detect if this is a verification QR (contains _verify_)
+                        const isVerificationQR = code.includes('_verify_');
+                        // For verification QR, derive the original attendance key
+                        const originalAttendanceKey = isVerificationQR ? code.replace(/_verify_\d+$/, '') : code;
+                        const key = isVerificationQR ? originalAttendanceKey : code;
+                        const verificationKey = isVerificationQR ? code : null;
+
+                        if (isVerificationQR) {
+                            // Save to verification node (separate from attendance)
+                            db.ref('verification/' + verificationKey).orderByChild('rollNo').equalTo(student.rollNo).once('value', (alreadySnap) => {
+                                if (alreadySnap.exists()) {
+                                    msgDiv.innerHTML = '<div class="message warning">⚠️ You have already verified for this round.</div>';
+                                    return;
+                                }
+                                // Confirm student was actually present in original attendance
+                                db.ref('attendance/' + originalAttendanceKey).orderByChild('rollNo').equalTo(student.rollNo).once('value', (presSnap) => {
+                                    if (!presSnap.exists()) {
+                                        msgDiv.innerHTML = '<div class="message error">❌ You were not marked present in original attendance. Cannot verify.</div>';
+                                        return;
+                                    }
+                                    const verRecord = { rollNo: student.rollNo, name: student.name, time: Date.now(), verifiedAt: new Date().toLocaleTimeString('en-IN') };
+                                    db.ref('verification/' + verificationKey).push(verRecord).then(() => {
+                                        const successURL = `attendance-success.html?name=${encodeURIComponent(student.name)}&roll=${encodeURIComponent(student.rollNo)}&subject=${encodeURIComponent(subject.replace(/_verify_\d+$/, ''))}&time=${encodeURIComponent(new Date().toLocaleTimeString('en-IN'))}&class=${encodeURIComponent(username)}&verified=true`;
+                                        window.location.href = successURL;
+                                    });
+                                });
+                            });
+                            return;
+                        }
 
                         // Check if already marked
                         db.ref('attendance/' + key).orderByChild('rollNo').equalTo(student.rollNo).once('value', (snapshot) => {

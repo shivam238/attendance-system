@@ -372,7 +372,18 @@ function showDateDetails(dateStr) {
             const absentCount = Math.max(0, totalStudents - presentCount);
             const percentage = totalStudents > 0 ? Math.round((presentCount / totalStudents) * 100) : 0;
 
-            const verRecords = (verData && verData[session.key]) ? Object.values(verData[session.key]) : [];
+            // Aggregate verification records from all verification rounds of this session
+            let verRecords = [];
+            if (verData) {
+                Object.entries(verData).forEach(([vKey, vVal]) => {
+                    if (vKey === session.key + '_verify' || vKey.startsWith(session.key + '_verify_')) {
+                        if (vVal) {
+                            verRecords = verRecords.concat(Object.values(vVal));
+                        }
+                    }
+                });
+            }
+
             const verifiedCount = verRecords.length;
             const notVerifiedCount = Math.max(0, presentCount - verifiedCount);
             const hasVerification = verifiedCount > 0;

@@ -247,6 +247,7 @@
         const isLate = urlParams.get('late') === 'true';
         const lateMinutes = urlParams.get('lateBy') || '0';
         const isAlreadyMarked = urlParams.get('alreadyMarked') === 'true';
+        const isVerified = urlParams.get('verified') === 'true';
 
         const isOutOfRange = urlParams.get('outOfRange') === 'true';
         const distance = urlParams.get('distance') || '0';
@@ -255,7 +256,21 @@
         let isPendingRequest = isLate || isOutOfRange || gpsDenied;
 
         // Update UI based on status
-        if (isAlreadyMarked) {
+        if (isVerified) {
+            document.getElementById('status-icon').className = 'success-icon';
+            document.getElementById('status-icon').innerHTML = '<div class="checkmark"></div>';
+
+            document.getElementById('status-title').textContent = '🛡️ Profile Verified!';
+            document.getElementById('status-title').className = '';
+            document.getElementById('status-title').style.color = '#10b981';
+
+            document.getElementById('status-message').innerHTML =
+                `Hi <strong>${studentName}</strong>!<br>Your profile has been successfully verified for this round.`;
+
+            document.getElementById('status-note').innerHTML =
+                `ℹ️ <strong>Note:</strong> You can safely close this window now. Your verification is complete.`;
+
+        } else if (isAlreadyMarked) {
             document.getElementById('status-icon').className = 'success-icon warning-icon';
             document.getElementById('status-icon').innerHTML = '<div class="clock-icon">🔔</div>';
 
@@ -378,6 +393,13 @@
                 <div class="info-row">
                     <span class="info-label">Status:</span>
                     <span class="info-value late">${statusLabel}</span>
+                </div>
+            `;
+        } else if (isVerified) {
+            detailsHTML += `
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" style="color: #10b981;">🛡️ Profile Verified</span>
                 </div>
             `;
         } else {
