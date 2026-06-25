@@ -3760,9 +3760,10 @@ Convert the student list from the attached file/image, or the text enclosed in t
         });
 
         // If CR dismisses the beforeunload dialog and stays on the page,
-        // the page becomes visible again — cancel the abandon grace timer
+        // the page becomes visible again — cancel the abandon grace timer.
+        // Guard: only cancel if the QR is still active (not already being closed via confirm dialog).
         document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible' && activeQRLeaveMarked) {
+            if (document.visibilityState === 'visible' && activeQRLeaveMarked && currentQRCode) {
                 cancelAbandonGrace();
             }
         });
