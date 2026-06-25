@@ -146,7 +146,7 @@ export default function ChatWidget({
   };
 
   const handleEscalateEmail = () => {
-    const supportEmail = "sm3165599@gmail.com";
+    const supportEmail = "attendifycore@gmail.com";
     const subject = encodeURIComponent("[ATTENDIFY Support] Help / Escalation Request");
     
     // Find latest user query and latest bot reply

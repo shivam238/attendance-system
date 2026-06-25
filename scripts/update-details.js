@@ -21,7 +21,7 @@ const targetFiles = [
 // Default fallback values representing the current state of the repo
 const defaultState = {
     developerName: "Shivam Kumar Mahto",
-    developerEmail: "sm3165599@gmail.com",
+    developerEmail: "attendifycore@gmail.com",
     whatsappCommunity: "https://chat.whatsapp.com/GDOjvKK7nxGFvQ7NSrQNiG",
     instagramLink: "https://www.instagram.com/theattendify/",
     instagramHandle: "@theattendify",

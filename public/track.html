@@ -2911,14 +2911,19 @@ Bug reporting: If the student mentions any bug, error, crash, slow loading, or u
                         timestamp: Date.now()
                     };
                     db.ref('feedbacks').push(reportEntry);
-                    showBugToast('🐞 Issue logged! Our team will look into it. Thanks!');
+                    
+                    const subject = encodeURIComponent(`[ATTENDIFY Bug Report] ${reportEntry.category}`);
+                    const body = encodeURIComponent(`Source: ${reportEntry.source}\nCategory: ${reportEntry.category}\n\nSummary:\n${reportEntry.text}\n\nSubmitted via AI Support.`);
+                    const mailtoUrl = `mailto:attendifycore@gmail.com?subject=${subject}&body=${body}`;
+                    
+                    showBugToast('🐞 Issue logged! Click to send email copy.', mailtoUrl);
                 } catch (e) {
                     console.warn('Bug report parse failed:', e);
                 }
             }
         }
 
-        function showBugToast(msg) {
+        function showBugToast(msg, mailtoUrl) {
             const existing = document.getElementById('bug-toast');
             if (existing) existing.remove();
             const toast = document.createElement('div');
@@ -2934,13 +2939,19 @@ Bug reporting: If the student mentions any bug, error, crash, slow loading, or u
                 z-index: 99999; opacity: 0;
                 transition: opacity 0.3s ease;
                 white-space: nowrap;
+                cursor: pointer;
             `;
+            if (mailtoUrl) {
+                toast.onclick = () => {
+                    window.location.href = mailtoUrl;
+                };
+            }
             document.body.appendChild(toast);
             requestAnimationFrame(() => { toast.style.opacity = '1'; });
             setTimeout(() => {
                 toast.style.opacity = '0';
                 setTimeout(() => toast.remove(), 400);
-            }, 3500);
+            }, 5000); // Give slightly more time (5s) so the user can click it
         }
         // ===== END SMART BUG REPORTING =====
 

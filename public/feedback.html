@@ -227,7 +227,8 @@
                 <div class="success-icon">🎉</div>
                 <h2>Thank You!</h2>
                 <p>Your feedback has been successfully submitted. We appreciate your support in making ATTENDIFY better.</p>
-                <button onclick="resetFeedbackForm()" class="btn-submit" style="margin-top: 24px; max-width: 220px; margin-left: auto; margin-right: auto;">Send Another Response</button>
+                <a id="email-feedback-btn" href="#" class="btn-submit" style="display: inline-block; text-decoration: none; margin-top: 24px; max-width: 260px; margin-left: auto; margin-right: auto; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">📧 Send Email Copy</a>
+                <button onclick="resetFeedbackForm()" class="btn-submit" style="margin-top: 12px; max-width: 220px; margin-left: auto; margin-right: auto;">Send Another Response</button>
             </div>
         </div>
 
@@ -303,9 +304,24 @@
                 .then(() => {
                     document.getElementById('native-feedback-form').style.display = 'none';
                     document.getElementById('feedback-success-state').style.display = 'block';
+                    
+                    const subject = encodeURIComponent(`[ATTENDIFY Feedback] ${category}`);
+                    const body = encodeURIComponent(`Category: ${category}\nRating: ${selectedRating} Stars\n\nComments:\n${text}\n\nSubmitted via ATTENDIFY.`);
+                    const mailtoUrl = `mailto:attendifycore@gmail.com?subject=${subject}&body=${body}`;
+                    
+                    const emailBtn = document.getElementById('email-feedback-btn');
+                    if (emailBtn) {
+                        emailBtn.href = mailtoUrl;
+                    }
+                    
                     if (window.showToast) {
                         window.showToast("✅ Feedback submitted successfully!");
                     }
+                    
+                    // Trigger mail client popup automatically
+                    setTimeout(() => {
+                        window.location.href = mailtoUrl;
+                    }, 500);
                 })
                 .catch(error => {
                     console.error('Error submitting feedback:', error);
