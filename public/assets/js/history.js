@@ -324,136 +324,162 @@ function showDateDetails(dateStr) {
     const detailsContainer = document.getElementById('calendar-date-details');
     if (!detailsContainer) return;
 
-    detailsContainer.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; padding: 20px;">
-            <span>🔄 Loading date details...</span>
-        </div>
-    `;
-
-    // Filter sessions matching selected date
+    // --- 1. Filter sessions from cached data (SYNCHRONOUS, no loading spinner) ---
     const dateSessions = [];
     if (attendanceHistoryData) {
         Object.entries(attendanceHistoryData).forEach(([key, records]) => {
             const parts = key.split('_');
             if (parts[0] !== currentUser.username) return;
             if (parts[1] !== dateStr) return;
-
             const subject = parts.slice(2).join('_');
             dateSessions.push({
                 key,
                 subject,
-                records: Object.values(records)
+                records: records ? Object.values(records) : []
             });
         });
     }
 
+    // Sort sessions by subject name
+    dateSessions.sort((a, b) => a.subject.localeCompare(b.subject));
+
     if (dateSessions.length === 0) {
         detailsContainer.innerHTML = `
-            <div style="text-align: center; padding: 20px; color: var(--text-muted);">
-                <h4>📅 ${dateStr}</h4>
-                <p style="margin-top: 8px; font-size: 14px;">No attendance sessions were recorded on this date.</p>
-            </div>
-        `;
+            <div style="text-align: center; padding: 32px 20px; color: var(--text-muted);">
+                <div style="font-size: 36px; margin-bottom: 12px;">📅</div>
+                <div style="font-size: 15px; font-weight: 600; color: var(--text-color);">${dateStr}</div>
+                <div style="font-size: 13px; margin-top: 6px;">No attendance sessions recorded on this date.</div>
+            </div>`;
         return;
     }
 
-    // Let's fetch verification data for this date
-    db.ref('verification').orderByKey().startAt(`${currentUser.username}_${dateStr}`).endAt(`${currentUser.username}_${dateStr}\uf8ff`).once('value', (verSnapshot) => {
-        const verData = verSnapshot.val() || {};
-        
-        let html = `<h4 style="margin: 0 0 16px 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
-            <span>📅</span> Date Details: ${dateStr}
-        </h4>`;
+    const totalStudents = currentUser.students ? currentUser.students.length : 0;
 
-        const totalStudents = currentUser.students ? currentUser.students.length : 0;
+    // --- 2. Helper to build the full HTML (called immediately, and again after verification fetch) ---
+    function buildHTML(verData) {
+        const dateLabel = new Date(dateStr + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        let html = `
+            <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+                <div style="font-size: 16px; font-weight: 800; color: var(--text-color); display: flex; align-items: center; gap: 8px;">
+                    📅 ${dateLabel}
+                </div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">${dateSessions.length} subject(s) recorded</div>
+            </div>`;
 
         dateSessions.forEach(session => {
             const presentCount = session.records.length;
             const absentCount = Math.max(0, totalStudents - presentCount);
             const percentage = totalStudents > 0 ? Math.round((presentCount / totalStudents) * 100) : 0;
 
-            // Check if verification records exist for this session
-            const verRecords = verData[session.key] ? Object.values(verData[session.key]) : [];
+            const verRecords = (verData && verData[session.key]) ? Object.values(verData[session.key]) : [];
             const verifiedCount = verRecords.length;
             const notVerifiedCount = Math.max(0, presentCount - verifiedCount);
             const hasVerification = verifiedCount > 0;
 
-            // Generate Lists of student roll numbers
-            const presentRolls = new Set(session.records.map(r => r.rollNo.toUpperCase()));
-            const verifiedRolls = new Set(verRecords.map(r => r.rollNo.toUpperCase()));
-            
-            // Absent list
-            const absentStudents = (currentUser.students || []).filter(s => !presentRolls.has(s.rollNo.toUpperCase()));
+            const presentRolls = new Map();
+            session.records.forEach(r => {
+                if (r.rollNo) presentRolls.set(r.rollNo.toUpperCase(), r);
+            });
+            const verifiedRolls = new Set(verRecords.map(r => r.rollNo ? r.rollNo.toUpperCase() : ''));
 
-            let studentStatusRows = (currentUser.students || []).map(s => {
-                const sRoll = s.rollNo.toUpperCase();
-                let statusLabel = `<span style="color: #ef4444; font-weight: bold;">Absent</span>`;
-                let timeStr = '-';
+            // Build per-student table rows
+            const allStudents = currentUser.students || [];
+            const tableRows = allStudents.map(s => {
+                const sRoll = (s.rollNo || '').toUpperCase();
+                const record = presentRolls.get(sRoll);
+                const isPresent = !!record;
+                const isVerified = verifiedRolls.has(sRoll);
 
-                if (presentRolls.has(sRoll)) {
-                    const record = session.records.find(r => r.rollNo.toUpperCase() === sRoll);
-                    timeStr = record && record.time ? (typeof formatTime === 'function' ? formatTime(record.time) : record.time) : 'Present';
-                    
-                    if (hasVerification) {
-                        if (verifiedRolls.has(sRoll)) {
-                            statusLabel = `<span style="color: #10b981; font-weight: bold;">Verified Present</span>`;
-                        } else {
-                            statusLabel = `<span style="color: #f59e0b; font-weight: bold;">Not Verified (Proxy)</span>`;
-                        }
-                    } else {
-                        statusLabel = `<span style="color: #10b981; font-weight: bold;">Present</span>`;
-                    }
+                let statusBadge, timeStr;
+                if (!isPresent) {
+                    statusBadge = `<span style="background: rgba(239,68,68,0.1); color: #ef4444; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; border: 1px solid rgba(239,68,68,0.2);">Absent</span>`;
+                    timeStr = '—';
+                } else if (hasVerification && isVerified) {
+                    statusBadge = `<span style="background: rgba(16,185,129,0.1); color: #10b981; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; border: 1px solid rgba(16,185,129,0.2);">✓ Verified</span>`;
+                    timeStr = record.time ? (typeof formatTime === 'function' ? formatTime(record.time) : record.time) : '—';
+                } else if (hasVerification && !isVerified) {
+                    statusBadge = `<span style="background: rgba(245,158,11,0.1); color: #f59e0b; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; border: 1px solid rgba(245,158,11,0.2);">⚠ Proxy?</span>`;
+                    timeStr = record.time ? (typeof formatTime === 'function' ? formatTime(record.time) : record.time) : '—';
+                } else {
+                    statusBadge = `<span style="background: rgba(99,102,241,0.1); color: var(--primary-color); padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; border: 1px solid rgba(99,102,241,0.2);">Present</span>`;
+                    timeStr = record.time ? (typeof formatTime === 'function' ? formatTime(record.time) : record.time) : '—';
                 }
 
                 return `
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 13px;">
-                        <div>
-                            <strong style="color: var(--text-color);">${historyEscapeHtml(s.name)}</strong>
-                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 1px;">Roll: ${historyEscapeHtml(s.rollNo)}</div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div>${statusLabel}</div>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 1px;">${timeStr}</div>
-                        </div>
-                    </div>
-                `;
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                        <td style="padding: 8px 10px; font-size: 13px; font-weight: 600; color: var(--text-color); white-space: nowrap;">${historyEscapeHtml(s.name)}</td>
+                        <td style="padding: 8px 10px; font-size: 12px; color: var(--text-muted);">${historyEscapeHtml(s.rollNo)}</td>
+                        <td style="padding: 8px 10px; font-size: 12px; color: var(--text-muted); white-space: nowrap;">${timeStr}</td>
+                        <td style="padding: 8px 10px; text-align: right;">${statusBadge}</td>
+                    </tr>`;
             }).join('');
 
+            const percentColor = percentage >= 75 ? '#10b981' : percentage >= 50 ? '#f59e0b' : '#ef4444';
+
             html += `
-                <div class="details-subject-card">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div style="background: var(--tab-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px; margin-bottom: 16px; overflow: hidden;">
+                    <!-- Subject Header -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
                         <div>
-                            <h5 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--primary-color);">${historyEscapeHtml(session.subject)}</h5>
-                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
-                                🧑‍🏫 Teacher: ${historyEscapeHtml(currentUser.displayName || 'Class CR')} | 🏫 Class: ${historyEscapeHtml(currentUser.branch || 'Class')} ${historyEscapeHtml(currentUser.section || 'A')}
-                            </div>
+                            <div style="font-size: 15px; font-weight: 800; color: var(--primary-color);">📘 ${historyEscapeHtml(session.subject)}</div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Class: ${historyEscapeHtml(currentUser.branch || '')} Sec-${historyEscapeHtml(currentUser.section || '')}</div>
                         </div>
-                        <div style="font-size: 18px; font-weight: 800; color: var(--text-color);">${percentage}%</div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 22px; font-weight: 900; color: ${percentColor};">${percentage}%</div>
+                            <div style="font-size: 10px; color: var(--text-muted);">${presentCount}/${totalStudents} present</div>
+                        </div>
                     </div>
 
-                    <div class="progress-bar-container">
-                        <div class="progress-bar-fill" style="width: ${percentage}%;"></div>
-                    </div>
-
-                    <div style="display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0;">
-                        <span class="details-badge present">👥 Present: ${presentCount}</span>
-                        <span class="details-badge absent">❌ Absent: ${absentCount}</span>
+                    <!-- Stats Badges -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
+                        <span style="background: rgba(99,102,241,0.1); color: var(--primary-color); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; border: 1px solid rgba(99,102,241,0.2);">👥 Present: ${presentCount}</span>
+                        <span style="background: rgba(239,68,68,0.1); color: #ef4444; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; border: 1px solid rgba(239,68,68,0.2);">❌ Absent: ${absentCount}</span>
                         ${hasVerification ? `
-                            <span class="details-badge verification">🛡️ Verified: ${verifiedCount}</span>
-                            <span class="details-badge absent" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.2);">⚠️ Unverified: ${notVerifiedCount}</span>
+                        <span style="background: rgba(16,185,129,0.1); color: #10b981; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; border: 1px solid rgba(16,185,129,0.2);">🛡️ Verified: ${verifiedCount}</span>
+                        <span style="background: rgba(245,158,11,0.1); color: #f59e0b; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; border: 1px solid rgba(245,158,11,0.2);">⚠️ Proxy Risk: ${notVerifiedCount}</span>
                         ` : ''}
                     </div>
 
-                    <details style="margin-top: 10px; cursor: pointer;">
-                        <summary style="font-size: 12px; color: var(--primary-color); outline: none; font-weight: 600;">👥 Student List (${totalStudents}) ▾</summary>
-                        <div style="margin-top: 8px; max-height: 250px; overflow-y: auto; padding-right: 4px;">
-                            ${studentStatusRows}
-                        </div>
-                    </details>
-                </div>
-            `;
+                    <!-- Organized Table -->
+                    <div style="overflow-x: auto; border-radius: 10px; border: 1px solid rgba(255,255,255,0.06);">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: rgba(255,255,255,0.04);">
+                                    <th style="padding: 8px 10px; font-size: 11px; color: var(--text-muted); text-align: left; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Student</th>
+                                    <th style="padding: 8px 10px; font-size: 11px; color: var(--text-muted); text-align: left; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Roll No</th>
+                                    <th style="padding: 8px 10px; font-size: 11px; color: var(--text-muted); text-align: left; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Time Marked</th>
+                                    <th style="padding: 8px 10px; font-size: 11px; color: var(--text-muted); text-align: right; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>${tableRows}</tbody>
+                        </table>
+                    </div>
+                </div>`;
         });
 
-        detailsContainer.innerHTML = html;
-    });
+        return html;
+    }
+
+    // --- 3. Render immediately with no verification data ---
+    detailsContainer.innerHTML = buildHTML(null);
+
+    // --- 4. Fetch verification data async and re-render if available ---
+    try {
+        db.ref('verification')
+            .orderByKey()
+            .startAt(`${currentUser.username}_${dateStr}`)
+            .endAt(`${currentUser.username}_${dateStr}\uf8ff`)
+            .once('value', (verSnapshot) => {
+                const verData = verSnapshot.val();
+                if (verData) {
+                    // Re-render with verification data
+                    detailsContainer.innerHTML = buildHTML(verData);
+                }
+            });
+    } catch(e) {
+        // Verification fetch failed — already rendered without it, no issue
+    }
 }
+
+

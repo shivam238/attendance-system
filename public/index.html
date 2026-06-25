@@ -1035,6 +1035,34 @@
                 <div id="link-google-message"></div>
             </div>
 
+            <!-- QR Timer Settings -->
+            <div style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+                <div style="font-size: 13px; font-weight: 700; color: var(--primary-color); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                    ⏰ QR Timer Settings
+                </div>
+                <div style="background: var(--tab-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px;">
+                    <div style="margin-bottom: 14px;">
+                        <div style="font-size: 12px; font-weight: 600; color: var(--text-color); margin-bottom: 8px;">📲 Attendance QR Duration</div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="number" id="settings-attn-min" min="0" max="60" placeholder="Min" style="width: 70px; margin: 0; padding: 8px 10px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--input-border); color: var(--text-color); font-size: 14px; font-weight: 600; text-align: center;">
+                            <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">min</span>
+                            <input type="number" id="settings-attn-sec" min="0" max="59" placeholder="Sec" style="width: 70px; margin: 0; padding: 8px 10px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--input-border); color: var(--text-color); font-size: 14px; font-weight: 600; text-align: center;">
+                            <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">sec</span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 14px;">
+                        <div style="font-size: 12px; font-weight: 600; color: var(--text-color); margin-bottom: 8px;">🛡️ Verification QR Duration</div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="number" id="settings-ver-min" min="0" max="60" placeholder="Min" style="width: 70px; margin: 0; padding: 8px 10px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--input-border); color: var(--text-color); font-size: 14px; font-weight: 600; text-align: center;">
+                            <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">min</span>
+                            <input type="number" id="settings-ver-sec" min="0" max="59" placeholder="Sec" style="width: 70px; margin: 0; padding: 8px 10px; border-radius: 8px; background: var(--card-bg); border: 1px solid var(--input-border); color: var(--text-color); font-size: 14px; font-weight: 600; text-align: center;">
+                            <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">sec</span>
+                        </div>
+                    </div>
+                    <button onclick="saveQRTimerSettings()" style="width: 100%; padding: 10px; border-radius: 8px; border: none; background: var(--primary-color); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s;">💾 Save Timer Settings</button>
+                </div>
+            </div>
+
             <!-- Danger Zone -->
             <div style="margin-top: 24px; border-top: 1px solid var(--border-color); padding-top: 20px;">
                 <div style="font-size: 13px; font-weight: 700; color: #ef4444; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
@@ -3377,12 +3405,83 @@ Convert the student list from the attached file/image, or the text enclosed in t
                 window.currentQRListenerRef = null;
             }
         }
+        // ===== QR TIMER SETTINGS =====
+        let attendanceQRMinutes = parseInt(localStorage.getItem('attendanceQRMinutes') || '2');
+        let attendanceQRSeconds = parseInt(localStorage.getItem('attendanceQRSeconds') || '0');
+        let verificationQRMinutes = parseInt(localStorage.getItem('verificationQRMinutes') || '1');
+        let verificationQRSeconds = parseInt(localStorage.getItem('verificationQRSeconds') || '0');
+
+        function saveQRTimerSettings() {
+            const attnMin = parseInt(document.getElementById('settings-attn-min').value) || 0;
+            const attnSec = parseInt(document.getElementById('settings-attn-sec').value) || 0;
+            const verMin = parseInt(document.getElementById('settings-ver-min').value) || 0;
+            const verSec = parseInt(document.getElementById('settings-ver-sec').value) || 0;
+
+            if (attnMin === 0 && attnSec === 0) { showToast('Attendance QR duration must be > 0 seconds.', 'error'); return; }
+            if (verMin === 0 && verSec === 0) { showToast('Verification QR duration must be > 0 seconds.', 'error'); return; }
+
+            attendanceQRMinutes = attnMin; attendanceQRSeconds = attnSec;
+            verificationQRMinutes = verMin; verificationQRSeconds = verSec;
+
+            localStorage.setItem('attendanceQRMinutes', attnMin);
+            localStorage.setItem('attendanceQRSeconds', attnSec);
+            localStorage.setItem('verificationQRMinutes', verMin);
+            localStorage.setItem('verificationQRSeconds', verSec);
+
+            if (window.syncSettingToCloud) {
+                window.syncSettingToCloud('attendanceQRMinutes', attnMin);
+                window.syncSettingToCloud('attendanceQRSeconds', attnSec);
+                window.syncSettingToCloud('verificationQRMinutes', verMin);
+                window.syncSettingToCloud('verificationQRSeconds', verSec);
+            }
+            showToast('⏰ Timer settings saved!', 'success');
+        }
+
+        // ===== VERIFY ATTENDANCE SESSION =====
+        function startVerificationSession() {
+            if (!currentSubject) { showToast('Please select a subject first.', 'error'); return; }
+
+            const durationMs = ((verificationQRMinutes * 60) + verificationQRSeconds) * 1000;
+            const today = getLocalDateKey();
+            const originalCode = `${currentUser.username}_${today}_${currentSubject}`;
+            const code = `${originalCode}_verify`;
+            const expiryTime = Date.now() + durationMs;
+            const baseURL = window.location.origin + window.location.pathname.replace('index.html', '');
+            const url = `${baseURL}index.html?code=${code}`;
+
+            currentQRCode = { code, url, expiryTime };
+            qrExpireTime = expiryTime;
+            persistActiveQRSession(code, currentSubject);
+
+            // Session data in Firebase
+            const sessionData = { generatedAt: Date.now(), expiryTime, subject: currentSubject, username: currentUser.username, status: 'active', isVerification: true };
+            db.ref('qr_sessions/' + code).set(sessionData);
+
+            // Render QR
+            document.getElementById('qrcode').innerHTML = '';
+            new QRCode(document.getElementById('qrcode'), { text: url, width: 200, height: 200 });
+            document.getElementById('qr-section').style.display = 'block';
+
+            // Update button state
+            const generateBtn = document.getElementById('generate-qr-btn');
+            if (generateBtn) {
+                generateBtn.textContent = '🛡️ Verification Active...';
+                generateBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                generateBtn.disabled = true;
+            }
+
+            showToast('🛡️ Anti-Proxy Verification QR Generated!', 'success');
+            startQRTimer();
+            openFullscreenQR();
+        }
+
 
 
         function checkForActiveQRSession() {
             if (!currentSubject) return;
             const today = getLocalDateKey();
             const code = `${currentUser.username}_${today}_${currentSubject}`;
+
             
             db.ref('qr_sessions/' + code).once('value', (snapshot) => {
                 const session = snapshot.val();
@@ -3513,6 +3612,20 @@ Convert the student list from the attached file/image, or the text enclosed in t
                     const fsStats = document.getElementById('fullscreen-qr-stats');
                     if (fsStats) {
                         fsStats.textContent = `Present: ${records.length} / ${currentUser.students.length}`;
+                    }
+                }
+
+                // Toggle QR Button: "Verify Attendance" vs "Generate QR Code"
+                const generateBtn = document.getElementById('generate-qr-btn');
+                if (generateBtn && !currentQRCode) {
+                    if (records.length > 0) {
+                        generateBtn.textContent = '🛡️ Verify Attendance';
+                        generateBtn.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+                        generateBtn.onclick = startVerificationSession;
+                    } else {
+                        generateBtn.textContent = '📲 Generate QR Code';
+                        generateBtn.style.background = '';
+                        generateBtn.onclick = generateQRCode;
                     }
                 }
             });

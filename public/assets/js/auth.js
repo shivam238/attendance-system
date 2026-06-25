@@ -328,6 +328,18 @@ function openProfileModal() {
             }
         }
     }
+
+    // Populate QR Timer Settings if inputs exist
+    const attnMinEl = document.getElementById('settings-attn-min');
+    if (attnMinEl) {
+        attnMinEl.value = localStorage.getItem('attendanceQRMinutes') || '2';
+        const attnSecEl = document.getElementById('settings-attn-sec');
+        if (attnSecEl) attnSecEl.value = localStorage.getItem('attendanceQRSeconds') || '0';
+        const verMinEl = document.getElementById('settings-ver-min');
+        if (verMinEl) verMinEl.value = localStorage.getItem('verificationQRMinutes') || '1';
+        const verSecEl = document.getElementById('settings-ver-sec');
+        if (verSecEl) verSecEl.value = localStorage.getItem('verificationQRSeconds') || '0';
+    }
 }
 
 function closeProfileModal() {
