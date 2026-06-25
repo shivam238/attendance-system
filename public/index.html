@@ -477,7 +477,7 @@
                                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px;">
                                     <button class="btn btn-secondary" onclick="copyQRLink()" style="font-size: 13px; padding: 12px 8px; margin: 0;">📋 Copy</button>
                                     <button class="btn btn-primary" onclick="openFullscreenQR()" style="font-size: 13px; padding: 12px 8px; margin: 0; background: var(--primary-color);">📺 Fullscreen</button>
-                                    <button class="btn btn-danger" onclick="resetQR(true)" style="font-size: 13px; padding: 12px 8px; margin: 0;">✕ Clear</button>
+                                    <button type="button" class="btn btn-danger" onclick="resetQR(true)" style="font-size: 13px; padding: 12px 8px; margin: 0;">✕ Clear</button>
                                 </div>
                             </div>
                         </div>
@@ -3336,6 +3336,8 @@ Convert the student list from the attached file/image, or the text enclosed in t
             });
         }
 
+        let _abandonGraceTimerId = null;
+
         function markActiveQRLeaveGrace() {
             if (!currentQRCode || activeQRLeaveMarked) return;
             const remaining = qrExpireTime - Date.now();
@@ -3349,14 +3351,23 @@ Convert the student list from the attached file/image, or the text enclosed in t
                 lastSeenAt: Date.now()
             };
             const ref = db.ref('qr_sessions/' + currentQRCode.code);
+            ref.update(updates);
 
-            if (navigator.sendBeacon) {
-                ref.update(updates);
-            } else {
-                ref.update(updates);
+            // Store timer ID so we can cancel it if CR comes back
+            const savedCode = currentQRCode.code;
+            _abandonGraceTimerId = setTimeout(() => closeAbandonedQRSession(savedCode), QR_ABANDON_GRACE_MS + 1200);
+        }
+
+        function cancelAbandonGrace() {
+            if (!activeQRLeaveMarked || !currentQRCode) return;
+            // Cancel the pending close timer
+            if (_abandonGraceTimerId !== null) {
+                clearTimeout(_abandonGraceTimerId);
+                _abandonGraceTimerId = null;
             }
-
-            setTimeout(() => closeAbandonedQRSession(currentQRCode && currentQRCode.code), QR_ABANDON_GRACE_MS + 1200);
+            // Resume session in Firebase
+            resumeActiveQRSession(currentQRCode.code);
+            activeQRLeaveMarked = false;
         }
 
         function resumeActiveQRSession(code) {
@@ -3499,6 +3510,12 @@ Convert the student list from the attached file/image, or the text enclosed in t
                 if (!confirm(msg)) return;
             }
 
+            if (qrTimerInterval) {
+                clearInterval(qrTimerInterval);
+                qrTimerInterval = null;
+            }
+            activeQRLeaveMarked = false;
+
             if (currentQRCode) {
                 const closedCode = currentQRCode.code;
                 const isVerification = currentQRCode.isVerification;
@@ -3506,9 +3523,15 @@ Convert the student list from the attached file/image, or the text enclosed in t
 
                 clearPersistedQRSession(closedCode);
                 if (isManual) {
-                    db.ref('qr_sessions/' + closedCode).remove().then(() => {
+                    const sessionRef = db.ref('qr_sessions/' + closedCode);
+                    sessionRef.update({ status: 'closed', closedAt: Date.now() }).then(() => {
+                        return sessionRef.remove();
+                    }).then(() => {
                         showToast('🛑 QR Session revoked successfully.');
                         autoExportClosedSession(closedCode);
+                    }).catch((err) => {
+                        console.error('Failed to close QR session:', err);
+                        showToast('⚠️ QR closed locally, but server cleanup failed.', 'error');
                     });
                 }
 
@@ -3568,7 +3591,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
                 generateBtn.onclick = generateQRCode;
             }
             // Re-run attendance display to correctly set button state (Generate vs Verify)
-            if (currentSubject) updateAttendanceDisplay();
+            if (currentSubject) updateAttendanceDisplay(isManual);
         }
         // ===== QR TIMER SETTINGS =====
         let attendanceQRMinutes = parseInt(localStorage.getItem('attendanceQRMinutes') || '2');
@@ -3724,6 +3747,21 @@ Convert the student list from the attached file/image, or the text enclosed in t
             markActiveQRLeaveGrace();
         });
 
+        // If CR comes back from bfcache (back/forward navigation), cancel the abandon grace
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) {
+                cancelAbandonGrace();
+            }
+        });
+
+        // If CR dismisses the beforeunload dialog and stays on the page,
+        // the page becomes visible again — cancel the abandon grace timer
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && activeQRLeaveMarked) {
+                cancelAbandonGrace();
+            }
+        });
+
         window.addEventListener('beforeunload', (event) => {
             if (!currentQRCode) return;
             if (window.attendifyIntentionalLogout) return;
@@ -3731,7 +3769,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
             event.returnValue = '';
         });
 
-        function updateAttendanceDisplay() {
+        function updateAttendanceDisplay(skipActiveQRCheck = false) {
             if (!currentSubject) {
                 currentSessionRecords = [];
                 document.getElementById('attendance-list').innerHTML =
@@ -3741,7 +3779,9 @@ Convert the student list from the attached file/image, or the text enclosed in t
                 return;
             }
 
-            checkForActiveQRSession();
+            if (!skipActiveQRCheck) {
+                checkForActiveQRSession();
+            }
 
             const today = getLocalDateKey();
             const key = `${currentUser.username}_${today}_${currentSubject}`;
