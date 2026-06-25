@@ -477,7 +477,7 @@
                                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px;">
                                     <button class="btn btn-secondary" onclick="copyQRLink()" style="font-size: 13px; padding: 12px 8px; margin: 0;">📋 Copy</button>
                                     <button class="btn btn-primary" onclick="openFullscreenQR()" style="font-size: 13px; padding: 12px 8px; margin: 0; background: var(--primary-color);">📺 Fullscreen</button>
-                                    <button type="button" class="btn btn-danger" onclick="resetQR(true)" style="font-size: 13px; padding: 12px 8px; margin: 0;">✕ Clear</button>
+                                    <button type="button" id="clear-qr-btn" class="btn btn-danger" onclick="confirmClearQR(this)" style="font-size: 13px; padding: 12px 8px; margin: 0;">✕ Clear</button>
                                 </div>
                             </div>
                         </div>
@@ -3501,12 +3501,34 @@ Convert the student list from the attached file/image, or the text enclosed in t
             });
         }
 
-        function resetQR(isManual = false) {
-            if (isManual && currentQRCode) {
+        let _clearQRPendingConfirm = false;
+        let _clearQRConfirmTimer = null;
+
+        function confirmClearQR(btn) {
+            if (_clearQRPendingConfirm) {
+                // Second tap — actually clear
+                _clearQRPendingConfirm = false;
+                clearTimeout(_clearQRConfirmTimer);
+                if (btn) { btn.textContent = '✕ Clear'; btn.style.background = ''; }
+                resetQR(true, true); // preConfirmed = true
+            } else {
+                // First tap — ask for confirmation via button state
+                _clearQRPendingConfirm = true;
+                if (btn) { btn.textContent = '⚠️ Confirm?'; btn.style.background = '#b91c1c'; }
+                _clearQRConfirmTimer = setTimeout(() => {
+                    _clearQRPendingConfirm = false;
+                    if (btn) { btn.textContent = '✕ Clear'; btn.style.background = ''; }
+                }, 3000);
+            }
+        }
+
+        function resetQR(isManual = false, preConfirmed = false) {
+            if (isManual && !preConfirmed && currentQRCode) {
+                // Fallback confirm for non-button calls (e.g. programmatic)
                 const isVerification = currentQRCode.isVerification;
                 const msg = isVerification
-                    ? '⚠️ Close verification session?\n\nUnverified students will be moved to pending requests. Are you sure?'
-                    : '⚠️ Close QR session?\n\nStudents will no longer be able to mark attendance. Are you sure?';
+                    ? '⚠️ Close verification session? Unverified students will be moved to pending requests.'
+                    : '⚠️ Close QR session? Students will no longer be able to mark attendance.';
                 if (!confirm(msg)) return;
             }
 
