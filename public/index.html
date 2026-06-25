@@ -485,13 +485,19 @@
                         <!-- RIGHT COLUMN: STATS & LOG -->
                         <div class="display-panel">
                             <div class="stats">
-                                <div class="stat-card">
+                                <div class="stat-card" onclick="openSessionStudentsModal('present')"
+                                    style="cursor: pointer;"
+                                    onmouseover="this.style.transform='scale(1.02)'"
+                                    onmouseout="this.style.transform='scale(1)'">
                                     <div class="stat-value" id="present-count">0</div>
-                                    <div class="stat-label">Present</div>
+                                    <div class="stat-label">Present ➔</div>
                                 </div>
-                                <div class="stat-card">
+                                <div class="stat-card" onclick="openSessionStudentsModal('total')"
+                                    style="cursor: pointer;"
+                                    onmouseover="this.style.transform='scale(1.02)'"
+                                    onmouseout="this.style.transform='scale(1)'">
                                     <div class="stat-value" id="total-count">0</div>
-                                    <div class="stat-label">Total</div>
+                                    <div class="stat-label">Total ➔</div>
                                 </div>
                             </div>
 
@@ -611,6 +617,19 @@
             <button class="logo-popup-button" onclick="closeLogoPopup()">Awesome! Let's Go 🚀</button>
         </div>
     </div>
+    <!-- LIVE SESSION STUDENTS MODAL (Present / Total) -->
+    <div id="session-students-modal" class="modal">
+        <div class="modal-content" style="max-width: 480px; max-height: 85vh; overflow-y: auto;">
+            <span class="modal-close" onclick="closeSessionStudentsModal()">&times;</span>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 id="session-students-title" class="modal-header" style="margin-bottom: 4px;">Students</h2>
+                <p id="session-students-subtitle" style="color: var(--text-muted); font-size: 13px;"></p>
+            </div>
+            <div id="session-students-content"></div>
+            <button class="btn btn-primary" onclick="closeSessionStudentsModal()" style="margin-top: 10px;">Close</button>
+        </div>
+    </div>
+
     <!-- TODAY STUDENTS MODAL -->
     <div id="today-students-modal" class="modal">
         <div class="modal-content" style="max-width: 450px; max-height: 85vh; overflow-y: auto;">
@@ -2630,6 +2649,90 @@ Convert the student list from the attached file/image, or the text enclosed in t
         }
 
         let todayGroupedData = {}; // Global store for today's data
+        let currentSessionRecords = []; // Live QR session attendance records
+
+        function getSessionEmailByRoll(records) {
+            const map = {};
+            (records || []).forEach((r) => {
+                if (r.rollNo && r.googleEmail) {
+                    map[r.rollNo.toUpperCase()] = r.googleEmail;
+                }
+            });
+            return map;
+        }
+
+        function renderSessionStudentRow(name, rollNo, email) {
+            const emailText = email ? escapeHtml(email) : '—';
+            return `
+                <div style="background: var(--tab-bg); padding: 14px; border-radius: 16px; border: 1px solid var(--input-border); margin-bottom: 10px;">
+                    <div style="font-weight: 600; color: var(--text-color); font-size: 15px;">${escapeHtml(name)}</div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;"><strong>Roll:</strong> ${escapeHtml(rollNo)}</div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px; word-break: break-all;"><strong>Email:</strong> ${emailText}</div>
+                </div>`;
+        }
+
+        function openSessionStudentsModal(mode) {
+            const modal = document.getElementById('session-students-modal');
+            const content = document.getElementById('session-students-content');
+            const title = document.getElementById('session-students-title');
+            const subtitle = document.getElementById('session-students-subtitle');
+            modal.classList.add('active');
+
+            if (!currentSubject) {
+                content.innerHTML = '<div class="empty-state">Please select a subject first.</div>';
+                title.textContent = mode === 'present' ? 'Present Students' : 'All Students';
+                subtitle.textContent = '';
+                return;
+            }
+
+            const emailByRoll = getSessionEmailByRoll(currentSessionRecords);
+            const students = currentUser.students || [];
+
+            if (mode === 'present') {
+                title.textContent = 'Present Students';
+                subtitle.textContent = currentSubject;
+
+                if (currentSessionRecords.length === 0) {
+                    content.innerHTML = '<div class="empty-state">No one has marked attendance yet.</div>';
+                    return;
+                }
+
+                const seen = new Set();
+                const presentList = [];
+                currentSessionRecords.forEach((r) => {
+                    const rollKey = (r.rollNo || '').toUpperCase();
+                    if (!rollKey || seen.has(rollKey)) return;
+                    seen.add(rollKey);
+                    presentList.push({
+                        name: r.name || 'Unknown',
+                        rollNo: r.rollNo,
+                        email: r.googleEmail || emailByRoll[rollKey] || ''
+                    });
+                });
+
+                presentList.sort((a, b) => a.rollNo.localeCompare(b.rollNo, undefined, { numeric: true }));
+                content.innerHTML = presentList.map((s) => renderSessionStudentRow(s.name, s.rollNo, s.email)).join('');
+                return;
+            }
+
+            title.textContent = 'All Students';
+            subtitle.textContent = currentSubject;
+
+            if (students.length === 0) {
+                content.innerHTML = '<div class="empty-state">No students added yet. Add students from the Students tab.</div>';
+                return;
+            }
+
+            const sortedStudents = [...students].sort((a, b) => a.rollNo.localeCompare(b.rollNo, undefined, { numeric: true }));
+            content.innerHTML = sortedStudents.map((s) => {
+                const email = emailByRoll[(s.rollNo || '').toUpperCase()] || s.email || '';
+                return renderSessionStudentRow(s.name, s.rollNo, email);
+            }).join('');
+        }
+
+        function closeSessionStudentsModal() {
+            document.getElementById('session-students-modal').classList.remove('active');
+        }
 
         function renderTodayTab() {
             const today = getLocalDateKey();
@@ -3622,6 +3725,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
 
         function updateAttendanceDisplay() {
             if (!currentSubject) {
+                currentSessionRecords = [];
                 document.getElementById('attendance-list').innerHTML =
                     '<div class="empty-state"><div class="empty-icon">📋</div><div>Select a subject</div></div>';
                 document.getElementById('present-count').textContent = '0';
@@ -3643,6 +3747,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
             attendanceRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 const records = data ? Object.values(data) : [];
+                currentSessionRecords = records;
 
                 let html = '';
                 if (records.length === 0) {
