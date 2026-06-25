@@ -3388,11 +3388,48 @@ Convert the student list from the attached file/image, or the text enclosed in t
         function resetQR(isManual = false) {
             if (currentQRCode) {
                 const closedCode = currentQRCode.code;
+                const isVerification = currentQRCode.isVerification;
+                const originalAttendanceKey = currentQRCode.originalAttendanceKey;
+
                 clearPersistedQRSession(closedCode);
                 if (isManual) {
                     db.ref('qr_sessions/' + closedCode).remove().then(() => {
                         showToast('🛑 QR Session revoked successfully.');
                         autoExportClosedSession(closedCode);
+                    });
+                }
+
+                if (isVerification && originalAttendanceKey) {
+                    const subject = originalAttendanceKey.split('_').slice(2).join('_');
+                    db.ref('attendance/' + originalAttendanceKey).once('value', (attnSnap) => {
+                        db.ref('verification/' + closedCode).once('value', (verSnap) => {
+                            const attnData = attnSnap.val() || {};
+                            const verData = verSnap.val() || {};
+
+                            const verifiedRolls = new Set();
+                            Object.values(verData).forEach(v => {
+                                if (v && v.rollNo) verifiedRolls.add(v.rollNo.toUpperCase());
+                            });
+
+                            Object.entries(attnData).forEach(([recordId, record]) => {
+                                const roll = (record.rollNo || '').toUpperCase();
+                                if (!verifiedRolls.has(roll)) {
+                                    const requestData = {
+                                        rollNo: record.rollNo,
+                                        name: record.name,
+                                        subject: subject,
+                                        requestTime: new Date().toLocaleTimeString('en-IN'),
+                                        timestamp: Date.now(),
+                                        status: 'pending',
+                                        suspicious: true,
+                                        suspiciousReason: 'Failed real-time verification (Unverified)'
+                                    };
+
+                                    db.ref('requests/' + originalAttendanceKey).push(requestData);
+                                    db.ref('attendance/' + originalAttendanceKey + '/' + recordId).remove();
+                                }
+                            });
+                        });
                     });
                 }
             }
