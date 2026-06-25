@@ -1150,7 +1150,7 @@
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="font-size: 22px;">🤖</span>
                 <div>
-                    <div style="font-size: 14px; font-weight: 800; color: #fff;">Classroom AI Assistant</div>
+                    <div style="font-size: 14px; font-weight: 800; color: #fff;">AI Assistant</div>
                     <div style="font-size: 10px; color: rgba(255,255,255,0.9); font-weight: 500;">AI · Knows all student logs</div>
                 </div>
             </div>
@@ -3092,7 +3092,8 @@ Convert the student list from the attached file/image, or the text enclosed in t
         function proceedWithQRGeneration(locationData) {
             const today = getLocalDateKey();
             const code = `${currentUser.username}_${today}_${currentSubject}`;
-            const expiryTime = Date.now() + (5 * 60 * 1000); // 5 minutes
+            const durationMs = ((attendanceQRMinutes * 60) + attendanceQRSeconds) * 1000;
+            const expiryTime = Date.now() + durationMs;
             activeQRLeaveMarked = false;
 
             const baseURL = window.location.origin + window.location.pathname;
@@ -3142,6 +3143,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
 
             document.getElementById('qr-section').style.display = 'block';
             startQRTimer();
+            openFullscreenQR();
 
             // Log Analytics Event
             logAnalyticsEvent("qr_generated", {
@@ -5173,7 +5175,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
 
             const today = getLocalDateKey();
 
-            return `You are the ATTENDIFY Classroom AI Assistant for the CR (Class Representative) of:
+            return `You are the ATTENDIFY AI Assistant for the CR (Class Representative) of:
 Class: ${className}
 Subjects: ${subjects}
 Total Students: ${totalStudents}
@@ -5218,7 +5220,7 @@ Submissions/Timestamps/Top Performers: Not available in current session database
             const msgs = document.getElementById('ai-messages');
             if (msgs && msgs.children.length === 0) {
                 const crName = currentUser ? (currentUser.displayName || 'CR').split(' ')[0] : 'CR';
-                appendAIMessage('bot', `Hello ${crName}! 👋 I'm your Classroom AI Assistant.\n\nI have full access to your class attendance data — who's absent today, who's below 75%, pending requests, and more. What would you like to know?`);
+                appendAIMessage('bot', `Hello ${crName}! 👋 I'm your AI Assistant.\n\nI have full access to your class attendance data — who's absent today, who's below 75%, pending requests, and more. What would you like to know?`);
             }
 
             // Refresh context data on open for latest info
