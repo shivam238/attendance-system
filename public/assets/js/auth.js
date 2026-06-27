@@ -1,54 +1,126 @@
 // Auth management for ATTENDIFY
 
+const PENDING_AUTH_SK_KEY = 'pending_auth_sk';
+let pendingAuthCompletionInProgress = false;
+let pendingAuthTimeoutId = null;
+
+function generateAuthSessionKey(prefix = 'sk') {
+    return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+}
+
+function ensureCapacitorFirebaseAuth() {
+    if (auth.currentUser) {
+        return Promise.resolve(auth.currentUser);
+    }
+    return auth.signInAnonymously().then(() => auth.currentUser);
+}
+
+function fetchPendingAuthSession(sk, attempt = 0) {
+    return db.ref('student_auth_sessions/' + sk).once('value').then((snap) => {
+        if (snap.exists() || attempt >= 5) {
+            return snap;
+        }
+        return new Promise((resolve) => setTimeout(resolve, 500)).then(() => fetchPendingAuthSession(sk, attempt + 1));
+    });
+}
+
+function completePendingAuthSession() {
+    const sk = localStorage.getItem(PENDING_AUTH_SK_KEY);
+    if (!sk) {
+        return Promise.resolve(false);
+    }
+    if (pendingAuthCompletionInProgress) {
+        return Promise.resolve(false);
+    }
+    pendingAuthCompletionInProgress = true;
+
+    console.log('[Auth] Completing pending auth session for sk:', sk);
+
+    return ensureCapacitorFirebaseAuth()
+        .then(() => fetchPendingAuthSession(sk))
+        .then((snap) => {
+            if (!snap.exists()) {
+                console.log('[Auth] Session not yet available at student_auth_sessions/' + sk);
+                return false;
+            }
+
+            const data = snap.val();
+            if (!data || !data.idToken) {
+                console.error('[Auth] Session exists but no idToken found');
+                return false;
+            }
+
+            console.log('[Auth] Session data received:', { hasUid: !!data.uid, hasIdToken: !!data.idToken, ts: data.ts });
+
+            if (pendingAuthTimeoutId) {
+                clearTimeout(pendingAuthTimeoutId);
+                pendingAuthTimeoutId = null;
+            }
+
+            localStorage.removeItem(PENDING_AUTH_SK_KEY);
+            db.ref('student_auth_sessions/' + sk).remove().catch((err) => {
+                console.error('[Auth] Session removal error:', err);
+            });
+
+            console.log('[Auth] Calling loginWithToken with idToken from Firebase session');
+            loginWithToken(data.idToken);
+            return true;
+        })
+        .catch((err) => {
+            console.error('[Auth] Failed to complete pending auth session:', err);
+            return false;
+        })
+        .finally(() => {
+            pendingAuthCompletionInProgress = false;
+        });
+}
+
+function startCapacitorGoogleLogin(options = {}) {
+    const sk = generateAuthSessionKey(options.skPrefix || 'sk');
+    console.log('[Auth] Generated session key:', sk);
+
+    localStorage.setItem(PENDING_AUTH_SK_KEY, sk);
+    console.log('[Auth] Session key stored in localStorage');
+
+    if (options.openModal === 'cr') {
+        openCapacitorLoginModal();
+    } else if (typeof options.openModal === 'function') {
+        options.openModal();
+    }
+
+    openBrowserLoginPage(sk);
+
+    const msgDiv = options.messageEl
+        || document.getElementById(options.messageElId || 'capacitor-login-message');
+    if (msgDiv) {
+        msgDiv.innerHTML = '<span style="color: var(--text-color);">🔄 Waiting for Google Sign-In...</span>';
+    }
+
+    if (pendingAuthTimeoutId) {
+        clearTimeout(pendingAuthTimeoutId);
+    }
+
+    pendingAuthTimeoutId = setTimeout(() => {
+        if (localStorage.getItem(PENDING_AUTH_SK_KEY) !== sk) {
+            return;
+        }
+        console.log('[Auth] Pending auth session timed out after 5 minutes');
+        localStorage.removeItem(PENDING_AUTH_SK_KEY);
+        pendingAuthTimeoutId = null;
+        if (msgDiv) {
+            msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Sign-in timed out. Please try again.</span>';
+        }
+        if (options.openModal === 'cr') {
+            closeCapacitorLoginModal();
+        } else if (typeof options.onTimeout === 'function') {
+            options.onTimeout();
+        }
+    }, 5 * 60 * 1000);
+}
+
 function signInWithGoogle() {
     if (window.Capacitor) {
-        // Generate secure session key
-        const sk = 'sk_cr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        console.log('[Auth] Generated session key:', sk);
-        
-        // Store session key for deep link callback
-        localStorage.setItem('pending_auth_sk', sk);
-        console.log('[Auth] Session key stored in localStorage');
-        
-        openCapacitorLoginModal();
-        openBrowserLoginPage(sk);
-
-        const msgDiv = document.getElementById('capacitor-login-message');
-        if (msgDiv) msgDiv.innerHTML = '<span style="color: var(--text-color);">🔄 Waiting for Google Sign-In...</span>';
-
-        // Listen for session completion
-        console.log('[Auth] Setting up Firebase listener for session:', sk);
-        let sessionListenerRef = db.ref('student_auth_sessions/' + sk);
-        const onSession = sessionListenerRef.on('value', (snap) => {
-            console.log('[Auth] Session listener triggered, exists:', snap.exists());
-            if (snap.exists()) {
-                const data = snap.val();
-                console.log('[Auth] Session data received:', { hasUid: !!data.uid, hasIdToken: !!data.idToken, ts: data.ts });
-                sessionListenerRef.off('value', onSession);
-                sessionListenerRef.remove().catch(err => console.error('[Auth] Session removal error:', err));
-                localStorage.removeItem('pending_auth_sk');
-                console.log('[Auth] Cleanup completed');
-                
-                if (data.idToken) {
-                    console.log('[Auth] Calling loginWithToken with idToken');
-                    loginWithToken(data.idToken);
-                } else {
-                    console.error('[Auth] Session exists but no idToken found - this is a bug');
-                    if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Authentication error: No token received from server</span>';
-                    closeCapacitorLoginModal();
-                }
-            }
-        });
-
-        // 5-minute timeout cleanup
-        setTimeout(() => {
-            console.log('[Auth] Session listener timeout reached after 5 minutes');
-            sessionListenerRef.off('value', onSession);
-            localStorage.removeItem('pending_auth_sk');
-            if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Sign-in timed out. Please try again.</span>';
-            closeCapacitorLoginModal();
-        }, 5 * 60 * 1000);
-
+        startCapacitorGoogleLogin({ skPrefix: 'sk_cr', openModal: 'cr' });
         return;
     }
 
@@ -102,12 +174,15 @@ function closeCapacitorLoginModal() {
     if (msgDiv) msgDiv.innerHTML = '';
 }
 
-function openBrowserLoginPage(sk = '') {
+function openBrowserLoginPage(sk) {
+    if (!sk) {
+        console.error('[Auth] openBrowserLoginPage requires a session key');
+        return;
+    }
     const domain = (typeof firebaseConfig !== 'undefined' && firebaseConfig.authDomain) 
         ? firebaseConfig.authDomain 
         : 'firstfile-c763521e.firebaseapp.com';
-    const baseUrl = `https://${domain}/login-app.html`;
-    const url = sk ? `${baseUrl}?sk=${sk}` : baseUrl;
+    const url = `https://${domain}/login-app.html?sk=${encodeURIComponent(sk)}`;
     console.log('[Auth] Opening browser with URL:', url);
     window.open(url, '_system');
 }
@@ -653,9 +728,9 @@ if (window.Capacitor) {
                             }
                         }
                     } else {
-                        // Main login flow - Firebase listener handles this automatically
-                        // Deep link just brings app back to foreground, listener does the rest
-                        console.log('[Auth] Deep link received, Firebase listener will handle session');
+                        // Main login flow — session relay via Firebase (no JWT in deep link)
+                        console.log('[Auth] Deep link received, fetching Firebase auth session');
+                        completePendingAuthSession();
                     }
                 }
             } catch (e) {
@@ -665,17 +740,25 @@ if (window.Capacitor) {
 
         if (window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
             console.log('[Auth] Capacitor App plugin available, setting up deep link listeners');
-            // Listen to resume events with deep link URL
             window.Capacitor.Plugins.App.addListener('appUrlOpen', (data) => {
                 console.log('[Auth] appUrlOpen event fired, URL:', data.url);
                 checkDeepLink(data.url);
             });
 
-            // Check if app was initially launched with a deep link
+            window.Capacitor.Plugins.App.addListener('appStateChange', (state) => {
+                if (state.isActive && localStorage.getItem(PENDING_AUTH_SK_KEY)) {
+                    console.log('[Auth] App resumed with pending auth session');
+                    completePendingAuthSession();
+                }
+            });
+
             window.Capacitor.Plugins.App.getLaunchUrl().then((launchUrl) => {
                 if (launchUrl && launchUrl.url) {
                     console.log('[Auth] getLaunchUrl returned, URL:', launchUrl.url);
                     checkDeepLink(launchUrl.url);
+                } else if (localStorage.getItem(PENDING_AUTH_SK_KEY)) {
+                    console.log('[Auth] Pending auth session on launch, attempting completion');
+                    completePendingAuthSession();
                 } else {
                     console.log('[Auth] getLaunchUrl returned no URL');
                 }

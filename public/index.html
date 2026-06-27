@@ -1387,7 +1387,7 @@
 
     <!-- Core Logic Scripts -->
     <script src="assets/js/firebase-config.js?v=5"></script>
-    <script src="assets/js/auth.js?v=2"></script>
+    <script src="assets/js/auth.js?v=3"></script>
     <script src="assets/js/ui.js?v=19"></script>
     <script src="assets/js/history.js?v=10"></script>
     <script src="assets/js/export.js?v=11"></script>
@@ -1502,25 +1502,25 @@
 
         // --- Capacitor student login bridge ---
         function openStudentCapacitorLoginFlow() {
-            // Show the student-specific Capacitor login modal
-            const modal = document.getElementById('student-capacitor-login-modal');
-            if (modal) {
-                modal.classList.add('active');
-                // Reset to loading state
-                const loadingState = document.getElementById('student-cap-loading-state');
-                const manualState = document.getElementById('student-cap-manual-state');
-                if (loadingState) loadingState.style.display = 'block';
-                if (manualState) manualState.style.display = 'none';
-                const msgDiv = document.getElementById('student-cap-message');
-                if (msgDiv) msgDiv.innerHTML = '';
-                const tokenInput = document.getElementById('student-cap-token-input');
-                if (tokenInput) tokenInput.value = '';
-            }
-            // Open the login page in external system browser
-            const domain = (typeof firebaseConfig !== 'undefined' && firebaseConfig.authDomain) 
-                ? firebaseConfig.authDomain 
-                : 'firstfile-c763521e.firebaseapp.com';
-            window.open(`https://${domain}/login-app.html`, '_system');
+            startCapacitorGoogleLogin({
+                skPrefix: 'sk_student',
+                messageElId: 'student-cap-message',
+                openModal: () => {
+                    const modal = document.getElementById('student-capacitor-login-modal');
+                    if (modal) {
+                        modal.classList.add('active');
+                        const loadingState = document.getElementById('student-cap-loading-state');
+                        const manualState = document.getElementById('student-cap-manual-state');
+                        if (loadingState) loadingState.style.display = 'block';
+                        if (manualState) manualState.style.display = 'none';
+                        const msgDiv = document.getElementById('student-cap-message');
+                        if (msgDiv) msgDiv.innerHTML = '';
+                        const tokenInput = document.getElementById('student-cap-token-input');
+                        if (tokenInput) tokenInput.value = '';
+                    }
+                },
+                onTimeout: () => closeStudentCapacitorLoginModal()
+            });
         }
 
         function closeStudentCapacitorLoginModal() {
