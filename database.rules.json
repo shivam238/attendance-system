@@ -64,7 +64,7 @@
       "$session_key": {
         ".read": "auth != null",
         ".write": "auth != null && !data.exists()",
-        ".validate": "!newData.exists() || (newData.hasChildren(['uid', 'ts']) && newData.child('uid').isString() && newData.child('uid').val() === auth.uid && newData.child('ts').isNumber())"
+        ".validate": "!newData.exists() || (newData.hasChildren(['uid', 'idToken', 'ts']) && newData.child('uid').isString() && newData.child('uid').val() === auth.uid && newData.child('idToken').isString() && newData.child('ts').isNumber())"
       }
     }
   }
