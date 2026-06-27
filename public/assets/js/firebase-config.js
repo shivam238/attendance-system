@@ -1,13 +1,13 @@
 // Central Firebase Configuration for ATTENDIFY
 const firebaseConfig = {
-    apiKey: "AIzaSyBzeR_s64wa6GV9EWd3n3z4hlmF1JP9Agk",
-    authDomain: "attendify-staging.firebaseapp.com",
-    databaseURL: "https://attendify-staging-default-rtdb.firebaseio.com",
-    projectId: "attendify-staging",
-    storageBucket: "attendify-staging.firebasestorage.app",
-    messagingSenderId: "626082005024",
-    appId: "1:626082005024:web:e943edc4831ffbd6a5fc45",
-    measurementId: "G-FH7TW0S84N"
+    apiKey: "AIzaSyDN6iWRpxLZuwzQYVX580eTQbZuz2VY-HU",
+    authDomain: "firstfile-c763521e.firebaseapp.com",
+    databaseURL: "https://firstfile-c763521e-default-rtdb.firebaseio.com",
+    projectId: "firstfile-c763521e",
+    storageBucket: "firstfile-c763521e.firebasestorage.app",
+    messagingSenderId: "841328143028",
+    appId: "1:841328143028:web:caebd6835972138e70c5e1",
+    measurementId: "G-RC6MB6YMV9"
 };
 
 
