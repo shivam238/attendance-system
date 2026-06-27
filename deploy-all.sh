@@ -1,91 +1,160 @@
 #!/bin/bash
 # ATTENDIFY Unified Build, Deploy & Sync Script
-# Runs all deployment steps and git sync in a single command.
 
-# Exit immediately if a command exits with a non-zero status
 set -e
 
-# Define terminal colors for beautiful output
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 echo -e "${BLUE}===================================================${NC}"
 echo -e "${BLUE}          ATTENDIFY UNIFIED DEPLOYMENT SCRIPT       ${NC}"
 echo -e "${BLUE}===================================================${NC}"
 
-# 1. Handle Git Commit Message
 COMMIT_MSG="$1"
+
 if [ -z "$COMMIT_MSG" ]; then
-    echo -e "${YELLOW}Enter Git commit message (press Enter for default 'chore: automated deployment update'):${NC}"
-    read -r input_msg
-    if [ -z "$input_msg" ]; then
-        COMMIT_MSG="chore: automated deployment update"
-    else
-        COMMIT_MSG="$input_msg"
-    fi
+    read -rp "Commit message (Enter = default): " input
+    COMMIT_MSG="${input:-chore: automated deployment update}"
 fi
 
-# 2. Configure Git Credential Helper to avoid entering token/password repeatedly
-echo -e "\n${BLUE}[1/9] Ensuring Git credential helper is active...${NC}"
+########################################
+# 1
+########################################
+
+echo -e "\n${BLUE}[1/10] Git Credential Helper${NC}"
+
 git config credential.helper store
-echo -e "${GREEN}✔ Git credential helper is set to store credentials.${NC}"
 
-# 3. Update Application Details & Regenerate Chatbot Knowledge Base
-echo -e "\n${BLUE}[2/9] Propagating application details & regenerating Chatbot Knowledge Base...${NC}"
+########################################
+# 2
+########################################
+
+echo -e "\n${BLUE}[2/10] Updating details & chatbot KB${NC}"
+
 node scripts/update-details.js
-echo -e "${GREEN}✔ Details propagated and Chatbot Knowledge Base regenerated successfully.${NC}"
 
-# 4. Regenerate PDF Manual
-echo -e "\n${BLUE}[3/9] Regenerating PDF User Manual from manual.html...${NC}"
-google-chrome --headless --disable-gpu --print-to-pdf="public/QR Attendance System - Complete User Manual.pdf" file://$(pwd)/public/manual.html
-echo -e "${GREEN}✔ PDF User Manual regenerated successfully.${NC}"
+########################################
+# 3
+########################################
 
-# 5. Sync assets and build Android APK
-echo -e "\n${BLUE}[4/9] Syncing web assets and compiling Android APK...${NC}"
+echo -e "\n${BLUE}[3/10] Generating PDF Manual${NC}"
+
+google-chrome \
+--headless \
+--disable-gpu \
+--print-to-pdf="public/QR Attendance System - Complete User Manual.pdf" \
+file://$(pwd)/public/manual.html
+
+########################################
+# 4
+########################################
+
+echo -e "\n${BLUE}[4/10] Building Android APK${NC}"
+
 bash scripts/build-app.sh
-echo -e "${GREEN}✔ Android APK built successfully.${NC}"
 
-# 6. Upload APK to GitHub Releases
-echo -e "\n${BLUE}[5/9] Uploading new APK to latest GitHub Release...${NC}"
+########################################
+# 5
+########################################
+
+echo -e "\n${BLUE}[5/10] Uploading APK to GitHub Release${NC}"
+
 python3 scripts/upload-apk.py
-echo -e "${GREEN}✔ APK uploaded to GitHub Releases successfully.${NC}"
 
-# 7. Check and install on connected ADB device
-echo -e "\n${BLUE}[6/9] Checking for connected Android devices via ADB...${NC}"
-if adb devices | grep -q -w "device"; then
-    echo -e "${YELLOW}Device detected! Reinstalling/updating APK on device...${NC}"
+########################################
+# 6
+########################################
+
+echo -e "\n${BLUE}[6/10] Installing APK (ADB)${NC}"
+
+if adb devices | grep -w "device" >/dev/null
+then
     adb install -r ATTENDIFY.apk
-    echo -e "${GREEN}✔ APK installed on connected device.${NC}"
 else
-    echo -e "${YELLOW}⚠ No Android device detected via ADB. Skipping local installation.${NC}"
+    echo -e "${YELLOW}No Android device connected. Skipping.${NC}"
 fi
 
-# 8. Deploy to Firebase (Hosting, Database Rules & Cloud Functions)
-echo -e "\n${BLUE}[7/10] Installing Cloud Functions dependencies...${NC}"
-(cd functions && npm install)
-echo -e "${GREEN}✔ Cloud Functions dependencies installed.${NC}"
+########################################
+# 7
+########################################
 
-echo -e "\n${BLUE}[8/10] Deploying to Firebase (Hosting, Database Rules & Functions)...${NC}"
-firebase deploy --only hosting,database,functions
-echo -e "${GREEN}✔ Firebase deployment completed.${NC}"
+echo -e "\n${BLUE}[7/10] Firebase Hosting + Database${NC}"
 
-# 9. Deploy Cloudflare Worker
-echo -e "\n${BLUE}[9/10] Deploying Cloudflare Worker for AI Chatbot...${NC}"
+firebase deploy --only hosting,database
+
+########################################
+# 8
+########################################
+
+echo -e "\n${BLUE}[8/10] Cloud Functions (optional)${NC}"
+
+if [ -d functions ]; then
+
+    (
+        cd functions
+        npm install
+    )
+
+    if firebase deploy --only functions
+    then
+        echo -e "${GREEN}Functions deployed.${NC}"
+    else
+        echo -e "${YELLOW}"
+        echo "Functions skipped."
+        echo "Reason: Blaze plan/API not enabled."
+        echo -e "${NC}"
+    fi
+
+else
+
+    echo -e "${YELLOW}functions/ folder not found. Skipping.${NC}"
+
+fi
+
+########################################
+# 9
+########################################
+
+echo -e "\n${BLUE}[9/10] Cloudflare Worker${NC}"
+
+if [ -d attendify-support-worker ]; then
+
+(
 cd attendify-support-worker
-npx wrangler deploy
-cd ..
-echo -e "${GREEN}✔ Cloudflare Worker deployed.${NC}"
 
-# 10. Sync with Git Repository
-echo -e "\n${BLUE}[9/9] Staging, committing, and pushing changes to GitHub...${NC}"
+if command -v npx >/dev/null
+then
+    npx wrangler deploy || echo "Worker deploy skipped."
+fi
+
+)
+
+else
+
+echo -e "${YELLOW}Worker folder not found.${NC}"
+
+fi
+
+########################################
+# 10
+########################################
+
+echo -e "\n${BLUE}[10/10] Git Sync${NC}"
+
 git add .
-git commit -m "$COMMIT_MSG"
-git push origin $(git rev-parse --abbrev-ref HEAD)
-echo -e "${GREEN}✔ Git repository successfully updated & pushed to $(git rev-parse --abbrev-ref HEAD) branch.${NC}"
 
-echo -e "\n${GREEN}===================================================${NC}"
-echo -e "${GREEN}          ALL DEPLOYMENTS COMPLETED SUCCESSFULLY!   ${NC}"
-echo -e "${GREEN}===================================================${NC}\n"
+if git diff --cached --quiet
+then
+    echo -e "${YELLOW}Nothing to commit.${NC}"
+else
+    git commit -m "$COMMIT_MSG"
+    git push origin "$(git branch --show-current)"
+fi
+
+echo
+echo -e "${GREEN}===================================================${NC}"
+echo -e "${GREEN}      ATTENDIFY DEPLOYMENT FINISHED SUCCESSFULLY    ${NC}"
+echo -e "${GREEN}===================================================${NC}"

@@ -2537,6 +2537,10 @@
         function exitPortal() {
             if (confirm("Are you sure you want to log out of the student portal?")) {
                 localStorage.removeItem('student_session');
+                sessionStorage.removeItem('attendify_student_login_origin');
+                sessionStorage.removeItem('attendify_student_code');
+                sessionStorage.removeItem('attendify_track_login_resume');
+                window._trackLoginPending = false;
                 currentStudent = null;
                 classUserData = null;
                 attendanceRecords = [];
@@ -2553,7 +2557,19 @@
                 const fab = document.getElementById('ai-assistant-fab');
                 if (fab) fab.classList.remove('ai-fab-visible');
                 closeAIAssistant();
-                window.location.href = 'track.html';
+
+                const finishLogout = () => {
+                    window.location.href = 'track.html';
+                };
+
+                if (typeof auth !== 'undefined' && auth.currentUser) {
+                    auth.signOut().then(finishLogout).catch((err) => {
+                        console.error("Student portal Firebase sign-out failed:", err);
+                        finishLogout();
+                    });
+                } else {
+                    finishLogout();
+                }
             }
         }
 
