@@ -313,12 +313,71 @@
             window.history.replaceState({}, document.title, window.location.pathname);
         }
 
+        // Session relay: Google OAuth idToken written to RTDB — never passed in deep link URL
+        function resolveGoogleOAuthIdToken(result) {
+            let credential = firebase.auth.GoogleAuthProvider.credentialFromResult(result);
+            let source = 'credentialFromResult';
+
+            if ((!credential || !credential.idToken) && result.credential && result.credential.idToken) {
+                credential = firebase.auth.GoogleAuthProvider.credential(result.credential.idToken);
+                source = 'result.credential';
+            }
+
+            return {
+                idToken: credential && credential.idToken ? credential.idToken : null,
+                source: source,
+                credential: credential
+            };
+        }
+
+        function showFatalAuthError(message) {
+            signingIn = false;
+            document.getElementById('connecting-state').style.display = 'none';
+            document.getElementById('login-section').style.display = 'block';
+            document.getElementById('token-section').style.display = 'none';
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = '❌ ' + message;
+            messageEl.className = 'error';
+        }
+
+        function writeSessionAndReturnToApp(user, googleOAuthIdToken, sk, studentFlow) {
+            const db = firebase.database();
+            const sessionData = {
+                uid: user.uid,
+                idToken: googleOAuthIdToken,
+                createdAt: Date.now(),
+                used: false
+            };
+
+            console.log('[Login-App] Writing session relay to student_auth_sessions/' + sk);
+            console.log('[Login-App] Google OAuth ID Token present:', !!googleOAuthIdToken);
+
+            return db.ref('student_auth_sessions/' + sk).set(sessionData).then(function () {
+                let deepLink = 'attendify://login?session=' + encodeURIComponent(sk);
+                if (studentFlow) {
+                    deepLink += '&flow=student';
+                }
+                console.log('[Login-App] Deep link (session key only):', deepLink);
+                document.getElementById('token-display').textContent =
+                    '✅ Signed in as: ' + (user.displayName || 'user') + ' (Please return to the ATTENDIFY app.)';
+                setTimeout(() => {
+                    window.location.href = deepLink;
+                }, 500);
+            });
+        }
 
         function signInWithGoogle() {
             if (signingIn) return;
             signingIn = true;
 
             const msgDiv = document.getElementById('message');
+            const sk = urlParams.get('sk');
+
+            if (!sk) {
+                showFatalAuthError('Invalid session link. Please reopen from the ATTENDIFY app.');
+                return;
+            }
+
             document.getElementById('connecting-state').style.display = 'block';
             document.getElementById('login-section').style.display = 'none';
             msgDiv.textContent = '';
@@ -327,94 +386,38 @@
             const provider = new firebase.auth.GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
 
-            // signInWithPopup works reliably in system browser (Chrome) — no redirect loop
             auth.signInWithPopup(provider).then((result) => {
-                if (isStudentFlow) {
-                    // ✅ Student flow: send uid-based deep link — no token copy-paste needed
-                    handleStudentFlow(result.user);
-                } else {
-                    // CR/Teacher flow: send idToken for auth
-                    const idToken = result.credential ? result.credential.idToken : null;
-                    if (idToken) {
-                        handleSuccessfulLogin(idToken);
-                    } else {
-                        return result.user.getIdToken().then((token) => {
-                            handleSuccessfulLogin(token);
-                        });
-                    }
+                const resolved = resolveGoogleOAuthIdToken(result);
+
+                console.log('[Login-App] Credential source:', resolved.source);
+                console.log('Credential:', resolved.credential);
+                console.log('Google OAuth ID Token:', resolved.idToken);
+
+                if (!resolved.idToken) {
+                    console.error('[Login-App] FATAL: Google OAuth ID Token is null — check Firebase Google provider & OAuth client config');
+                    throw new Error(
+                        'Google OAuth ID Token missing. Verify Firebase Google sign-in and OAuth client configuration, then try again.'
+                    );
                 }
+
+                console.log('[Login-App] ✔ Google OAuth ID Token present, length:', resolved.idToken.length);
+
+                const user = result.user;
+                document.getElementById('connecting-state').style.display = 'none';
+                document.getElementById('login-section').style.display = 'none';
+                document.getElementById('token-section').style.display = 'block';
+                document.getElementById('token-display').textContent =
+                    '✅ Signed in as: ' + (user.displayName || 'user') + ' (Sending you back to the app...)';
+                msgDiv.textContent = '';
+                msgDiv.className = '';
+
+                return writeSessionAndReturnToApp(user, resolved.idToken, sk, isStudentFlow);
             }).catch((error) => {
                 console.error('Sign-in error:', error);
-                signingIn = false;
-                document.getElementById('connecting-state').style.display = 'none';
-                document.getElementById('login-section').style.display = 'block';
-                msgDiv.textContent = '❌ Sign-in failed: ' + error.message;
-                msgDiv.className = 'error';
+                showFatalAuthError('Sign-in failed: ' + error.message);
             });
         }
 
-        // ✅ Student flow: write uid and idToken to Firebase session — app listener picks it up automatically
-        function handleStudentFlow(user) {
-            console.log('[Login-App] handleStudentFlow called');
-            const msgDiv = document.getElementById('message');
-            const sk = urlParams.get('sk');
-            console.log('[Login-App] Session key from URL:', sk);
-
-            document.getElementById('connecting-state').style.display = 'none';
-            document.getElementById('login-section').style.display = 'none';
-            document.getElementById('token-section').style.display = 'block';
-            document.getElementById('token-display').textContent = '✅ Signed in as: ' + user.displayName + ' (Sending you back to the app...)';
-            msgDiv.textContent = '';
-            msgDiv.className = '';
-
-            if (sk) {
-                console.log('[Login-App] Session key present, calling getIdToken');
-                // Get idToken and write to Firebase — app listener will auto-login
-                user.getIdToken().then((idToken) => {
-                    console.log('[Login-App] getIdToken succeeded, idToken length:', idToken.length);
-                    const db = firebase.database();
-                    const sessionData = {
-                        uid: user.uid,
-                        idToken: idToken,
-                        ts: Date.now()
-                    };
-                    console.log('[Login-App] Writing to Firebase: student_auth_sessions/' + sk, { uid: user.uid, hasIdToken: !!idToken, ts: sessionData.ts });
-                    db.ref('student_auth_sessions/' + sk).set(sessionData).then(() => {
-                        console.log('[Login-App] Firebase write succeeded');
-                        // Session written — app listener will pick it up automatically
-                        document.getElementById('token-display').textContent = '✅ Signed in as: ' + user.displayName + ' (Please return to the ATTENDIFY app.)';
-                        // Deep link redirect to bring the app back to foreground
-                        console.log('[Login-App] Triggering deep link: attendify://login?flow=student');
-                        setTimeout(() => {
-                            window.location.href = "attendify://login?flow=student";
-                        }, 500);
-                    }).catch((err) => {
-                        console.error('[Login-App] Session write error:', err);
-                        console.error('[Login-App] Error code:', err.code);
-                        console.error('[Login-App] Error message:', err.message);
-                        document.getElementById('token-section').style.display = 'none';
-                        const messageEl = document.getElementById('message');
-                        messageEl.textContent = '❌ Session error: ' + err.message;
-                        messageEl.className = 'error';
-                    });
-                }).catch((err) => {
-                    console.error('[Login-App] Failed to get idToken:', err);
-                    document.getElementById('token-section').style.display = 'none';
-                    const messageEl = document.getElementById('message');
-                    messageEl.textContent = '❌ Token error: ' + err.message;
-                    messageEl.className = 'error';
-                });
-            } else {
-                console.error('[Login-App] No session key found in URL');
-                // No session key — show error, cannot proceed without sk
-                document.getElementById('token-section').style.display = 'none';
-                const messageEl = document.getElementById('message');
-                messageEl.textContent = '❌ Invalid session link. Please reopen from the ATTENDIFY app.';
-                messageEl.className = 'error';
-            }
-        }
-
-        // Show the sign-in button immediately on load — no auto-redirect
         window.addEventListener('DOMContentLoaded', () => {
             if (isStudentFlow) {
                 document.getElementById('page-subtitle').textContent = 'Sign in to return to your attendance portal';
@@ -422,47 +425,6 @@
             document.getElementById('connecting-state').style.display = 'none';
             document.getElementById('login-section').style.display = 'block';
         });
-
-        function handleSuccessfulLogin(idToken) {
-            const msgDiv = document.getElementById('message');
-            const sk = urlParams.get('sk');
-
-            document.getElementById('connecting-state').style.display = 'none';
-            document.getElementById('login-section').style.display = 'none';
-            document.getElementById('token-section').style.display = 'block';
-            document.getElementById('token-display').textContent = '✅ Signed in successfully! (Please return to the ATTENDIFY app.)';
-            msgDiv.textContent = '';
-            msgDiv.className = '';
-
-            if (sk) {
-                // Secure Session Relay: Write idToken to Firebase for CR/Teacher login
-                const db = firebase.database();
-                db.ref('student_auth_sessions/' + sk).set({
-                    uid: firebase.auth().currentUser.uid,
-                    idToken: idToken,
-                    ts: Date.now()
-                }).then(() => {
-                    document.getElementById('token-display').textContent = '✅ Signed in successfully! (Please return to the ATTENDIFY app.)';
-                    // Attempt to deep link redirect back to app
-                    setTimeout(() => {
-                        window.location.href = "attendify://login";
-                    }, 500);
-                }).catch((err) => {
-                    console.error('Session write error:', err);
-                    document.getElementById('token-section').style.display = 'none';
-                    const messageEl = document.getElementById('message');
-                    messageEl.textContent = '❌ Session error. Please close this page and try again.';
-                    messageEl.className = 'error';
-                });
-            } else {
-                // No session key - cannot proceed securely
-                document.getElementById('token-section').style.display = 'none';
-                const messageEl = document.getElementById('message');
-                messageEl.textContent = '❌ Invalid session link. Please reopen from the ATTENDIFY app.';
-                messageEl.className = 'error';
-            }
-        }
-
 
     </script>
 </body>

@@ -1,26 +1,99 @@
 // Auth management for ATTENDIFY
 
 const PENDING_AUTH_SK_KEY = 'pending_auth_sk';
+const AUTH_SESSION_TTL_MS = 120 * 1000;
 let pendingAuthCompletionInProgress = false;
 let pendingAuthTimeoutId = null;
 
-function generateAuthSessionKey(prefix = 'sk') {
-    return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+function generateAuthSessionKey() {
+    const bytes = new Uint8Array(16);
+    if (window.crypto && window.crypto.getRandomValues) {
+        window.crypto.getRandomValues(bytes);
+    } else {
+        for (let i = 0; i < bytes.length; i++) {
+            bytes[i] = Math.floor(Math.random() * 256);
+        }
+    }
+    const hex = Array.from(bytes, function (b) {
+        return b.toString(16).padStart(2, '0');
+    }).join('');
+    return 'sk_' + hex.toUpperCase();
 }
 
 function ensureCapacitorFirebaseAuth() {
     if (auth.currentUser) {
         return Promise.resolve(auth.currentUser);
     }
-    return auth.signInAnonymously().then(() => auth.currentUser);
+    return auth.signInAnonymously()
+        .then(() => auth.currentUser)
+        .catch((err) => {
+            console.error('[Auth] Anonymous sign-in failed:', err.code, err.message);
+            if (err.code === 'auth/admin-restricted-operation') {
+                console.error('[Auth] Enable Anonymous sign-in in Firebase Console → Authentication → Sign-in method');
+            }
+            throw err;
+        });
 }
 
-function fetchPendingAuthSession(sk, attempt = 0) {
-    return db.ref('student_auth_sessions/' + sk).once('value').then((snap) => {
-        if (snap.exists() || attempt >= 5) {
-            return snap;
+function signInWithGoogleOAuthCredential(googleOAuthIdToken) {
+    if (!googleOAuthIdToken) {
+        return Promise.reject(new Error('Google OAuth ID token is required'));
+    }
+    const credential = firebase.auth.GoogleAuthProvider.credential(googleOAuthIdToken);
+    const currentUser = auth.currentUser;
+    if (currentUser && currentUser.isAnonymous) {
+        return auth.signOut().then(() => auth.signInWithCredential(credential));
+    }
+    return auth.signInWithCredential(credential);
+}
+
+function claimAuthSession(sk) {
+    const sessionRef = db.ref('student_auth_sessions/' + sk);
+    let claimedToken = null;
+
+    return new Promise(function (resolve, reject) {
+        sessionRef.transaction(function (current) {
+            if (!current) {
+                return current;
+            }
+            if (current.used === true) {
+                return current;
+            }
+
+            const createdAt = current.createdAt || current.ts || 0;
+            if (Date.now() - createdAt > AUTH_SESSION_TTL_MS) {
+                return null;
+            }
+            if (!current.idToken) {
+                return null;
+            }
+
+            claimedToken = current.idToken;
+            return null;
+        }, function (error, committed) {
+            if (error) {
+                reject(error);
+                return;
+            }
+            resolve({ committed: committed, idToken: claimedToken });
+        }, false);
+    });
+}
+
+function claimAuthSessionWithRetry(sk, attempt) {
+    attempt = attempt || 0;
+    return claimAuthSession(sk).then(function (result) {
+        if (result.committed && result.idToken) {
+            return result;
         }
-        return new Promise((resolve) => setTimeout(resolve, 500)).then(() => fetchPendingAuthSession(sk, attempt + 1));
+        if (attempt >= 5) {
+            return result;
+        }
+        return new Promise(function (resolve) {
+            setTimeout(resolve, 500);
+        }).then(function () {
+            return claimAuthSessionWithRetry(sk, attempt + 1);
+        });
     });
 }
 
@@ -34,23 +107,17 @@ function completePendingAuthSession() {
     }
     pendingAuthCompletionInProgress = true;
 
-    console.log('[Auth] Completing pending auth session for sk:', sk);
+    console.log('[Auth] Claiming pending auth session for sk:', sk);
 
     return ensureCapacitorFirebaseAuth()
-        .then(() => fetchPendingAuthSession(sk))
-        .then((snap) => {
-            if (!snap.exists()) {
-                console.log('[Auth] Session not yet available at student_auth_sessions/' + sk);
+        .then(function () { return claimAuthSessionWithRetry(sk); })
+        .then(function (result) {
+            if (!result.committed || !result.idToken) {
+                console.log('[Auth] Session unavailable, expired, already used, or not yet written');
                 return false;
             }
 
-            const data = snap.val();
-            if (!data || !data.idToken) {
-                console.error('[Auth] Session exists but no idToken found');
-                return false;
-            }
-
-            console.log('[Auth] Session data received:', { hasUid: !!data.uid, hasIdToken: !!data.idToken, ts: data.ts });
+            console.log('[Auth] Session claimed and deleted (single-use)');
 
             if (pendingAuthTimeoutId) {
                 clearTimeout(pendingAuthTimeoutId);
@@ -58,25 +125,22 @@ function completePendingAuthSession() {
             }
 
             localStorage.removeItem(PENDING_AUTH_SK_KEY);
-            db.ref('student_auth_sessions/' + sk).remove().catch((err) => {
-                console.error('[Auth] Session removal error:', err);
-            });
-
-            console.log('[Auth] Calling loginWithToken with idToken from Firebase session');
-            loginWithToken(data.idToken);
+            console.log('[Auth] Session relay idToken prefix:', result.idToken.substring(0, 20) + '...');
+            loginWithToken(result.idToken);
             return true;
         })
-        .catch((err) => {
+        .catch(function (err) {
             console.error('[Auth] Failed to complete pending auth session:', err);
             return false;
         })
-        .finally(() => {
+        .finally(function () {
             pendingAuthCompletionInProgress = false;
         });
 }
 
-function startCapacitorGoogleLogin(options = {}) {
-    const sk = generateAuthSessionKey(options.skPrefix || 'sk');
+function startCapacitorGoogleLogin(options) {
+    options = options || {};
+    const sk = generateAuthSessionKey();
     console.log('[Auth] Generated session key:', sk);
 
     localStorage.setItem(PENDING_AUTH_SK_KEY, sk);
@@ -120,7 +184,7 @@ function startCapacitorGoogleLogin(options = {}) {
 
 function signInWithGoogle() {
     if (window.Capacitor) {
-        startCapacitorGoogleLogin({ skPrefix: 'sk_cr', openModal: 'cr' });
+        startCapacitorGoogleLogin({ openModal: 'cr' });
         return;
     }
 
@@ -199,23 +263,17 @@ function verifyCapacitorLoginToken() {
 
     if (msgDiv) msgDiv.innerHTML = '<span style="color: var(--text-color);">🔄 Authenticating...</span>';
 
-    try {
-        const credential = firebase.auth.GoogleAuthProvider.credential(token);
-        auth.signInWithCredential(credential)
-            .then((result) => {
-                if (msgDiv) msgDiv.innerHTML = '<span style="color: #10b981;">✅ Signed in successfully!</span>';
-                setTimeout(() => {
-                    closeCapacitorLoginModal();
-                }, 1200);
-            })
-            .catch((error) => {
-                console.error("Token sign-in error:", error);
-                if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Invalid or expired login code. Please try again.</span>';
-            });
-    } catch (e) {
-        console.error("Credential parsing error:", e);
-        if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Error parsing code. Make sure you copied the entire code.</span>';
-    }
+    signInWithGoogleOAuthCredential(token)
+        .then((result) => {
+            if (msgDiv) msgDiv.innerHTML = '<span style="color: #10b981;">✅ Signed in successfully!</span>';
+            setTimeout(() => {
+                closeCapacitorLoginModal();
+            }, 1200);
+        })
+        .catch((error) => {
+            console.error("Token sign-in error:", error);
+            if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Invalid or expired login code. Please try again.</span>';
+        });
 }
 
 function logoutUser() {
@@ -617,93 +675,67 @@ function linkGoogleAccount() {
 // Track the last processed token to prevent loop/replay of old launch URLs in Capacitor
 let lastProcessedToken = null;
 
-// Automatic Login token verification helper
-function loginWithToken(token) {
-    console.log('[Auth] loginWithToken called, token length:', token ? token.length : 0);
-    if (!token) {
+// Complete sign-in using Google OAuth ID token from RTDB session relay (never from deep link URL)
+function loginWithToken(googleOAuthIdToken) {
+    console.log('[Auth] loginWithToken via session relay, length:', googleOAuthIdToken ? googleOAuthIdToken.length : 0);
+    if (!googleOAuthIdToken) {
         console.error('[Auth] loginWithToken called with empty token');
         return;
     }
-    if (token === lastProcessedToken) {
-        console.log("[Auth] Token already processed, skipping duplicate authentication.");
+    if (googleOAuthIdToken === lastProcessedToken) {
+        console.log('[Auth] Token already processed, skipping duplicate authentication.');
         return;
     }
-    lastProcessedToken = token;
-    console.log('[Auth] Processing new token');
+    lastProcessedToken = googleOAuthIdToken;
 
-    // Detect if this is a student attendance flow (URL has ?code= param)
     const isStudentFlow = new URLSearchParams(window.location.search).has('code');
-    console.log('[Auth] isStudentFlow:', isStudentFlow);
+
+    const onSuccess = (result, msgDiv, onDone) => {
+        console.log('[Auth] signInWithCredential succeeded, user:', result.user.email);
+        if (msgDiv) msgDiv.innerHTML = '<span style="color: #10b981;">✅ Signed in successfully!</span>';
+        setTimeout(onDone, isStudentFlow ? 1000 : 1200);
+    };
+
+    const onError = (error, msgDiv) => {
+        console.error('[Auth] signInWithCredential failed:', error.code, error.message);
+        if (msgDiv) {
+            msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Invalid or expired login code. Please try again.</span>';
+        }
+    };
 
     if (isStudentFlow) {
-        console.log('[Auth] Using student flow');
-        // Student flow: use student-specific Capacitor modal and update student UI after login
         const studentCapModal = document.getElementById('student-capacitor-login-modal');
         const studentCapMsg = document.getElementById('student-cap-message');
-        
         if (studentCapMsg) studentCapMsg.innerHTML = '<span style="color: var(--text-color);">🔄 Authenticating from browser...</span>';
-
-        try {
-            console.log('[Auth] Creating Google credential from token');
-            const credential = firebase.auth.GoogleAuthProvider.credential(token);
-            console.log('[Auth] Calling auth.signInWithCredential');
-            auth.signInWithCredential(credential)
-                .then((result) => {
-                    console.log('[Auth] signInWithCredential succeeded, user:', result.user.email);
-                    if (studentCapMsg) studentCapMsg.innerHTML = '<span style="color: #10b981;">✅ Signed in successfully!</span>';
-                    setTimeout(() => {
-                        if (studentCapModal) studentCapModal.classList.remove('active');
-                        // Update student auth UI with logged-in user
-                        if (typeof updateStudentAuthUI === 'function') {
-                            console.log('[Auth] Calling updateStudentAuthUI');
-                            updateStudentAuthUI(result.user);
-                        }
-                    }, 1000);
-                })
-                .catch((error) => {
-                    console.error("[Auth] Student token sign-in error:", error);
-                    console.error("[Auth] Error code:", error.code);
-                    console.error("[Auth] Error message:", error.message);
-                    if (studentCapMsg) studentCapMsg.innerHTML = '<span style="color: #ef4444;">❌ Invalid or expired login code. Please try again.</span>';
-                });
-        } catch (e) {
-            console.error("[Auth] Student credential parse error:", e);
-            if (studentCapMsg) studentCapMsg.innerHTML = '<span style="color: #ef4444;">❌ Error parsing code.</span>';
-        }
+        signInWithGoogleOAuthCredential(googleOAuthIdToken)
+            .then((result) => onSuccess(result, studentCapMsg, () => {
+                if (studentCapModal) studentCapModal.classList.remove('active');
+                if (typeof updateStudentAuthUI === 'function') updateStudentAuthUI(result.user);
+            }))
+            .catch((error) => onError(error, studentCapMsg));
         return;
     }
 
-    console.log('[Auth] Using CR/default flow');
-    // CR / default flow: use the standard capacitor login modal
     const msgDiv = document.getElementById('capacitor-login-message') || document.getElementById('login-message');
     if (msgDiv) msgDiv.innerHTML = '<span style="color: var(--text-color);">🔄 Authenticating from browser...</span>';
-    
-    // Auto open/ensure modal is active to show progress
     openCapacitorLoginModal();
-    const tokenInput = document.getElementById('capacitor-token-input');
-    if (tokenInput) tokenInput.value = token;
-
-    try {
-        const credential = firebase.auth.GoogleAuthProvider.credential(token);
-        auth.signInWithCredential(credential)
-            .then((result) => {
-                if (msgDiv) msgDiv.innerHTML = '<span style="color: #10b981;">✅ Signed in successfully!</span>';
-                setTimeout(() => {
-                    closeCapacitorLoginModal();
-                }, 1200);
-            })
-            .catch((error) => {
-                console.error("Token sign-in error:", error);
-                if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Invalid or expired login code. Please try again.</span>';
-            });
-    } catch (e) {
-        console.error("Credential parsing error:", e);
-        if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Error parsing code.</span>';
-    }
+    signInWithGoogleOAuthCredential(googleOAuthIdToken)
+        .then((result) => onSuccess(result, msgDiv, () => closeCapacitorLoginModal()))
+        .catch((error) => onError(error, msgDiv));
 }
 
-// Register deep link listener for Capacitor environment
-if (window.Capacitor) {
+function handleAuthSessionDeepLink(urlObj) {
+    const sessionSk = urlObj.searchParams.get('session');
+    if (sessionSk) {
+        console.log('[Auth] Deep link session key received:', sessionSk);
+        localStorage.setItem(PENDING_AUTH_SK_KEY, sessionSk);
+    }
+    completePendingAuthSession();
+}
+
+// Register deep link listener for Capacitor environment (once only)
+if (window.Capacitor && !window._attendifyAuthDeepLinkRegistered) {
+    window._attendifyAuthDeepLinkRegistered = true;
     document.addEventListener('DOMContentLoaded', () => {
         const checkDeepLink = (url) => {
             try {
@@ -728,9 +760,7 @@ if (window.Capacitor) {
                             }
                         }
                     } else {
-                        // Main login flow — session relay via Firebase (no JWT in deep link)
-                        console.log('[Auth] Deep link received, fetching Firebase auth session');
-                        completePendingAuthSession();
+                        handleAuthSessionDeepLink(urlObj);
                     }
                 }
             } catch (e) {

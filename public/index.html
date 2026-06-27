@@ -1387,7 +1387,7 @@
 
     <!-- Core Logic Scripts -->
     <script src="assets/js/firebase-config.js?v=5"></script>
-    <script src="assets/js/auth.js?v=3"></script>
+    <script src="assets/js/auth.js?v=7"></script>
     <script src="assets/js/ui.js?v=19"></script>
     <script src="assets/js/history.js?v=10"></script>
     <script src="assets/js/export.js?v=11"></script>
@@ -1503,7 +1503,6 @@
         // --- Capacitor student login bridge ---
         function openStudentCapacitorLoginFlow() {
             startCapacitorGoogleLogin({
-                skPrefix: 'sk_student',
                 messageElId: 'student-cap-message',
                 openModal: () => {
                     const modal = document.getElementById('student-capacitor-login-modal');
@@ -1549,24 +1548,18 @@
 
             if (msgDiv) msgDiv.innerHTML = '<span style="color: var(--text-color);">🔄 Authenticating...</span>';
 
-            try {
-                const credential = firebase.auth.GoogleAuthProvider.credential(token);
-                auth.signInWithCredential(credential)
-                    .then((result) => {
-                        if (msgDiv) msgDiv.innerHTML = '<span style="color: #10b981;">✅ Signed in successfully!</span>';
-                        setTimeout(() => {
-                            closeStudentCapacitorLoginModal();
-                            updateStudentAuthUI(result.user);
-                        }, 1000);
-                    })
-                    .catch((error) => {
-                        console.error("Student token sign-in error:", error);
-                        if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Invalid or expired code. Please try again.</span>';
-                    });
-            } catch (e) {
-                console.error("Student credential parse error:", e);
-                if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Error parsing code. Copy the full code from the browser.</span>';
-            }
+            signInWithGoogleOAuthCredential(token)
+                .then((result) => {
+                    if (msgDiv) msgDiv.innerHTML = '<span style="color: #10b981;">✅ Signed in successfully!</span>';
+                    setTimeout(() => {
+                        closeStudentCapacitorLoginModal();
+                        updateStudentAuthUI(result.user);
+                    }, 1000);
+                })
+                .catch((error) => {
+                    console.error("Student token sign-in error:", error);
+                    if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Invalid or expired code. Please try again.</span>';
+                });
         }
 
         function studentGoogleLogout() {

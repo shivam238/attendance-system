@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Phase 3 mobile auth migration checks for auth.js
+ * Session-relay mobile auth checks
  * Run: node scripts/test-mobile-auth-phase3.js
  */
 
@@ -10,6 +10,7 @@ const path = require('path');
 const authJsPath = path.join(__dirname, '../public/assets/js/auth.js');
 const loginAppPath = path.join(__dirname, '../public/login-app.html');
 const indexHtmlPath = path.join(__dirname, '../public/index.html');
+const rulesPath = path.join(__dirname, '../database.rules.json');
 
 let failures = 0;
 
@@ -25,103 +26,74 @@ function pass(msg) {
 const authJs = fs.readFileSync(authJsPath, 'utf8');
 const loginApp = fs.readFileSync(loginAppPath, 'utf8');
 const indexHtml = fs.readFileSync(indexHtmlPath, 'utf8');
+const rules = fs.readFileSync(rulesPath, 'utf8');
 
-// Student login flow must not read JWT from deep link URL
-const classroomTokenUsage = authJs.match(/searchParams\.get\('token'\)/g) || [];
-const classroomOnly = authJs.includes('role === \'teacher\'') && classroomTokenUsage.length === 1;
-if (classroomTokenUsage.length === 0) {
-    pass('auth.js has no searchParams.get(\'token\') usage');
-} else if (classroomOnly) {
-    pass('auth.js searchParams.get(\'token\') is limited to classroom teacher flow only');
+const oauthCredDefCount = (authJs.match(/function signInWithGoogleOAuthCredential/g) || []).length;
+if (oauthCredDefCount !== 1) {
+    fail('auth.js must define signInWithGoogleOAuthCredential exactly once (found ' + oauthCredDefCount + ')');
 } else {
-    fail('auth.js searchParams.get(\'token\') appears outside classroom teacher flow');
+    pass('auth.js has single signInWithGoogleOAuthCredential definition');
 }
 
-if (!authJs.includes('completePendingAuthSession()')) {
-    fail('auth.js does not call completePendingAuthSession on resume/deep link');
+const authScriptTags = indexHtml.match(/assets\/js\/auth\.js/g) || [];
+if (authScriptTags.length !== 1) {
+    fail('index.html must load auth.js exactly once (found ' + authScriptTags.length + ')');
 } else {
-    pass('auth.js calls completePendingAuthSession on resume/deep link');
+    pass('index.html loads auth.js once');
 }
 
-if (!authJs.includes('PENDING_AUTH_SK_KEY')) {
-    fail('auth.js missing PENDING_AUTH_SK_KEY constant');
+if (authJs.includes('access_token') || loginApp.includes('access_token')) {
+    fail('OAuth access_token must not appear in mobile auth flow');
 } else {
-    pass('auth.js defines PENDING_AUTH_SK_KEY');
+    pass('No OAuth access_token in mobile auth flow');
 }
 
-if (!authJs.includes('function completePendingAuthSession')) {
-    fail('auth.js missing completePendingAuthSession');
+if (loginApp.match(/attendify:\/\/[^"']*[?&]token=/)) {
+    fail('login-app.html must not put OAuth tokens in deep link URL');
 } else {
-    pass('auth.js defines completePendingAuthSession');
+    pass('login-app.html deep link contains no OAuth token param');
 }
 
-if (!authJs.includes('student_auth_sessions/')) {
-    fail('auth.js does not reference student_auth_sessions');
+if (!loginApp.includes('createdAt') || !loginApp.includes('used: false')) {
+    fail('login-app.html must write createdAt and used:false on session');
 } else {
-    pass('auth.js references student_auth_sessions');
+    pass('login-app.html writes createdAt + used:false session');
 }
 
-if (!authJs.includes('login-app.html?sk=')) {
-    fail('auth.js does not open login-app.html with sk query param');
+if (/\.getIdToken\s*\(/.test(loginApp)) {
+    fail('login-app.html must not call user.getIdToken()');
 } else {
-    pass('auth.js opens login-app.html?sk=');
+    pass('login-app.html does not call user.getIdToken()');
 }
 
-if (authJs.includes('sessionListenerRef.on(\'value\'')) {
-    fail('auth.js still uses legacy Firebase session listener in signInWithGoogle');
+if (!authJs.includes('claimAuthSession')) {
+    fail('auth.js must atomically claim sessions');
 } else {
-    pass('auth.js removed legacy session listener from sign-in flow');
+    pass('auth.js implements claimAuthSession transaction');
 }
 
-if (!loginApp.includes('student_auth_sessions/')) {
-    fail('login-app.html does not write to student_auth_sessions');
+if (!authJs.includes('AUTH_SESSION_TTL_MS')) {
+    fail('auth.js must define AUTH_SESSION_TTL_MS');
 } else {
-    pass('login-app.html writes to student_auth_sessions');
+    pass('auth.js defines session TTL');
 }
 
-if (loginApp.includes('attendify://') && loginApp.match(/attendify:\/\/[^"']*token/)) {
-    fail('login-app.html deep link still contains token');
+if (!authJs.includes('getRandomValues')) {
+    fail('auth.js must use crypto random session keys');
 } else {
-    pass('login-app.html deep links contain no JWT');
+    pass('auth.js uses crypto random session keys');
 }
 
-if (indexHtml.includes('login-app.html`, \'_system\')') || indexHtml.includes('login-app.html\', \'_system\')')) {
-    fail('index.html still opens login-app.html without session key');
+if (!authJs.includes('_attendifyAuthDeepLinkRegistered')) {
+    fail('auth.js must guard against duplicate deep-link registration');
 } else {
-    pass('index.html student flow delegates to startCapacitorGoogleLogin');
+    pass('auth.js prevents duplicate deep-link listener registration');
 }
 
-if (!indexHtml.includes('startCapacitorGoogleLogin')) {
-    fail('index.html does not use startCapacitorGoogleLogin for student capacitor login');
+if (!rules.includes('used') || !rules.includes('createdAt')) {
+    fail('database.rules.json must enforce used + createdAt on sessions');
 } else {
-    pass('index.html uses startCapacitorGoogleLogin');
-}
-
-// Simulate resume flow logic
-function simulateResumeFlow() {
-    const storage = { pending_auth_sk: 'sk_test_123' };
-    const firebaseSessions = {
-        'sk_test_123': { uid: 'uid1', idToken: 'jwt-test-token', ts: Date.now() }
-    };
-    let deletedSk = false;
-    let loginToken = null;
-
-    const sk = storage.pending_auth_sk;
-    if (!sk) return false;
-    const data = firebaseSessions[sk];
-    if (!data || !data.idToken) return false;
-    delete storage.pending_auth_sk;
-    deletedSk = true;
-    delete firebaseSessions[sk];
-    loginToken = data.idToken;
-    return { deletedSk, loginToken, sessionRemoved: !firebaseSessions[sk] };
-}
-
-const result = simulateResumeFlow();
-if (!result.deletedSk || result.loginToken !== 'jwt-test-token' || !result.sessionRemoved) {
-    fail('Simulated resume flow did not complete correctly');
-} else {
-    pass('Simulated resume flow: read sk, fetch session, loginWithToken, cleanup');
+    pass('database.rules.json enforces session expiry and used flag');
 }
 
 if (failures > 0) {
@@ -129,4 +101,4 @@ if (failures > 0) {
     process.exit(1);
 }
 
-console.log('\nAll Phase 3 mobile auth checks passed.');
+console.log('\nAll session-relay mobile auth checks passed.');

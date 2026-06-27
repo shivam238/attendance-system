@@ -62,9 +62,9 @@
     },
     "student_auth_sessions": {
       "$session_key": {
-        ".read": "auth != null",
-        ".write": "auth != null && !data.exists()",
-        ".validate": "!newData.exists() || (newData.hasChildren(['uid', 'idToken', 'ts']) && newData.child('uid').isString() && newData.child('uid').val() === auth.uid && newData.child('idToken').isString() && newData.child('ts').isNumber())"
+        ".read": "auth != null && data.exists() && data.child('used').val() === false && data.child('createdAt').val() > now - 120000",
+        ".write": "auth != null && ((!data.exists() && newData.child('uid').val() === auth.uid && newData.child('used').val() === false) || (data.exists() && !newData.exists()))",
+        ".validate": "!newData.exists() || (newData.hasChildren(['uid', 'idToken', 'createdAt', 'used']) && newData.child('uid').isString() && newData.child('uid').val() === auth.uid && newData.child('idToken').isString() && newData.child('createdAt').isNumber() && newData.child('used').isBoolean() && newData.child('used').val() === false && newData.child('createdAt').val() <= now && newData.child('createdAt').val() > now - 120000)"
       }
     }
   }

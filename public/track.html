@@ -1814,9 +1814,16 @@
 
             msgDiv.innerHTML = '<div class="message info" style="margin: 0; padding: 10px;">🔄 Authenticating...</div>';
 
-            try {
+            const doSignIn = () => {
                 const credential = firebase.auth.GoogleAuthProvider.credential(token);
-                auth.signInWithCredential(credential).then((result) => {
+                return auth.signInWithCredential(credential);
+            };
+
+            const signInPromise = (auth.currentUser && auth.currentUser.isAnonymous)
+                ? auth.signOut().then(doSignIn)
+                : doSignIn();
+
+            signInPromise.then((result) => {
                     const user = result.user;
                     msgDiv.innerHTML = '<div class="message info" style="margin: 0; padding: 10px;">🔍 Verifying linked student profile...</div>';
                     
@@ -1842,9 +1849,6 @@
                     console.error("Token auth error:", err);
                     msgDiv.innerHTML = '<div class="message error" style="margin: 0; padding: 10px;">❌ Invalid or expired code. Please try again.</div>';
                 });
-            } catch (e) {
-                msgDiv.innerHTML = '<div class="message error" style="margin: 0; padding: 10px;">❌ Error parsing code. Copy the full code from the browser.</div>';
-            }
         }
 
         function renderClassSelection(links) {
