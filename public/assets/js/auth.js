@@ -108,6 +108,7 @@ function openBrowserLoginPage(sk = '') {
         : 'firstfile-c763521e.firebaseapp.com';
     const baseUrl = `https://${domain}/login-app.html`;
     const url = sk ? `${baseUrl}?sk=${sk}` : baseUrl;
+    console.log('[Auth] Opening browser with URL:', url);
     window.open(url, '_system');
 }
 
@@ -543,17 +544,24 @@ let lastProcessedToken = null;
 
 // Automatic Login token verification helper
 function loginWithToken(token) {
-    if (!token) return;
+    console.log('[Auth] loginWithToken called, token length:', token ? token.length : 0);
+    if (!token) {
+        console.error('[Auth] loginWithToken called with empty token');
+        return;
+    }
     if (token === lastProcessedToken) {
-        console.log("Token already processed, skipping duplicate authentication.");
+        console.log("[Auth] Token already processed, skipping duplicate authentication.");
         return;
     }
     lastProcessedToken = token;
+    console.log('[Auth] Processing new token');
 
     // Detect if this is a student attendance flow (URL has ?code= param)
     const isStudentFlow = new URLSearchParams(window.location.search).has('code');
+    console.log('[Auth] isStudentFlow:', isStudentFlow);
 
     if (isStudentFlow) {
+        console.log('[Auth] Using student flow');
         // Student flow: use student-specific Capacitor modal and update student UI after login
         const studentCapModal = document.getElementById('student-capacitor-login-modal');
         const studentCapMsg = document.getElementById('student-cap-message');
@@ -561,29 +569,36 @@ function loginWithToken(token) {
         if (studentCapMsg) studentCapMsg.innerHTML = '<span style="color: var(--text-color);">🔄 Authenticating from browser...</span>';
 
         try {
+            console.log('[Auth] Creating Google credential from token');
             const credential = firebase.auth.GoogleAuthProvider.credential(token);
+            console.log('[Auth] Calling auth.signInWithCredential');
             auth.signInWithCredential(credential)
                 .then((result) => {
+                    console.log('[Auth] signInWithCredential succeeded, user:', result.user.email);
                     if (studentCapMsg) studentCapMsg.innerHTML = '<span style="color: #10b981;">✅ Signed in successfully!</span>';
                     setTimeout(() => {
                         if (studentCapModal) studentCapModal.classList.remove('active');
                         // Update student auth UI with logged-in user
                         if (typeof updateStudentAuthUI === 'function') {
+                            console.log('[Auth] Calling updateStudentAuthUI');
                             updateStudentAuthUI(result.user);
                         }
                     }, 1000);
                 })
                 .catch((error) => {
-                    console.error("Student token sign-in error:", error);
+                    console.error("[Auth] Student token sign-in error:", error);
+                    console.error("[Auth] Error code:", error.code);
+                    console.error("[Auth] Error message:", error.message);
                     if (studentCapMsg) studentCapMsg.innerHTML = '<span style="color: #ef4444;">❌ Invalid or expired login code. Please try again.</span>';
                 });
         } catch (e) {
-            console.error("Student credential parse error:", e);
+            console.error("[Auth] Student credential parse error:", e);
             if (studentCapMsg) studentCapMsg.innerHTML = '<span style="color: #ef4444;">❌ Error parsing code.</span>';
         }
         return;
     }
 
+    console.log('[Auth] Using CR/default flow');
     // CR / default flow: use the standard capacitor login modal
     const msgDiv = document.getElementById('capacitor-login-message') || document.getElementById('login-message');
     if (msgDiv) msgDiv.innerHTML = '<span style="color: var(--text-color);">🔄 Authenticating from browser...</span>';
@@ -649,19 +664,26 @@ if (window.Capacitor) {
         };
 
         if (window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+            console.log('[Auth] Capacitor App plugin available, setting up deep link listeners');
             // Listen to resume events with deep link URL
             window.Capacitor.Plugins.App.addListener('appUrlOpen', (data) => {
-                console.log('App opened with URL:', data.url);
+                console.log('[Auth] appUrlOpen event fired, URL:', data.url);
                 checkDeepLink(data.url);
             });
 
             // Check if app was initially launched with a deep link
             window.Capacitor.Plugins.App.getLaunchUrl().then((launchUrl) => {
                 if (launchUrl && launchUrl.url) {
-                    console.log('App launched with URL:', launchUrl.url);
+                    console.log('[Auth] getLaunchUrl returned, URL:', launchUrl.url);
                     checkDeepLink(launchUrl.url);
+                } else {
+                    console.log('[Auth] getLaunchUrl returned no URL');
                 }
+            }).catch(err => {
+                console.error('[Auth] getLaunchUrl error:', err);
             });
+        } else {
+            console.error('[Auth] Capacitor App plugin not available');
         }
     });
 }

@@ -355,8 +355,10 @@
 
         // ✅ Student flow: write uid and idToken to Firebase session — app listener picks it up automatically
         function handleStudentFlow(user) {
+            console.log('[Login-App] handleStudentFlow called');
             const msgDiv = document.getElementById('message');
             const sk = urlParams.get('sk');
+            console.log('[Login-App] Session key from URL:', sk);
 
             document.getElementById('connecting-state').style.display = 'none';
             document.getElementById('login-section').style.display = 'none';
@@ -366,36 +368,44 @@
             msgDiv.className = '';
 
             if (sk) {
+                console.log('[Login-App] Session key present, calling getIdToken');
                 // Get idToken and write to Firebase — app listener will auto-login
                 user.getIdToken().then((idToken) => {
+                    console.log('[Login-App] getIdToken succeeded, idToken length:', idToken.length);
                     const db = firebase.database();
-                    console.log('[Login-App] Writing student session to Firebase with idToken');
-                    db.ref('student_auth_sessions/' + sk).set({
+                    const sessionData = {
                         uid: user.uid,
                         idToken: idToken,
                         ts: Date.now()
-                    }).then(() => {
+                    };
+                    console.log('[Login-App] Writing to Firebase: student_auth_sessions/' + sk, { uid: user.uid, hasIdToken: !!idToken, ts: sessionData.ts });
+                    db.ref('student_auth_sessions/' + sk).set(sessionData).then(() => {
+                        console.log('[Login-App] Firebase write succeeded');
                         // Session written — app listener will pick it up automatically
                         document.getElementById('token-display').textContent = '✅ Signed in as: ' + user.displayName + ' (Please return to the ATTENDIFY app.)';
                         // Deep link redirect to bring the app back to foreground
+                        console.log('[Login-App] Triggering deep link: attendify://login?flow=student');
                         setTimeout(() => {
                             window.location.href = "attendify://login?flow=student";
                         }, 500);
                     }).catch((err) => {
                         console.error('[Login-App] Session write error:', err);
+                        console.error('[Login-App] Error code:', err.code);
+                        console.error('[Login-App] Error message:', err.message);
                         document.getElementById('token-section').style.display = 'none';
                         const messageEl = document.getElementById('message');
-                        messageEl.textContent = '❌ Session error. Please close this page and try again.';
+                        messageEl.textContent = '❌ Session error: ' + err.message;
                         messageEl.className = 'error';
                     });
                 }).catch((err) => {
                     console.error('[Login-App] Failed to get idToken:', err);
                     document.getElementById('token-section').style.display = 'none';
                     const messageEl = document.getElementById('message');
-                    messageEl.textContent = '❌ Token error. Please try again.';
+                    messageEl.textContent = '❌ Token error: ' + err.message;
                     messageEl.className = 'error';
                 });
             } else {
+                console.error('[Login-App] No session key found in URL');
                 // No session key — show error, cannot proceed without sk
                 document.getElementById('token-section').style.display = 'none';
                 const messageEl = document.getElementById('message');
