@@ -1387,7 +1387,7 @@
 
     <!-- Core Logic Scripts -->
     <script src="assets/js/firebase-config.js?v=5"></script>
-    <script src="assets/js/auth.js?v=10"></script>
+    <script src="assets/js/auth.js?v=11"></script>
     <script src="assets/js/ui.js?v=19"></script>
     <script src="assets/js/history.js?v=10"></script>
     <script src="assets/js/export.js?v=11"></script>
@@ -1471,6 +1471,8 @@
 
         function handleStudentLink(code) {
             activeStudentCode = code;
+            sessionStorage.setItem('attendify_student_code', code);
+            sessionStorage.setItem('attendify_student_login_origin', 'index');
             const parts = code.split('_');
             if (parts.length >= 3) {
                 const subject = parts.slice(2).join('_');
@@ -1502,8 +1504,11 @@
 
         // --- Capacitor student login bridge ---
         function openStudentCapacitorLoginFlow() {
+            persistStudentLoginContext();
+            sessionStorage.setItem('attendify_student_login_origin', 'index');
             startCapacitorGoogleLogin({
                 studentFlow: true,
+                studentOrigin: 'index',
                 messageElId: 'student-cap-message',
                 openModal: () => {
                     const modal = document.getElementById('student-capacitor-login-modal');
@@ -1600,8 +1605,11 @@
                 document.getElementById('student-google-name').textContent = user.displayName || 'Google Student';
                 document.getElementById('student-google-email').textContent = user.email;
 
-                const code = activeStudentCode || new URLSearchParams(window.location.search).get('code');
+                const code = activeStudentCode
+                    || sessionStorage.getItem('attendify_student_code')
+                    || new URLSearchParams(window.location.search).get('code');
                 if (!code) return;
+                if (!activeStudentCode) activeStudentCode = code;
                 const parts = code.split('_');
                 const classId = parts[0];
 

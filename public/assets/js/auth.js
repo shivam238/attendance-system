@@ -23,7 +23,10 @@ function startCapacitorGoogleLogin(options) {
         options.openModal();
     }
 
-    openBrowserLoginPage({ studentFlow: !!options.studentFlow });
+    openBrowserLoginPage({
+        studentFlow: !!options.studentFlow,
+        studentOrigin: options.studentOrigin || (isTrackStudentPortalPage() ? 'track' : 'index')
+    });
 
     const msgDiv = options.messageEl
         || document.getElementById(options.messageElId || 'capacitor-login-message');
@@ -112,6 +115,7 @@ function openBrowserLoginPage(options) {
     let url = 'https://' + domain + '/login-app.html';
     if (options.studentFlow) {
         url += '?flow=student';
+        sessionStorage.setItem('attendify_student_login_origin', options.studentOrigin || 'index');
     }
     console.log('[Auth] Opening browser with URL:', url);
     window.open(url, '_system');
@@ -541,6 +545,64 @@ function linkGoogleAccount() {
 // Track the last processed token to prevent loop/replay of old launch URLs in Capacitor
 let lastProcessedToken = null;
 
+function isTrackStudentPortalPage() {
+    return /track\.html$/i.test(window.location.pathname);
+}
+
+function persistStudentLoginContext() {
+    if (typeof activeStudentCode !== 'undefined' && activeStudentCode) {
+        sessionStorage.setItem('attendify_student_code', activeStudentCode);
+    } else {
+        const codeFromUrl = new URLSearchParams(window.location.search).get('code');
+        if (codeFromUrl) {
+            sessionStorage.setItem('attendify_student_code', codeFromUrl);
+        }
+    }
+}
+
+function restoreStudentLoginContext() {
+    if (typeof activeStudentCode !== 'undefined' && !activeStudentCode) {
+        const storedCode = sessionStorage.getItem('attendify_student_code');
+        if (storedCode) {
+            activeStudentCode = storedCode;
+        }
+    }
+    return sessionStorage.getItem('attendify_student_code')
+        || (typeof activeStudentCode !== 'undefined' ? activeStudentCode : null)
+        || new URLSearchParams(window.location.search).get('code');
+}
+
+function clearStudentLoginSessionFlags() {
+    sessionStorage.removeItem('attendify_student_login_origin');
+    sessionStorage.removeItem('attendify_student_code');
+}
+
+function finishTrackStudentLogin(user) {
+    window._trackLoginPending = false;
+    if (typeof autoCompleteStudentGoogleLogin === 'function') {
+        autoCompleteStudentGoogleLogin(user.uid);
+        return true;
+    }
+    sessionStorage.setItem('attendify_track_login_resume', user.uid);
+    if (!isTrackStudentPortalPage()) {
+        window.location.href = 'track.html';
+    }
+    return false;
+}
+
+function finishIndexStudentLogin(user) {
+    restoreStudentLoginContext();
+    const studentModal = document.getElementById('student-modal');
+    const studentCapModal = document.getElementById('student-capacitor-login-modal');
+    if (studentCapModal) studentCapModal.classList.add('active');
+    if (studentModal && sessionStorage.getItem('attendify_student_code')) {
+        studentModal.classList.add('active');
+    }
+    if (typeof updateStudentAuthUI === 'function') {
+        updateStudentAuthUI(user);
+    }
+}
+
 // Google OAuth ID token from deep link → signInWithCredential
 function loginWithToken(googleOAuthIdToken, options) {
     options = options || {};
@@ -560,6 +622,9 @@ function loginWithToken(googleOAuthIdToken, options) {
         pendingAuthTimeoutId = null;
     }
 
+    const studentOrigin = options.studentOrigin
+        || sessionStorage.getItem('attendify_student_login_origin')
+        || (isTrackStudentPortalPage() ? 'track' : 'index');
     const isStudentFlow = !!options.studentFlow;
 
     const onSuccess = function (result, msgDiv, onDone) {
@@ -577,13 +642,26 @@ function loginWithToken(googleOAuthIdToken, options) {
 
     if (isStudentFlow) {
         const studentCapModal = document.getElementById('student-capacitor-login-modal');
-        const studentCapMsg = document.getElementById('student-cap-message');
-        if (studentCapMsg) studentCapMsg.innerHTML = '<span style="color: var(--text-color);">🔄 Authenticating from browser...</span>';
+        const studentCapMsg = document.getElementById('student-cap-message')
+            || document.getElementById('portal-auth-message');
+        if (studentCapModal) studentCapModal.classList.add('active');
+        if (studentCapMsg) {
+            studentCapMsg.innerHTML = '<span style="color: var(--text-color);">🔄 Authenticating from browser...</span>';
+        }
+
+        const useTrackFlow = studentOrigin === 'track' || isTrackStudentPortalPage();
         signInWithGoogleOAuthCredential(googleOAuthIdToken)
-            .then(function (result) { onSuccess(result, studentCapMsg, function () {
-                if (studentCapModal) studentCapModal.classList.remove('active');
-                if (typeof updateStudentAuthUI === 'function') updateStudentAuthUI(result.user);
-            }); })
+            .then(function (result) {
+                onSuccess(result, studentCapMsg, function () {
+                    if (studentCapModal) studentCapModal.classList.remove('active');
+                    if (useTrackFlow) {
+                        finishTrackStudentLogin(result.user);
+                    } else {
+                        finishIndexStudentLogin(result.user);
+                    }
+                    clearStudentLoginSessionFlags();
+                });
+            })
             .catch(function (error) { onError(error, studentCapMsg); });
         return;
     }
@@ -601,7 +679,12 @@ function handleLoginDeepLink(urlObj) {
     if (token) {
         console.log('[Auth] Received deep-link token:', token.substring(0, 80));
         const studentFlow = urlObj.searchParams.get('flow') === 'student';
-        loginWithToken(token, { studentFlow: studentFlow });
+        loginWithToken(token, {
+            studentFlow: studentFlow,
+            studentOrigin: studentFlow
+                ? (sessionStorage.getItem('attendify_student_login_origin') || (isTrackStudentPortalPage() ? 'track' : 'index'))
+                : null
+        });
     }
 }
 
