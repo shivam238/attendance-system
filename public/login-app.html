@@ -353,7 +353,7 @@
             });
         }
 
-        // ✅ Student flow: write uid to Firebase session — track.html listener picks it up automatically
+        // ✅ Student flow: write uid and idToken to Firebase session — app listener picks it up automatically
         function handleStudentFlow(user) {
             const msgDiv = document.getElementById('message');
             const sk = urlParams.get('sk');
@@ -366,23 +366,33 @@
             msgDiv.className = '';
 
             if (sk) {
-                // Write uid to Firebase — track.html Firebase listener will auto-login immediately
-                const db = firebase.database();
-                db.ref('student_auth_sessions/' + sk).set({
-                    uid: user.uid,
-                    ts: Date.now()
-                }).then(() => {
-                    // Session written — app listener will pick it up automatically
-                    document.getElementById('token-display').textContent = '✅ Signed in as: ' + user.displayName + ' (Please return to the ATTENDIFY app.)';
-                    // Deep link redirect to bring the app back to foreground
-                    setTimeout(() => {
-                        window.location.href = "attendify://login?flow=student";
-                    }, 500);
+                // Get idToken and write to Firebase — app listener will auto-login
+                user.getIdToken().then((idToken) => {
+                    const db = firebase.database();
+                    console.log('[Login-App] Writing student session to Firebase with idToken');
+                    db.ref('student_auth_sessions/' + sk).set({
+                        uid: user.uid,
+                        idToken: idToken,
+                        ts: Date.now()
+                    }).then(() => {
+                        // Session written — app listener will pick it up automatically
+                        document.getElementById('token-display').textContent = '✅ Signed in as: ' + user.displayName + ' (Please return to the ATTENDIFY app.)';
+                        // Deep link redirect to bring the app back to foreground
+                        setTimeout(() => {
+                            window.location.href = "attendify://login?flow=student";
+                        }, 500);
+                    }).catch((err) => {
+                        console.error('[Login-App] Session write error:', err);
+                        document.getElementById('token-section').style.display = 'none';
+                        const messageEl = document.getElementById('message');
+                        messageEl.textContent = '❌ Session error. Please close this page and try again.';
+                        messageEl.className = 'error';
+                    });
                 }).catch((err) => {
-                    console.error('Session write error:', err);
+                    console.error('[Login-App] Failed to get idToken:', err);
                     document.getElementById('token-section').style.display = 'none';
                     const messageEl = document.getElementById('message');
-                    messageEl.textContent = '❌ Session error. Please close this page and try again.';
+                    messageEl.textContent = '❌ Token error. Please try again.';
                     messageEl.className = 'error';
                 });
             } else {

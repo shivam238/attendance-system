@@ -4,9 +4,11 @@ function signInWithGoogle() {
     if (window.Capacitor) {
         // Generate secure session key
         const sk = 'sk_cr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        console.log('[Auth] Generated session key:', sk);
         
         // Store session key for deep link callback
         localStorage.setItem('pending_auth_sk', sk);
+        console.log('[Auth] Session key stored in localStorage');
         
         openCapacitorLoginModal();
         openBrowserLoginPage(sk);
@@ -15,29 +17,32 @@ function signInWithGoogle() {
         if (msgDiv) msgDiv.innerHTML = '<span style="color: var(--text-color);">🔄 Waiting for Google Sign-In...</span>';
 
         // Listen for session completion
+        console.log('[Auth] Setting up Firebase listener for session:', sk);
         let sessionListenerRef = db.ref('student_auth_sessions/' + sk);
         const onSession = sessionListenerRef.on('value', (snap) => {
             console.log('[Auth] Session listener triggered, exists:', snap.exists());
             if (snap.exists()) {
                 const data = snap.val();
-                console.log('[Auth] Session data received, has idToken:', !!data.idToken);
+                console.log('[Auth] Session data received:', { hasUid: !!data.uid, hasIdToken: !!data.idToken, ts: data.ts });
                 sessionListenerRef.off('value', onSession);
                 sessionListenerRef.remove().catch(err => console.error('[Auth] Session removal error:', err));
                 localStorage.removeItem('pending_auth_sk');
+                console.log('[Auth] Cleanup completed');
                 
                 if (data.idToken) {
-                    console.log('[Auth] Calling loginWithToken');
+                    console.log('[Auth] Calling loginWithToken with idToken');
                     loginWithToken(data.idToken);
                 } else {
-                    console.error('[Auth] Session exists but no idToken found');
-                    if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Authentication error: No token received</span>';
+                    console.error('[Auth] Session exists but no idToken found - this is a bug');
+                    if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Authentication error: No token received from server</span>';
+                    closeCapacitorLoginModal();
                 }
             }
         });
 
         // 5-minute timeout cleanup
         setTimeout(() => {
-            console.log('[Auth] Session listener timeout reached');
+            console.log('[Auth] Session listener timeout reached after 5 minutes');
             sessionListenerRef.off('value', onSession);
             localStorage.removeItem('pending_auth_sk');
             if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Sign-in timed out. Please try again.</span>';
