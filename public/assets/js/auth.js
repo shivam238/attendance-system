@@ -5,6 +5,9 @@ function signInWithGoogle() {
         // Generate secure session key
         const sk = 'sk_cr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         
+        // Store session key for deep link callback
+        localStorage.setItem('pending_auth_sk', sk);
+        
         openCapacitorLoginModal();
         openBrowserLoginPage(sk);
 
@@ -28,6 +31,7 @@ function signInWithGoogle() {
         // 5-minute timeout cleanup
         setTimeout(() => {
             sessionListenerRef.off('value', onSession);
+            localStorage.removeItem('pending_auth_sk');
         }, 5 * 60 * 1000);
 
         return;
@@ -600,10 +604,11 @@ if (window.Capacitor) {
             try {
                 if (url && url.includes('attendify://')) {
                     const urlObj = new URL(url.replace('attendify://', 'https://dummy-domain/'));
-                    const token = urlObj.searchParams.get('token');
                     const role = urlObj.searchParams.get('role');
 
                     if (url.includes('classroom') || role) {
+                        // Classroom auth flow - still uses token for now (separate system)
+                        const token = urlObj.searchParams.get('token');
                         if (token && role === 'teacher') {
                             if (typeof saveClassroomToken === 'function') {
                                 saveClassroomToken(token);
@@ -618,8 +623,47 @@ if (window.Capacitor) {
                             }
                         }
                     } else {
-                        if (token) {
-                            loginWithToken(token);
+                        // Main login flow - use Firebase session relay instead of URL token
+                        const sk = localStorage.getItem('pending_auth_sk');
+                        if (sk) {
+                            // Fetch session from Firebase
+                            const sessionRef = db.ref('student_auth_sessions/' + sk);
+                            sessionRef.once('value').then((snap) => {
+                                if (snap.exists()) {
+                                    const data = snap.val();
+                                    const now = Date.now();
+                                    const sessionAge = now - (data.ts || 0);
+                                    
+                                    // Validate session (5 minute expiry)
+                                    if (sessionAge < 5 * 60 * 1000 && data.idToken) {
+                                        // Session valid - complete authentication
+                                        sessionRef.remove(); // Delete immediately (single-use)
+                                        localStorage.removeItem('pending_auth_sk'); // Clean up local storage
+                                        loginWithToken(data.idToken);
+                                    } else {
+                                        // Session expired
+                                        sessionRef.remove();
+                                        localStorage.removeItem('pending_auth_sk');
+                                        const msgDiv = document.getElementById('capacitor-login-message');
+                                        if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Login expired. Please try again.</span>';
+                                        closeCapacitorLoginModal();
+                                    }
+                                } else {
+                                    // Session not found - may still be in browser
+                                    console.log('Session not yet available in Firebase, waiting...');
+                                    localStorage.removeItem('pending_auth_sk');
+                                    const msgDiv = document.getElementById('capacitor-login-message');
+                                    if (msgDiv) msgDiv.innerHTML = '<span style="color: var(--text-color);">🔄 Completing sign-in...</span>';
+                                }
+                            }).catch((err) => {
+                                console.error('Session fetch error:', err);
+                                localStorage.removeItem('pending_auth_sk');
+                                const msgDiv = document.getElementById('capacitor-login-message');
+                                if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Login error. Please try again.</span>';
+                                closeCapacitorLoginModal();
+                            });
+                        } else {
+                            console.log('No pending session key found');
                         }
                     }
                 }
