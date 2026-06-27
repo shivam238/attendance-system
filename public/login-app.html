@@ -313,21 +313,12 @@
             window.history.replaceState({}, document.title, window.location.pathname);
         }
 
-        // Session relay: Google OAuth idToken written to RTDB — never passed in deep link URL
         function resolveGoogleOAuthIdToken(result) {
-            let credential = firebase.auth.GoogleAuthProvider.credentialFromResult(result);
-            let source = 'credentialFromResult';
-
+            var credential = firebase.auth.GoogleAuthProvider.credentialFromResult(result);
             if ((!credential || !credential.idToken) && result.credential && result.credential.idToken) {
                 credential = firebase.auth.GoogleAuthProvider.credential(result.credential.idToken);
-                source = 'result.credential';
             }
-
-            return {
-                idToken: credential && credential.idToken ? credential.idToken : null,
-                source: source,
-                credential: credential
-            };
+            return credential && credential.idToken ? credential.idToken : null;
         }
 
         function showFatalAuthError(message) {
@@ -335,74 +326,48 @@
             document.getElementById('connecting-state').style.display = 'none';
             document.getElementById('login-section').style.display = 'block';
             document.getElementById('token-section').style.display = 'none';
-            const messageEl = document.getElementById('message');
+            var messageEl = document.getElementById('message');
             messageEl.textContent = '❌ ' + message;
             messageEl.className = 'error';
         }
 
-        function writeSessionAndReturnToApp(user, googleOAuthIdToken, sk, studentFlow) {
-            const db = firebase.database();
-            const sessionData = {
-                uid: user.uid,
-                idToken: googleOAuthIdToken,
-                createdAt: Date.now(),
-                used: false
-            };
-
-            console.log('[Login-App] Writing session relay to student_auth_sessions/' + sk);
-            console.log('[Login-App] Google OAuth ID Token present:', !!googleOAuthIdToken);
-
-            return db.ref('student_auth_sessions/' + sk).set(sessionData).then(function () {
-                let deepLink = 'attendify://login?session=' + encodeURIComponent(sk);
-                if (studentFlow) {
-                    deepLink += '&flow=student';
-                }
-                console.log('[Login-App] Deep link (session key only):', deepLink);
-                document.getElementById('token-display').textContent =
-                    '✅ Signed in as: ' + (user.displayName || 'user') + ' (Please return to the ATTENDIFY app.)';
-                setTimeout(() => {
-                    window.location.href = deepLink;
-                }, 500);
-            });
+        function redirectToAppWithToken(googleOAuthIdToken, studentFlow) {
+            var deepLink = 'attendify://login?token=' + encodeURIComponent(googleOAuthIdToken);
+            if (studentFlow) {
+                deepLink += '&flow=student';
+            }
+            console.log('[Login-App] Deep link token prefix:', googleOAuthIdToken.substring(0, 80));
+            setTimeout(function () {
+                window.location.href = deepLink;
+            }, 500);
         }
 
         function signInWithGoogle() {
             if (signingIn) return;
             signingIn = true;
 
-            const msgDiv = document.getElementById('message');
-            const sk = urlParams.get('sk');
-
-            if (!sk) {
-                showFatalAuthError('Invalid session link. Please reopen from the ATTENDIFY app.');
-                return;
-            }
-
+            var msgDiv = document.getElementById('message');
             document.getElementById('connecting-state').style.display = 'block';
             document.getElementById('login-section').style.display = 'none';
             msgDiv.textContent = '';
             msgDiv.className = '';
 
-            const provider = new firebase.auth.GoogleAuthProvider();
+            var provider = new firebase.auth.GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
 
-            auth.signInWithPopup(provider).then((result) => {
-                const resolved = resolveGoogleOAuthIdToken(result);
+            auth.signInWithPopup(provider).then(function (result) {
+                var credential = firebase.auth.GoogleAuthProvider.credentialFromResult(result);
+                console.log('Credential:', credential);
+                console.log('Google OAuth ID Token:', credential ? credential.idToken : null);
 
-                console.log('[Login-App] Credential source:', resolved.source);
-                console.log('Credential:', resolved.credential);
-                console.log('Google OAuth ID Token:', resolved.idToken);
-
-                if (!resolved.idToken) {
-                    console.error('[Login-App] FATAL: Google OAuth ID Token is null — check Firebase Google provider & OAuth client config');
-                    throw new Error(
-                        'Google OAuth ID Token missing. Verify Firebase Google sign-in and OAuth client configuration, then try again.'
-                    );
+                var googleOAuthIdToken = resolveGoogleOAuthIdToken(result);
+                if (!googleOAuthIdToken) {
+                    throw new Error('Google OAuth ID Token missing.');
                 }
 
-                console.log('[Login-App] ✔ Google OAuth ID Token present, length:', resolved.idToken.length);
+                console.log('[Login-App] ✔ Google OAuth ID Token present, length:', googleOAuthIdToken.length);
 
-                const user = result.user;
+                var user = result.user;
                 document.getElementById('connecting-state').style.display = 'none';
                 document.getElementById('login-section').style.display = 'none';
                 document.getElementById('token-section').style.display = 'block';
@@ -411,9 +376,9 @@
                 msgDiv.textContent = '';
                 msgDiv.className = '';
 
-                return writeSessionAndReturnToApp(user, resolved.idToken, sk, isStudentFlow);
-            }).catch((error) => {
-                console.error('Sign-in error:', error);
+                redirectToAppWithToken(googleOAuthIdToken, isStudentFlow);
+            }).catch(function (error) {
+                console.error('[Login-App] Sign-in error:', error);
                 showFatalAuthError('Sign-in failed: ' + error.message);
             });
         }

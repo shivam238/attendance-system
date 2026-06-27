@@ -1279,6 +1279,35 @@
             });
         }
 
+        let lastProcessedTrackLoginToken = null;
+
+        function completeTrackCapacitorGoogleLogin(googleOAuthIdToken) {
+            if (!googleOAuthIdToken || googleOAuthIdToken === lastProcessedTrackLoginToken) {
+                return;
+            }
+            lastProcessedTrackLoginToken = googleOAuthIdToken;
+
+            const msgDiv = document.getElementById('portal-auth-message');
+            if (msgDiv) {
+                msgDiv.innerHTML = '<div class="message info" style="margin:0; padding:10px; color:var(--text-color); background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.3); border-radius:8px;">🔄 Authenticating from browser...</div>';
+            }
+
+            const credential = firebase.auth.GoogleAuthProvider.credential(googleOAuthIdToken);
+            const signInPromise = (auth.currentUser && auth.currentUser.isAnonymous)
+                ? auth.signOut().then(function () { return auth.signInWithCredential(credential); })
+                : auth.signInWithCredential(credential);
+
+            signInPromise.then(function (result) {
+                window._trackLoginPending = false;
+                autoCompleteStudentGoogleLogin(result.user.uid);
+            }).catch(function (err) {
+                console.error('[Track] signInWithCredential failed:', err);
+                if (msgDiv) {
+                    msgDiv.innerHTML = '<div class="message error" style="margin:0; padding:10px; color:#ef4444;">❌ Sign-in failed. Please try again.</div>';
+                }
+            });
+        }
+
         function checkStudentDeepLink(url) {
             try {
                 if (url && url.includes('attendify://')) {
@@ -1286,9 +1315,13 @@
                     const path = urlObj.hostname; // 'student-login', 'login', 'classroom'
                     const token = urlObj.searchParams.get('token') || urlObj.searchParams.get('classroom_token');
                     const role = urlObj.searchParams.get('role');
-                    const uid = urlObj.searchParams.get('uid');
+                    const flow = urlObj.searchParams.get('flow');
 
-
+                    if (path === 'login' && token && flow === 'student') {
+                        console.log('[Track] Received student login deep-link token');
+                        completeTrackCapacitorGoogleLogin(token);
+                        return;
+                    }
 
                     // Classroom token for student (Google Classroom integration)
                     if (token && role === 'student') {
@@ -1719,42 +1752,21 @@
         function loginWithGoogle() {
             const msgDiv = document.getElementById('portal-auth-message');
             
-            // In Capacitor (Android app) — use Firebase session relay (no deep links needed)
+            // In Capacitor (Android app) — browser Google login → deep link with OAuth id token
             if (window.Capacitor) {
-                // 1. Generate unique session key
-                const sk = 'sk_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                window._studentLoginSK = sk;
+                msgDiv.innerHTML = '<div class="message info" style="margin:0; padding:10px; color:var(--text-color); background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.3); border-radius:8px;">⚡ Opening Google Sign-In in browser...<br><small style="opacity:0.7;">Sign in there and you\'ll return here automatically.</small></div>';
 
-                msgDiv.innerHTML = '<div class="message info" style="margin:0; padding:10px; color:var(--text-color); background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.3); border-radius:8px;">⚡ Opening Google Sign-In in browser...<br><small style="opacity:0.7;">Sign in there and you\'ll be logged in here automatically.</small></div>';
-
-                // 2. Set up Firebase listener BEFORE opening browser
-                let sessionListenerRef = db.ref('student_auth_sessions/' + sk);
-                const onSession = sessionListenerRef.on('value', (snap) => {
-                    if (snap.exists()) {
-                        const data = snap.val();
-                        // Clean up listener and session
-                        sessionListenerRef.off('value', onSession);
-                        sessionListenerRef.remove();
-                        window._studentLoginSK = null;
-                        // Auto-login!
-                        autoCompleteStudentGoogleLogin(data.uid);
-                    }
-                });
-
-                // 3. Auto-cleanup listener after 5 minutes
-                setTimeout(() => {
-                    if (window._studentLoginSK === sk) {
-                        sessionListenerRef.off('value', onSession);
-                        window._studentLoginSK = null;
-                        msgDiv.innerHTML = '<div class="message error" style="margin:0; padding:10px; color:#ef4444;">⌛ Sign-in timed out. Please try again.</div>';
-                    }
-                }, 5 * 60 * 1000);
-
-                // 4. Open browser with session key
+                window._trackLoginPending = true;
                 const domain = (typeof firebaseConfig !== 'undefined' && firebaseConfig.authDomain) 
                     ? firebaseConfig.authDomain 
                     : 'firstfile-c763521e.firebaseapp.com';
-                window.open(`https://${domain}/login-app.html?flow=student&sk=${sk}`, '_system');
+                window.open('https://' + domain + '/login-app.html?flow=student', '_system');
+
+                setTimeout(function () {
+                    if (window._trackLoginPending && msgDiv) {
+                        msgDiv.innerHTML = '<div class="message error" style="margin:0; padding:10px; color:#ef4444;">⌛ Sign-in timed out. Please try again.</div>';
+                    }
+                }, 5 * 60 * 1000);
                 return;
             }
             
@@ -1814,8 +1826,8 @@
 
             msgDiv.innerHTML = '<div class="message info" style="margin: 0; padding: 10px;">🔄 Authenticating...</div>';
 
-            const doSignIn = () => {
-                const credential = firebase.auth.GoogleAuthProvider.credential(token);
+            const doSignIn = function () {
+                var credential = firebase.auth.GoogleAuthProvider.credential(token);
                 return auth.signInWithCredential(credential);
             };
 

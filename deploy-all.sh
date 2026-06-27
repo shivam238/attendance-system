@@ -63,13 +63,17 @@ else
     echo -e "${YELLOW}⚠ No Android device detected via ADB. Skipping local installation.${NC}"
 fi
 
-# 8. Deploy to Firebase Hosting and Database Rules
-echo -e "\n${BLUE}[7/9] Deploying to Firebase (Hosting & Database Rules)...${NC}"
-firebase deploy --only hosting,database
+# 8. Deploy to Firebase (Hosting, Database Rules & Cloud Functions)
+echo -e "\n${BLUE}[7/10] Installing Cloud Functions dependencies...${NC}"
+(cd functions && npm install)
+echo -e "${GREEN}✔ Cloud Functions dependencies installed.${NC}"
+
+echo -e "\n${BLUE}[8/10] Deploying to Firebase (Hosting, Database Rules & Functions)...${NC}"
+firebase deploy --only hosting,database,functions
 echo -e "${GREEN}✔ Firebase deployment completed.${NC}"
 
 # 9. Deploy Cloudflare Worker
-echo -e "\n${BLUE}[8/9] Deploying Cloudflare Worker for AI Chatbot...${NC}"
+echo -e "\n${BLUE}[9/10] Deploying Cloudflare Worker for AI Chatbot...${NC}"
 cd attendify-support-worker
 npx wrangler deploy
 cd ..
