@@ -769,7 +769,7 @@
                 </p>
                 <div id="student-cap-message" style="margin-bottom: 20px; font-size: 13px; font-weight: 600; min-height: 18px;"></div>
 
-                <button class="btn btn-secondary" onclick="window.open('https://firstfile-c763521e.firebaseapp.com/login-app.html', '_system')" style="width: 100%; height: 44px; border-radius: 12px; font-size: 14px; font-weight: 600; margin-bottom: 16px; background: rgba(99, 102, 241, 0.08); color: #818cf8; border: 1.5px solid rgba(99, 102, 241, 0.15);">
+                <button class="btn btn-secondary" onclick="openBrowserLoginPage()" style="width: 100%; height: 44px; border-radius: 12px; font-size: 14px; font-weight: 600; margin-bottom: 16px; background: rgba(99, 102, 241, 0.08); color: #818cf8; border: 1.5px solid rgba(99, 102, 241, 0.15);">
                     🌐 Reopen Browser Page
                 </button>
 
@@ -1517,7 +1517,10 @@
                 if (tokenInput) tokenInput.value = '';
             }
             // Open the login page in external system browser
-            window.open('https://firstfile-c763521e.firebaseapp.com/login-app.html', '_system');
+            const domain = (typeof firebaseConfig !== 'undefined' && firebaseConfig.authDomain) 
+                ? firebaseConfig.authDomain 
+                : 'firstfile-c763521e.firebaseapp.com';
+            window.open(`https://${domain}/login-app.html`, '_system');
         }
 
         function closeStudentCapacitorLoginModal() {
@@ -1837,7 +1840,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
                 return;
             }
 
-            if (user) {
+            if (user && !user.isAnonymous) {
                 isFirstAuthCheck = false;
                 // Check for cached profile to show app instantly
                 const cachedProfile = localStorage.getItem('user_profile_' + user.uid);
@@ -1861,7 +1864,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
                     // On initial load, wait a moment to see if Firebase recovers the session
                     // This prevents the "Login Screen Flash"
                     setTimeout(() => {
-                        if (!auth.currentUser) {
+                        if (!auth.currentUser || auth.currentUser.isAnonymous) {
                             currentUser = null;
                             showScreen('login-screen');
                             hideLoadingScreen();
@@ -2044,7 +2047,10 @@ Convert the student list from the attached file/image, or the text enclosed in t
             if (window.Capacitor) {
                 // For mobile app, redirect to hosted classroom-auth.html
                 msgDiv.innerHTML = '<div class="message">🔄 Redirecting to browser for Classroom authorization...</div>';
-                const url = 'https://firstfile-c763521e.firebaseapp.com/classroom-auth.html?role=teacher';
+                const domain = (typeof firebaseConfig !== 'undefined' && firebaseConfig.authDomain) 
+                    ? firebaseConfig.authDomain 
+                    : 'firstfile-c763521e.firebaseapp.com';
+                const url = `https://${domain}/classroom-auth.html?role=teacher`;
                 window.open(url, '_system');
                 return;
             }

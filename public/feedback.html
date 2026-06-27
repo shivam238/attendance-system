@@ -296,7 +296,7 @@
                 rating: selectedRating,
                 category: category,
                 text: text,
-                timestamp: Date.now(),
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
                 userAgent: navigator.userAgent
             };
 

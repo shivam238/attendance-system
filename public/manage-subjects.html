@@ -51,25 +51,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
+    <script src="assets/js/firebase-config.js"></script>
 
     <script>
-        // Inline Config for stability
-        const firebaseConfig = {
-            apiKey: "AIzaSyDN6iWRpxLZuwzQYVX580eTQbZuz2VY-HU",
-            authDomain: "firstfile-c763521e.firebaseapp.com",
-            databaseURL: "https://firstfile-c763521e-default-rtdb.firebaseio.com",
-            projectId: "firstfile-c763521e",
-            storageBucket: "firstfile-c763521e.firebasestorage.app",
-            messagingSenderId: "841328143028",
-            appId: "1:841328143028:web:caebd6835972138e70c5e1"
-        };
-
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-
-        const db = firebase.database();
-        const auth = firebase.auth();
         let currentUserData = null;
 
         function escapeHtml(value) {
@@ -92,7 +76,7 @@
 
         // Auth Listener
         auth.onAuthStateChanged((user) => {
-            if (user) {
+            if (user && !user.isAnonymous) {
                 console.log("Logged in:", user.uid);
                 loadUserSubjects(user.uid);
             } else {

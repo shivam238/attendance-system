@@ -1380,7 +1380,10 @@
             if (window.Capacitor) {
                 // For mobile app, redirect to hosted classroom-auth.html
                 msgDiv.innerHTML = '<div class="message">🔄 Redirecting to browser for Classroom authorization...</div>';
-                const url = 'https://firstfile-c763521e.firebaseapp.com/classroom-auth.html?role=student';
+                const domain = (typeof firebaseConfig !== 'undefined' && firebaseConfig.authDomain) 
+                    ? firebaseConfig.authDomain 
+                    : 'firstfile-c763521e.firebaseapp.com';
+                const url = `https://${domain}/classroom-auth.html?role=student`;
                 window.open(url, '_system');
                 
                 // Show the manual input section
@@ -1748,7 +1751,10 @@
                 }, 5 * 60 * 1000);
 
                 // 4. Open browser with session key
-                window.open('https://firstfile-c763521e.firebaseapp.com/login-app.html?flow=student&sk=' + sk, '_system');
+                const domain = (typeof firebaseConfig !== 'undefined' && firebaseConfig.authDomain) 
+                    ? firebaseConfig.authDomain 
+                    : 'firstfile-c763521e.firebaseapp.com';
+                window.open(`https://${domain}/login-app.html?flow=student&sk=${sk}`, '_system');
                 return;
             }
             

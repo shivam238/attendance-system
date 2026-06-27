@@ -308,6 +308,12 @@
         const urlParams = new URLSearchParams(window.location.search);
         const isStudentFlow = urlParams.get('flow') === 'student';
 
+        // Clean up URL query parameters from the address bar to prevent exposure of session keys
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+
         function signInWithGoogle() {
             if (signingIn) return;
             signingIn = true;
@@ -315,7 +321,8 @@
             const msgDiv = document.getElementById('message');
             document.getElementById('connecting-state').style.display = 'block';
             document.getElementById('login-section').style.display = 'none';
-            msgDiv.innerHTML = '';
+            msgDiv.textContent = '';
+            msgDiv.className = '';
 
             const provider = new firebase.auth.GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
@@ -341,7 +348,8 @@
                 signingIn = false;
                 document.getElementById('connecting-state').style.display = 'none';
                 document.getElementById('login-section').style.display = 'block';
-                msgDiv.innerHTML = '<span class="error">❌ Sign-in failed: ' + error.message + '</span>';
+                msgDiv.textContent = '❌ Sign-in failed: ' + error.message;
+                msgDiv.className = 'error';
             });
         }
 
@@ -354,7 +362,8 @@
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('token-section').style.display = 'block';
             document.getElementById('token-display').textContent = '✅ Signed in as: ' + user.displayName + ' (Sending you back to the app...)';
-            msgDiv.innerHTML = '';
+            msgDiv.textContent = '';
+            msgDiv.className = '';
 
             if (sk) {
                 // Write uid to Firebase — track.html Firebase listener will auto-login immediately
@@ -372,12 +381,16 @@
                 }).catch((err) => {
                     console.error('Session write error:', err);
                     document.getElementById('token-section').style.display = 'none';
-                    document.getElementById('message').innerHTML = '<span class="error">❌ Session error. Please close this page and try again.</span>';
+                    const messageEl = document.getElementById('message');
+                    messageEl.textContent = '❌ Session error. Please close this page and try again.';
+                    messageEl.className = 'error';
                 });
             } else {
                 // No session key — show error, cannot proceed without sk
                 document.getElementById('token-section').style.display = 'none';
-                document.getElementById('message').innerHTML = '<span class="error">❌ Invalid session link. Please reopen from the ATTENDIFY app.</span>';
+                const messageEl = document.getElementById('message');
+                messageEl.textContent = '❌ Invalid session link. Please reopen from the ATTENDIFY app.';
+                messageEl.className = 'error';
             }
         }
 
@@ -392,16 +405,42 @@
 
         function handleSuccessfulLogin(idToken) {
             const msgDiv = document.getElementById('message');
+            const sk = urlParams.get('sk');
+
             document.getElementById('connecting-state').style.display = 'none';
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('token-section').style.display = 'block';
             document.getElementById('token-display').textContent = idToken;
-            msgDiv.innerHTML = '';
+            msgDiv.textContent = '';
+            msgDiv.className = '';
 
-            // Attempt to deep link redirect back to app
-            setTimeout(() => {
-                window.location.href = "attendify://login?token=" + encodeURIComponent(idToken);
-            }, 500);
+            if (sk) {
+                // Secure Session Relay: Write idToken to Firebase for CR/Teacher login
+                const db = firebase.database();
+                db.ref('student_auth_sessions/' + sk).set({
+                    uid: firebase.auth().currentUser.uid,
+                    idToken: idToken,
+                    ts: Date.now()
+                }).then(() => {
+                    document.getElementById('token-display').textContent = '✅ Signed in successfully! (Please return to the ATTENDIFY app.)';
+                    // Attempt to deep link redirect back to app
+                    setTimeout(() => {
+                        window.location.href = "attendify://login";
+                    }, 500);
+                }).catch((err) => {
+                    console.error('Session write error:', err);
+                    document.getElementById('token-section').style.display = 'none';
+                    const messageEl = document.getElementById('message');
+                    messageEl.textContent = '❌ Session error. Please close this page and try again.';
+                    messageEl.className = 'error';
+                });
+            } else {
+                // Fallback: Copy-paste fallback flow if no session key (sk) is provided
+                // Attempt to deep link redirect back to app with token in URL (legacy support)
+                setTimeout(() => {
+                    window.location.href = "attendify://login?token=" + encodeURIComponent(idToken);
+                }, 500);
+            }
         }
 
 

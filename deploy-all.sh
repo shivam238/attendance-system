@@ -79,8 +79,8 @@ echo -e "${GREEN}✔ Cloudflare Worker deployed.${NC}"
 echo -e "\n${BLUE}[9/9] Staging, committing, and pushing changes to GitHub...${NC}"
 git add .
 git commit -m "$COMMIT_MSG"
-git push origin main
-echo -e "${GREEN}✔ Git repository successfully updated & pushed to main branch.${NC}"
+git push origin $(git rev-parse --abbrev-ref HEAD)
+echo -e "${GREEN}✔ Git repository successfully updated & pushed to $(git rev-parse --abbrev-ref HEAD) branch.${NC}"
 
 echo -e "\n${GREEN}===================================================${NC}"
 echo -e "${GREEN}          ALL DEPLOYMENTS COMPLETED SUCCESSFULLY!   ${NC}"

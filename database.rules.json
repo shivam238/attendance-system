@@ -1,14 +1,14 @@
 {
   "rules": {
     "users": {
-      ".read": true,
+      ".read": "auth != null",
       ".indexOn": ["username"],
       "$uid": {
         ".write": "$uid === auth.uid"
       }
     },
     "attendance": {
-      ".read": true,
+      ".read": "auth != null",
       "$session_id": {
         ".write": "auth != null && !newData.exists()",
         ".indexOn": ["rollNo", "timestamp"],
@@ -19,7 +19,7 @@
       }
     },
     "requests": {
-      ".read": true,
+      ".read": "auth != null",
       "$session_id": {
         ".write": "auth != null && !newData.exists()",
         "$request_id": {
@@ -29,14 +29,14 @@
       }
     },
     "qr_sessions": {
-      ".read": true,
+      ".read": "auth != null",
       "$session_id": {
         ".write": "auth != null",
         ".validate": "!newData.exists() || (newData.hasChildren(['generatedAt', 'expiryTime', 'subject', 'username']) && newData.child('generatedAt').isNumber() && newData.child('expiryTime').isNumber() && newData.child('subject').isString() && newData.child('subject').val().length > 0 && newData.child('subject').val().length <= 80 && newData.child('username').isString() && newData.child('username').val().length > 0 && newData.child('username').val().length <= 120)"
       }
     },
     "class_student_links": {
-      ".read": true,
+      ".read": "auth != null",
       "$class_id": {
         "$roll_no": {
           ".write": "auth != null",
@@ -45,7 +45,7 @@
       }
     },
     "google_user_links": {
-      ".read": true,
+      ".read": "auth != null",
       "$google_uid": {
         ".write": "auth != null && auth.uid === $google_uid",
         "$class_id": {
@@ -56,13 +56,13 @@
     "feedbacks": {
       ".read": "auth != null",
       "$feedback_id": {
-        ".write": "true",
-        ".validate": "newData.hasChildren(['rating', 'category', 'text', 'timestamp']) && newData.child('rating').isNumber() && newData.child('category').isString() && newData.child('text').isString() && newData.child('timestamp').isNumber()"
+        ".write": "!data.exists()",
+        ".validate": "newData.hasChildren(['rating', 'category', 'text', 'timestamp']) && newData.child('rating').isNumber() && newData.child('category').isString() && newData.child('text').isString() && newData.child('timestamp').val() === now"
       }
     },
     "student_auth_sessions": {
       "$session_key": {
-        ".read": "true",
+        ".read": "auth != null",
         ".write": "auth != null && !data.exists()",
         ".validate": "!newData.exists() || (newData.hasChildren(['uid', 'ts']) && newData.child('uid').isString() && newData.child('uid').val() === auth.uid && newData.child('ts').isNumber())"
       }

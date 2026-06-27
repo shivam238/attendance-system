@@ -2,8 +2,34 @@
 
 function signInWithGoogle() {
     if (window.Capacitor) {
+        // Generate secure session key
+        const sk = 'sk_cr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        
         openCapacitorLoginModal();
-        openBrowserLoginPage();
+        openBrowserLoginPage(sk);
+
+        const msgDiv = document.getElementById('capacitor-login-message');
+        if (msgDiv) msgDiv.innerHTML = '<span style="color: var(--text-color);">🔄 Waiting for Google Sign-In...</span>';
+
+        // Listen for session completion
+        let sessionListenerRef = db.ref('student_auth_sessions/' + sk);
+        const onSession = sessionListenerRef.on('value', (snap) => {
+            if (snap.exists()) {
+                const data = snap.val();
+                sessionListenerRef.off('value', onSession);
+                sessionListenerRef.remove();
+                
+                if (data.idToken) {
+                    loginWithToken(data.idToken);
+                }
+            }
+        });
+
+        // 5-minute timeout cleanup
+        setTimeout(() => {
+            sessionListenerRef.off('value', onSession);
+        }, 5 * 60 * 1000);
+
         return;
     }
 
@@ -57,8 +83,12 @@ function closeCapacitorLoginModal() {
     if (msgDiv) msgDiv.innerHTML = '';
 }
 
-function openBrowserLoginPage() {
-    const url = 'https://firstfile-c763521e.firebaseapp.com/login-app.html';
+function openBrowserLoginPage(sk = '') {
+    const domain = (typeof firebaseConfig !== 'undefined' && firebaseConfig.authDomain) 
+        ? firebaseConfig.authDomain 
+        : 'firstfile-c763521e.firebaseapp.com';
+    const baseUrl = `https://${domain}/login-app.html`;
+    const url = sk ? `${baseUrl}?sk=${sk}` : baseUrl;
     window.open(url, '_system');
 }
 
