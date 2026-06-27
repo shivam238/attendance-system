@@ -17,21 +17,31 @@ function signInWithGoogle() {
         // Listen for session completion
         let sessionListenerRef = db.ref('student_auth_sessions/' + sk);
         const onSession = sessionListenerRef.on('value', (snap) => {
+            console.log('[Auth] Session listener triggered, exists:', snap.exists());
             if (snap.exists()) {
                 const data = snap.val();
+                console.log('[Auth] Session data received, has idToken:', !!data.idToken);
                 sessionListenerRef.off('value', onSession);
-                sessionListenerRef.remove();
+                sessionListenerRef.remove().catch(err => console.error('[Auth] Session removal error:', err));
+                localStorage.removeItem('pending_auth_sk');
                 
                 if (data.idToken) {
+                    console.log('[Auth] Calling loginWithToken');
                     loginWithToken(data.idToken);
+                } else {
+                    console.error('[Auth] Session exists but no idToken found');
+                    if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Authentication error: No token received</span>';
                 }
             }
         });
 
         // 5-minute timeout cleanup
         setTimeout(() => {
+            console.log('[Auth] Session listener timeout reached');
             sessionListenerRef.off('value', onSession);
             localStorage.removeItem('pending_auth_sk');
+            if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Sign-in timed out. Please try again.</span>';
+            closeCapacitorLoginModal();
         }, 5 * 60 * 1000);
 
         return;
@@ -623,48 +633,9 @@ if (window.Capacitor) {
                             }
                         }
                     } else {
-                        // Main login flow - use Firebase session relay instead of URL token
-                        const sk = localStorage.getItem('pending_auth_sk');
-                        if (sk) {
-                            // Fetch session from Firebase
-                            const sessionRef = db.ref('student_auth_sessions/' + sk);
-                            sessionRef.once('value').then((snap) => {
-                                if (snap.exists()) {
-                                    const data = snap.val();
-                                    const now = Date.now();
-                                    const sessionAge = now - (data.ts || 0);
-                                    
-                                    // Validate session (5 minute expiry)
-                                    if (sessionAge < 5 * 60 * 1000 && data.idToken) {
-                                        // Session valid - complete authentication
-                                        sessionRef.remove(); // Delete immediately (single-use)
-                                        localStorage.removeItem('pending_auth_sk'); // Clean up local storage
-                                        loginWithToken(data.idToken);
-                                    } else {
-                                        // Session expired
-                                        sessionRef.remove();
-                                        localStorage.removeItem('pending_auth_sk');
-                                        const msgDiv = document.getElementById('capacitor-login-message');
-                                        if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Login expired. Please try again.</span>';
-                                        closeCapacitorLoginModal();
-                                    }
-                                } else {
-                                    // Session not found - may still be in browser
-                                    console.log('Session not yet available in Firebase, waiting...');
-                                    localStorage.removeItem('pending_auth_sk');
-                                    const msgDiv = document.getElementById('capacitor-login-message');
-                                    if (msgDiv) msgDiv.innerHTML = '<span style="color: var(--text-color);">🔄 Completing sign-in...</span>';
-                                }
-                            }).catch((err) => {
-                                console.error('Session fetch error:', err);
-                                localStorage.removeItem('pending_auth_sk');
-                                const msgDiv = document.getElementById('capacitor-login-message');
-                                if (msgDiv) msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Login error. Please try again.</span>';
-                                closeCapacitorLoginModal();
-                            });
-                        } else {
-                            console.log('No pending session key found');
-                        }
+                        // Main login flow - Firebase listener handles this automatically
+                        // Deep link just brings app back to foreground, listener does the rest
+                        console.log('[Auth] Deep link received, Firebase listener will handle session');
                     }
                 }
             } catch (e) {
