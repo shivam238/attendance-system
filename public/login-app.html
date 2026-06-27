@@ -410,7 +410,7 @@
             document.getElementById('connecting-state').style.display = 'none';
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('token-section').style.display = 'block';
-            document.getElementById('token-display').textContent = idToken;
+            document.getElementById('token-display').textContent = '✅ Signed in successfully! (Please return to the ATTENDIFY app.)';
             msgDiv.textContent = '';
             msgDiv.className = '';
 
@@ -435,11 +435,11 @@
                     messageEl.className = 'error';
                 });
             } else {
-                // Fallback: Copy-paste fallback flow if no session key (sk) is provided
-                // Attempt to deep link redirect back to app with token in URL (legacy support)
-                setTimeout(() => {
-                    window.location.href = "attendify://login?token=" + encodeURIComponent(idToken);
-                }, 500);
+                // No session key - cannot proceed securely
+                document.getElementById('token-section').style.display = 'none';
+                const messageEl = document.getElementById('message');
+                messageEl.textContent = '❌ Invalid session link. Please reopen from the ATTENDIFY app.';
+                messageEl.className = 'error';
             }
         }
 
