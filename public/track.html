@@ -2207,6 +2207,48 @@
                     Notification.requestPermission();
                 }
             }
+
+            if (window.Capacitor && window.Capacitor.isPluginAvailable('PushNotifications')) {
+                try {
+                    const { PushNotifications } = window.Capacitor.Plugins;
+                    
+                    if (!window.pushListenersInitialized) {
+                        window.pushListenersInitialized = true;
+                        
+                        PushNotifications.addListener('registration', (token) => {
+                            console.log('Push registration success, token:', token.value);
+                            window.lastFCMToken = token.value;
+                            if (currentClassId && currentRollNo) {
+                                db.ref('fcm_tokens/' + currentClassId + '/' + currentRollNo).set(token.value)
+                                    .catch(e => console.error('Failed to save FCM token:', e));
+                            }
+                        });
+
+                        PushNotifications.addListener('registrationError', (error) => {
+                            console.error('Push registration error:', JSON.stringify(error));
+                        });
+
+                        PushNotifications.addListener('pushNotificationReceived', (notification) => {
+                            console.log('Push received:', notification);
+                        });
+                    }
+
+                    let permStatus = await PushNotifications.checkPermissions();
+                    if (permStatus.receive !== 'granted') {
+                        permStatus = await PushNotifications.requestPermissions();
+                    }
+                    if (permStatus.receive === 'granted') {
+                        await PushNotifications.register();
+                    }
+                    
+                    if (window.lastFCMToken && currentClassId && currentRollNo) {
+                        db.ref('fcm_tokens/' + currentClassId + '/' + currentRollNo).set(window.lastFCMToken)
+                            .catch(e => console.error('Failed to save cached FCM token:', e));
+                    }
+                } catch (e) {
+                    console.error('Capacitor PushNotifications registration failed:', e);
+                }
+            }
         }
 
         function checkAttendanceShortageAlerts(classId, rollNo, subjects, subjectStats, threshold) {
@@ -2285,6 +2327,8 @@
             console.log("currentClassId:", currentClassId, "currentRollNo:", currentRollNo);
 
             if (currentClassId && currentRollNo) {
+                db.ref('student_preferences/' + currentClassId + '/' + currentRollNo).update({ threshold: val })
+                    .catch(e => console.error("Failed to save threshold to database:", e));
                 buildDashboardUI(currentClassId, currentRollNo);
             } else {
                 console.warn("Cannot re-render: currentClassId or currentRollNo is null");

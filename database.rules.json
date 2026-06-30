@@ -61,10 +61,36 @@
       }
     },
     "student_auth_sessions": {
-      "$session_key": {
-        ".read": "auth != null && data.exists() && data.child('used').val() === false && data.child('createdAt').val() > now - 120000",
-        ".write": "auth != null && data.exists() && !newData.exists()"
+        "$session_key": {
+          ".read": "auth != null && data.exists() && data.child('used').val() === false && data.child('createdAt').val() > now - 120000",
+          ".write": "auth != null && data.exists() && !newData.exists()"
+        }
+      },
+      "fcm_tokens": {
+        ".read": "auth != null",
+        "$class_id": {
+          "$roll_no": {
+            ".write": "auth != null"
+          }
+        }
+      },
+      "student_preferences": {
+        ".read": "auth != null",
+        "$class_id": {
+          "$roll_no": {
+            ".write": "auth != null"
+          }
+        }
+      },
+      "sent_push_alerts": {
+        ".read": "auth != null",
+        "$class_id": {
+          "$roll_no": {
+            "$subject_name": {
+              ".write": "auth != null"
+            }
+          }
+        }
       }
     }
   }
-}

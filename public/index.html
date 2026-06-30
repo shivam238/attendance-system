@@ -2522,6 +2522,9 @@ Convert the student list from the attached file/image, or the text enclosed in t
             // Show AI Assistant FAB and load context data
             showCRAIFAB();
             loadCRContextData();
+
+            // Set up push notifications listener
+            setupAttendanceListenerForPush();
         }
 
         // 👇👇👇 YAHAN SE ADD KARO 👇👇👇
@@ -5703,6 +5706,134 @@ Submissions/Timestamps/Top Performers: Not available in current session database
             }, 5000); // Give slightly more time (5s) so the user can click it
         }
         // ===== END CR AI ASSISTANT =====
+
+        // ===== AUTOMATED STUDENT PUSH NOTIFICATIONS =====
+        let _pushDebounceTimer = null;
+        function setupAttendanceListenerForPush() {
+            if (!currentUser || !currentUser.username) return;
+            if (window.attendancePushListenerActive) return;
+            window.attendancePushListenerActive = true;
+
+            const classId = currentUser.username;
+            const attendancePath = db.ref('attendance');
+
+            attendancePath.orderByKey().startAt(classId + '_').endAt(classId + '_\uf8ff')
+                .on('value', () => {
+                    if (_pushDebounceTimer) clearTimeout(_pushDebounceTimer);
+                    _pushDebounceTimer = setTimeout(() => {
+                        checkAndTriggerPushAlerts(classId);
+                    }, 5000); // Debounce by 5 seconds to optimize database reading and prevent network spam
+                });
+        }
+
+        function checkAndTriggerPushAlerts(classId) {
+            if (!classId) return;
+            console.log("📢 checkAndTriggerPushAlerts check running for class:", classId);
+
+            db.ref('users').orderByChild('username').equalTo(classId).once('value').then(userSnap => {
+                let students = [];
+                let subjects = [];
+                userSnap.forEach(child => {
+                    const val = child.val();
+                    if (val.students) students = val.students;
+                    if (val.subjects) subjects = val.subjects;
+                });
+
+                if (students.length === 0) return;
+
+                db.ref('attendance').orderByKey().startAt(classId + '_').endAt(classId + '_\uf8ff').once('value').then(attendanceSnap => {
+                    db.ref('student_preferences/' + classId).once('value').then(prefSnap => {
+                        const preferences = prefSnap.val() || {};
+
+                        db.ref('fcm_tokens/' + classId).once('value').then(tokenSnap => {
+                            const tokens = tokenSnap.val() || {};
+
+                            db.ref('sent_push_alerts/' + classId).once('value').then(sentAlertsSnap => {
+                                const sentAlerts = sentAlertsSnap.val() || {};
+
+                                students.forEach(student => {
+                                    const rollNo = student.rollNo;
+                                    const studentToken = tokens[rollNo];
+                                    if (!studentToken) return;
+
+                                    const studentPref = preferences[rollNo] || {};
+                                    const threshold = parseInt(studentPref.threshold) || 75;
+
+                                    const subjectStats = {};
+                                    subjects.forEach(sub => {
+                                        subjectStats[sub] = { attended: 0, total: 0 };
+                                    });
+
+                                    attendanceSnap.forEach(sessionSnap => {
+                                        const sessionKey = sessionSnap.key;
+                                        const parts = sessionKey.split('_');
+                                        if (parts.length < 4) return;
+                                        const subject = parts.slice(3).join('_');
+
+                                        if (!subjectStats[subject]) {
+                                            subjectStats[subject] = { attended: 0, total: 0 };
+                                        }
+
+                                        let isPresent = false;
+                                        sessionSnap.forEach(recordSnap => {
+                                            if (recordSnap.child('rollNo').val() === rollNo) {
+                                                isPresent = true;
+                                            }
+                                        });
+
+                                        subjectStats[subject].total++;
+                                        if (isPresent) {
+                                            subjectStats[subject].attended++;
+                                        }
+                                    });
+
+                                    subjects.forEach(sub => {
+                                        const stats = subjectStats[sub];
+                                        if (!stats || stats.total === 0) return;
+
+                                        const percentage = (stats.attended / stats.total) * 100;
+                                        if (percentage < threshold) {
+                                            const alertState = `${stats.attended}_${stats.total}_${threshold}`;
+                                            const studentSentAlerts = sentAlerts[rollNo] || {};
+                                            const lastAlertedState = studentSentAlerts[sub];
+
+                                            if (lastAlertedState !== alertState) {
+                                                const title = `⚠️ Attendance Shortage Alert`;
+                                                const body = `Your attendance in "${sub}" has dropped to ${percentage.toFixed(1)}% (Target: ${threshold}%).`;
+
+                                                fetch('https://attendify-support-worker.sm3165599.workers.dev/send-notification', {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'Content-Type': 'application/json'
+                                                    },
+                                                    body: JSON.stringify({
+                                                        token: studentToken,
+                                                        title: title,
+                                                        notificationBody: body
+                                                    })
+                                                })
+                                                .then(res => res.json())
+                                                .then(data => {
+                                                    if (data.success) {
+                                                        console.log(`Push notification sent successfully to ${student.name} (${rollNo}) for ${sub}`);
+                                                        db.ref(`sent_push_alerts/${classId}/${rollNo}/${sub}`).set(alertState);
+                                                    }
+                                                })
+                                                .catch(err => {
+                                                    console.error("Network error sending push notification:", err);
+                                                });
+                                            }
+                                        }
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            }).catch(e => {
+                console.error("Error in checkAndTriggerPushAlerts:", e);
+            });
+        }
 
     </script>
 
