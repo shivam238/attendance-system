@@ -98,13 +98,14 @@ if [ -d functions ]; then
         npm install
     )
 
-    if firebase deploy --only functions
-    then
+    deploy_err=0
+    firebase deploy --only functions || deploy_err=$?
+    if [ $deploy_err -eq 0 ]; then
         echo -e "${GREEN}Functions deployed.${NC}"
     else
         echo -e "${YELLOW}"
         echo "Functions skipped."
-        echo "Reason: Blaze plan/API not enabled."
+        echo "Reason: Blaze plan/API not enabled or deployment failed."
         echo -e "${NC}"
     fi
 

@@ -1999,6 +1999,7 @@
                 document.getElementById('portal-logout-btn').style.display = 'block';
                 // Show AI Assistant FAB
                 showAIFAB();
+                requestStudentNotificationPermission();
             }).catch(err => {
                 document.getElementById('loading-screen').classList.add('fade-out');
                 alert("Failed to fetch attendance records: " + err.message);
@@ -2185,6 +2186,88 @@
 
             // Render Smart Planner
             updateSmartPlanner();
+
+            // Check for shortage alerts
+            checkAttendanceShortageAlerts(classId, rollNo, subjects, subjectStats, threshold);
+        }
+
+        async function requestStudentNotificationPermission() {
+            if (window.Capacitor && window.Capacitor.isPluginAvailable('LocalNotifications')) {
+                try {
+                    const { LocalNotifications } = window.Capacitor.Plugins;
+                    let permStatus = await LocalNotifications.checkPermissions();
+                    if (permStatus.display !== 'granted') {
+                        permStatus = await LocalNotifications.requestPermissions();
+                    }
+                } catch (e) {
+                    console.error('Capacitor LocalNotifications permission request failed:', e);
+                }
+            } else if ('Notification' in window) {
+                if (Notification.permission === 'default') {
+                    Notification.requestPermission();
+                }
+            }
+        }
+
+        function checkAttendanceShortageAlerts(classId, rollNo, subjects, subjectStats, threshold) {
+            if (!('Notification' in window) && !(window.Capacitor && window.Capacitor.isPluginAvailable('LocalNotifications'))) {
+                return;
+            }
+
+            subjects.forEach(sub => {
+                const stats = subjectStats[sub];
+                if (!stats || stats.total === 0) return;
+
+                const percentage = (stats.attended / stats.total) * 100;
+                if (percentage < threshold) {
+                    const alertKey = `shortage_alert_${classId}_${rollNo}_${sub}`;
+                    const currentState = `${stats.attended}_${stats.total}_${threshold}`;
+                    const lastAlertedState = localStorage.getItem(alertKey);
+
+                    if (lastAlertedState !== currentState) {
+                        const title = `⚠️ Attendance Shortage Alert`;
+                        const body = `Your attendance in "${sub}" has dropped to ${percentage.toFixed(1)}% (Target: ${threshold}%).`;
+
+                        triggerStudentLocalNotification(title, body);
+                        localStorage.setItem(alertKey, currentState);
+                    }
+                }
+            });
+        }
+
+        function triggerStudentLocalNotification(title, body) {
+            if (window.Capacitor && window.Capacitor.isPluginAvailable('LocalNotifications')) {
+                try {
+                    const { LocalNotifications } = window.Capacitor.Plugins;
+                    LocalNotifications.schedule({
+                        notifications: [
+                            {
+                                title: title,
+                                body: body,
+                                id: Math.floor(Math.random() * 1000000),
+                                schedule: null,
+                                sound: null,
+                                attachments: null,
+                                actionTypeId: "",
+                                extra: null
+                            }
+                        ]
+                    });
+                } catch (e) {
+                    console.error("Capacitor LocalNotifications failed", e);
+                }
+            } else if ('Notification' in window && Notification.permission === 'granted') {
+                try {
+                    new Notification(title, {
+                        body: body,
+                        icon: 'logo-opt.png',
+                        tag: 'attendify-shortage',
+                        renotify: true
+                    });
+                } catch (e) {
+                    console.error("Web Notification failed", e);
+                }
+            }
         }
 
         function updateThreshold() {

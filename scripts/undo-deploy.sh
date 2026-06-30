@@ -20,6 +20,23 @@ echo "║            UNDO DEPLOY  (Ctrl+Z)             ║"
 echo "╚══════════════════════════════════════════════╝"
 echo ""
 
+# ── Helper to check for local changes
+has_changes() {
+    # Check tracked modified files
+    if ! git diff --quiet; then
+        return 0
+    fi
+    # Check staged changes
+    if ! git diff --cached --quiet; then
+        return 0
+    fi
+    # Check untracked files (ignoring files in .gitignore)
+    if [ -n "$(git status --porcelain | grep -E '^\?\?')" ]; then
+        return 0
+    fi
+    return 1
+}
+
 # ── Get the current LOGICAL version (not git HEAD, which grows with each deploy)
 if [ -f "$CURRENT_VER_FILE" ]; then
     CURRENT=$(cat "$CURRENT_VER_FILE")
@@ -30,6 +47,35 @@ else
 fi
 
 CURRENT_MSG=$(git log -1 --pretty="%s" "$CURRENT" 2>/dev/null || echo "unknown")
+
+# ── Check if there are local uncommitted changes
+if has_changes; then
+    echo "  ⚠️ Detected uncommitted local changes."
+    echo "     Reverting working directory to current clean version: $CURRENT_MSG"
+    echo ""
+
+    # Push "STASH" to redo stack
+    echo "STASH" >> "$REDO_STACK"
+    echo "  ✔ Pushed local changes to redo stack (as stash)"
+
+    # Stash the changes
+    git stash push --include-untracked -m "undo_backup_$(date +%s)"
+    echo "  ✔ Working directory cleaned to match $CURRENT"
+    echo ""
+
+    # Update version tracker
+    echo "$CURRENT" > "$CURRENT_VER_FILE"
+
+    # Deploy
+    bash "$PROJECT_ROOT/deploy-all.sh" "undo: reverted local changes to clean commit state"
+
+    echo ""
+    echo "✅ UNDO complete (local changes reverted)!"
+    echo "   Run again to go back to the previous commit."
+    echo "   Run  scripts/redo-deploy.sh  to restore your local changes."
+    echo ""
+    exit 0
+fi
 
 # ── Find the parent of the current logical version
 PARENT=$(git rev-parse --verify "${CURRENT}~1" 2>/dev/null) || {
@@ -55,7 +101,9 @@ echo ""
 
 # ── Restore project files to parent state
 git checkout "$PARENT" -- .
-echo "  ✔ Files restored to previous version"
+# Preserve scripts and deployment scripts to prevent undo/redo logic from being reverted
+git checkout HEAD -- scripts/ deploy-all.sh
+echo "  ✔ Files restored to previous version (deployment scripts preserved)"
 echo ""
 
 # ── Deploy

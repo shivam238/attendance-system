@@ -31,6 +31,28 @@ fi
 # ── Pop the top entry from redo stack (last line)
 REDO_COMMIT=$(tail -1 "$REDO_STACK")
 
+# ── Handle STASH marker
+if [ "$REDO_COMMIT" = "STASH" ]; then
+    echo "  TO   : Local uncommitted changes (restoring stash)"
+    echo ""
+
+    # Remove the popped entry from redo stack
+    sed -i '$ d' "$REDO_STACK"
+
+    # Pop the stash
+    git stash pop || {
+        echo "  ❌ Failed to restore stash. Conflicting changes?"
+        exit 1
+    }
+
+    # Deploy
+    bash "$PROJECT_ROOT/deploy-all.sh" "redo: restored local changes"
+
+    echo ""
+    echo "✅ REDO complete (local changes restored)!"
+    exit 0
+fi
+
 # Validate the commit exists
 git rev-parse --verify "$REDO_COMMIT" > /dev/null 2>&1 || {
     echo "  ❌ Redo commit not found: $REDO_COMMIT"
@@ -61,7 +83,9 @@ echo "  ✔ Version pointer moved forward"
 
 # ── Restore files to redo commit
 git checkout "$REDO_COMMIT" -- .
-echo "  ✔ Files restored to newer version"
+# Preserve scripts and deployment scripts to prevent undo/redo logic from being reverted
+git checkout HEAD -- scripts/ deploy-all.sh
+echo "  ✔ Files restored to newer version (deployment scripts preserved)"
 echo ""
 
 # ── Deploy
