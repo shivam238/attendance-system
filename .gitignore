@@ -52,3 +52,8 @@ ATTENDIFY.apk
 
 # Security Notes
 future_updates/
+
+# Generated zip archives and secrets
+ui.zip
+*-firebase-adminsdk-*.json
+
