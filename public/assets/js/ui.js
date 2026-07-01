@@ -45,8 +45,7 @@ function showScreen(screenId) {
         if (screenId === 'app-screen') {
             document.body.classList.remove('native-login-active');
             document.body.classList.add('app-layout-active');
-        } else if (screenId === 'login-screen' && isNative) {
-            // Lock viewport for login screen too in native app
+        } else if ((screenId === 'login-screen' || screenId === 'workspace-screen') && isNative) {
             document.body.classList.remove('app-layout-active');
             document.body.classList.add('native-login-active');
         } else {
@@ -55,9 +54,10 @@ function showScreen(screenId) {
         }
 
         const landingPage = document.getElementById('landing-page');
+        const isAuthScreen = screenId === 'login-screen' || screenId === 'workspace-screen';
         if (landingPage) {
-            landingPage.classList.toggle('is-hidden', screenId !== 'login-screen');
-            if (screenId === 'login-screen') {
+            landingPage.classList.toggle('is-hidden', !isAuthScreen);
+            if (isAuthScreen) {
                 const showLandingTop = consumeLandingTopLaunchRequest();
                 if ((isNative || localStorage.getItem('attendify_skip_landing') === 'true') && !showLandingTop) {
                     landingPage.classList.add('login-locked');
@@ -74,6 +74,19 @@ function showScreen(screenId) {
         window.scrollTo(0, 0);
         document.documentElement.scrollTop = 0;
         document.body.scrollTop = 0;
+    }
+}
+
+function showCRLogin() {
+    const card = document.getElementById('ws-card-cr');
+    if (card) {
+        card.classList.add('ws-selected');
+        setTimeout(() => {
+            card.classList.remove('ws-selected');
+            showScreen('login-screen');
+        }, 220);
+    } else {
+        showScreen('login-screen');
     }
 }
 

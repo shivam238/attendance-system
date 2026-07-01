@@ -168,7 +168,11 @@ function logoutUser() {
         console.error("Logout error:", err);
     }).then(() => {
         logoutFinished = true;
-        window.location.reload();
+        if (typeof showScreen === 'function') {
+            showScreen('workspace-screen');
+        } else {
+            window.location.reload();
+        }
     });
 
     // Fallback: Force reload only if sign-out hangs.
