@@ -96,7 +96,8 @@
                 <a href="#landing-how" onclick="scrollToLandingSection(event, 'landing-how')">How It Works</a>
                 <a href="#landing-features" onclick="scrollToLandingSection(event, 'landing-features')">Features</a>
                 <a href="#landing-roles" onclick="scrollToLandingSection(event, 'landing-roles')">For Whom</a>
-                <a href="#workspace-screen" class="landing-nav-cta" onclick="event.preventDefault(); showScreen('workspace-screen')">Get Started</a>
+                <button class="theme-btn navbar-theme-btn" onclick="toggleDarkMode()" aria-label="Toggle dark mode" style="margin: 0;"></button>
+                <a href="#workspace-screen" class="landing-nav-cta" onclick="scrollToWorkspace(event)">Get Started</a>
             </div>
             <button class="landing-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false" onclick="toggleLandingMenu(this)">
                 <span></span><span></span><span></span>
@@ -107,7 +108,10 @@
             <a href="#landing-how" onclick="scrollToLandingSection(event, 'landing-how')">How It Works</a>
             <a href="#landing-features" onclick="scrollToLandingSection(event, 'landing-features')">Features</a>
             <a href="#landing-roles" onclick="scrollToLandingSection(event, 'landing-roles')">For Whom</a>
-            <a href="#workspace-screen" class="landing-mobile-cta" onclick="event.preventDefault(); closeLandingMenu(); showScreen('workspace-screen')">Get Started</a>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; width: 100%; box-sizing: border-box;">
+                <button class="theme-btn" onclick="toggleDarkMode()" aria-label="Toggle dark mode" style="margin: 0;"></button>
+                <a href="#workspace-screen" class="landing-mobile-cta" onclick="closeLandingMenu(); scrollToWorkspace(event)">Get Started</a>
+            </div>
         </div>
 
         <section class="landing-hero">
@@ -118,7 +122,7 @@
                     <h1>Attendance, <em>simplified</em> for every class</h1>
                     <p>Create a QR code, let students scan, and record attendance instantly with live tracking, geofencing, requests, and Excel reports.</p>
                     <div class="landing-actions">
-                        <a href="#" class="landing-primary-btn" onclick="event.preventDefault(); showScreen('workspace-screen')">Open Dashboard</a>
+                        <a href="#" class="landing-primary-btn" onclick="scrollToWorkspace(event)">Open Dashboard</a>
                         <a href="track.html?v=1.1" class="landing-secondary-btn">Student Portal</a>
                         <a href="https://github.com/shivam238/attendance-system/releases/latest/download/ATTENDIFY.apk" class="landing-apk-btn">
                             <span style="margin-right: 6px;">🤖</span> Download App
@@ -265,24 +269,21 @@
         <!-- WORKSPACE SELECTION SCREEN -->
         <div id="workspace-screen" class="screen">
             <div class="workspace-shell">
-                <div class="workspace-top-bar">
-                    <div class="workspace-logo">
-                        <img src="logo.webp" alt="ATTENDIFY" width="32" height="32">
-                        <span><strong>ATTEND</strong>IFY</span>
-                    </div>
-                    <button class="theme-btn" onclick="toggleDarkMode()" style="margin: 0;"></button>
-                </div>
-
                 <div class="workspace-hero">
                     <div class="workspace-badge">Choose Your Workspace</div>
-                    <h1 class="workspace-heading">Where do you belong?</h1>
-                    <p class="workspace-sub">Select your role to get started with the right experience.</p>
+                    <h1 class="workspace-heading">Select Your Workspace</h1>
+                    <p class="workspace-sub">Choose the workspace that matches your role to continue.</p>
                 </div>
 
                 <div class="workspace-cards">
                     <!-- Student Card -->
                     <a href="track.html?v=1.1" class="workspace-card workspace-card--student" id="ws-card-student" aria-label="Go to Student Portal">
-                        <div class="workspace-card-icon">🎓</div>
+                        <div class="workspace-card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                                <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/>
+                            </svg>
+                        </div>
                         <div class="workspace-card-body">
                             <h2>Student</h2>
                             <p>Track your attendance across all subjects in one place.</p>
@@ -298,7 +299,14 @@
 
                     <!-- Class Representative Card -->
                     <div class="workspace-card workspace-card--cr" id="ws-card-cr" onclick="showCRLogin()" role="button" tabindex="0" aria-label="Go to CR Dashboard" onkeydown="if(event.key==='Enter'||event.key===' ')showCRLogin()">
-                        <div class="workspace-card-icon">🏫</div>
+                        <div class="workspace-card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 20V8a2 2 0 0 0-2-2h-3.9a2 2 0 0 0-1.7 1L12 10.4 9.6 7a2 2 0 0 0-1.7-1H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/>
+                                <path d="M12 22V14"/>
+                                <path d="M7 18h2"/>
+                                <path d="M15 18h2"/>
+                            </svg>
+                        </div>
                         <div class="workspace-card-body">
                             <h2>Class Representative</h2>
                             <p>Manage attendance sessions and generate QR codes for your class.</p>
@@ -6783,17 +6791,13 @@ Submissions/Timestamps/Top Performers: Not available in current session database
     </div>
     <footer class="app-footer">
         <div class="footer-links">
-            <a href="about.html">About</a>
-            <span class="footer-divider">|</span>
-            <a href="contact.html">Contact</a>
-            <span class="footer-divider">|</span>
-            <a href="manual.html" target="_blank">📖 Manual</a>
-            <span class="footer-divider">|</span>
-            <a href="feedback.html">Feedback</a>
-            <span class="footer-divider">|</span>
+            <a href="manual.html" target="_blank">User Manual</a>
+            <span class="footer-divider">·</span>
             <a href="privacy-policy.html">Privacy Policy</a>
-            <span class="footer-divider">|</span>
+            <span class="footer-divider">·</span>
             <a href="terms.html">Terms & Conditions</a>
+            <span class="footer-divider">·</span>
+            <a href="contact.html">Contact</a>
         </div>
         <p class="footer-copyright">&copy; 2026 ATTENDIFY. All rights reserved. Developed by Shivam Kumar Mahto.</p>
     </footer>

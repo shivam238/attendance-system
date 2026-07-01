@@ -101,6 +101,16 @@ function scrollToLogin(event) {
     }
 }
 
+function scrollToWorkspace(event) {
+    if (event) event.preventDefault();
+    closeLandingMenu();
+    const workspaceScreen = document.getElementById('workspace-screen');
+    if (workspaceScreen) {
+        const targetTop = workspaceScreen.getBoundingClientRect().top + window.scrollY - 90;
+        window.scrollTo({ top: Math.max(targetTop, 0), behavior: 'smooth' });
+    }
+}
+
 function handleLandingScroll() {
     if (isBypassingScrollLock) {
         return;
@@ -111,19 +121,19 @@ function handleLandingScroll() {
         return;
     }
 
-    const loginScreen = document.getElementById('login-screen');
-    if (!loginScreen || !loginScreen.classList.contains('active')) {
+    const activeScreen = document.querySelector('.screen.active');
+    if (!activeScreen || (activeScreen.id !== 'login-screen' && activeScreen.id !== 'workspace-screen')) {
         return;
     }
 
-    const loginRect = loginScreen.getBoundingClientRect();
+    const screenRect = activeScreen.getBoundingClientRect();
     
-    // Check if the top of the login screen reached the 90px threshold (nav bar height + gap)
+    // Check if the top of the screen reached the 90px threshold (nav bar height + gap)
     // or if the user has scrolled close to the bottom of the document
     // On mobile, touch inertia and elastic bounce make a larger tolerance (80px) much more reliable.
     const isAtBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 80;
 
-    if (loginRect.top <= 90 || isAtBottom) {
+    if (screenRect.top <= 90 || isAtBottom) {
         window.removeEventListener('scroll', handleLandingScroll);
         
         // Cancel active smooth scroll/inertia instantly to prevent scroll cutoff issues
@@ -138,7 +148,7 @@ function handleLandingScroll() {
 
         landingPage.classList.add('login-locked');
 
-        // Lock viewport for login screen in native/PWA modes
+        // Lock viewport for login/workspace screen in native/PWA modes
         const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
         const isNative = !!(window.Capacitor) || isPWA;
         if (isNative) {

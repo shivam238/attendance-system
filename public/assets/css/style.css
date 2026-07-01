@@ -91,9 +91,14 @@
             box-shadow: none !important;
         }
 
+        [ignoring loop detection]
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--body-bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.04) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.03) 0, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(99, 102, 241, 0.02) 0, transparent 50%),
+                linear-gradient(to bottom, var(--body-bg), var(--body-bg));
             background-attachment: fixed;
             color: #fff;
             min-height: 100vh;
@@ -180,20 +185,30 @@
         .landing-logo {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             color: var(--landing-text);
             font-family: 'Space Grotesk', sans-serif;
-            font-size: 17px;
-            letter-spacing: 0.06em;
+            font-size: 20px;
+            letter-spacing: 0.05em;
             font-weight: 700;
+            transition: transform 0.2s ease;
+        }
+        .landing-logo:hover {
+            transform: scale(1.02);
         }
 
         .landing-logo img {
-            width: 34px;
-            height: 34px;
-            border-radius: 10px;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
             object-fit: cover;
-            border: 1px solid rgba(176, 171, 255, 0.45);
+            border: 1.5px solid rgba(176, 171, 255, 0.45);
+            box-shadow: 0 0 15px rgba(123, 116, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .landing-logo:hover img {
+            border-color: var(--landing-indigo);
+            box-shadow: 0 0 20px rgba(123, 116, 255, 0.45);
         }
 
         .landing-logo strong {
@@ -2737,96 +2752,69 @@
             100% { transform: translate(-50%, -50%) translate(-60px, 60px) scale(1.15); }
         }
 
+        [ignoring loop detection]
         /* =====================================================
            WORKSPACE SELECTION SCREEN
            ===================================================== */
         #workspace-screen {
             display: none;
         }
-        /* Override generic .screen.active {display:block} */
         #workspace-screen.active {
             display: flex !important;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            /* Break out of .container's padding/max-width */
-            width: 100vw;
-            margin-left: calc(-50vw + 50%);
-            min-height: 100vh;
+            width: 100%;
+            max-width: 820px;
             box-sizing: border-box;
-            padding: 40px 24px 48px;
+            padding: 0;
+            margin: 0 auto;
         }
         .workspace-shell {
             width: 100%;
-            max-width: 820px;
             display: flex;
             flex-direction: column;
             align-items: center;
-        }
-        .workspace-top-bar {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
-        }
-        .workspace-logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-family: 'Space Grotesk', 'Inter', sans-serif;
-            font-size: 17px;
-            font-weight: 700;
-            color: var(--text-color);
-            letter-spacing: 0.04em;
-        }
-        .workspace-logo img {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            object-fit: cover;
-        }
-        .workspace-logo strong {
-            color: var(--primary-color);
+            gap: 24px;
         }
         .workspace-hero {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 12px;
         }
         .workspace-badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(99, 102, 241, 0.1);
-            border: 1px solid rgba(99, 102, 241, 0.25);
+            background: rgba(99, 102, 241, 0.08);
+            border: 1px solid rgba(99, 102, 241, 0.2);
             color: var(--primary-color);
             border-radius: 999px;
             padding: 6px 16px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
         body.dark-mode .workspace-badge {
-            background: rgba(129, 140, 248, 0.12);
-            border-color: rgba(129, 140, 248, 0.3);
+            background: rgba(129, 140, 248, 0.1);
+            border-color: rgba(129, 140, 248, 0.25);
             color: #818cf8;
         }
         .workspace-heading {
             font-family: 'Space Grotesk', 'Inter', sans-serif;
-            font-size: clamp(2rem, 5vw, 2.8rem);
+            font-size: clamp(2rem, 4vw, 2.5rem);
             font-weight: 800;
             color: var(--text-color);
             letter-spacing: -0.03em;
-            line-height: 1.1;
+            line-height: 1.15;
             margin-bottom: 12px;
         }
         .workspace-sub {
-            font-size: 16px;
+            font-size: 15px;
             color: var(--text-muted);
-            line-height: 1.6;
-            max-width: 400px;
+            line-height: 1.5;
+            max-width: 440px;
             margin: 0 auto;
         }
 
@@ -2834,9 +2822,8 @@
         .workspace-cards {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 24px;
             width: 100%;
-            margin-bottom: 36px;
         }
         .workspace-card {
             position: relative;
@@ -2844,50 +2831,63 @@
             flex-direction: column;
             align-items: flex-start;
             gap: 0;
-            padding: 28px 24px 24px;
+            padding: 32px 28px 28px;
             background: var(--card-bg);
             border: 1.5px solid var(--border-color);
-            border-radius: 20px;
+            border-radius: 24px;
             cursor: pointer;
             text-decoration: none;
             color: var(--text-color);
-            transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
-                        box-shadow 0.32s cubic-bezier(0.16, 1, 0.3, 1),
-                        border-color 0.25s ease;
-            box-shadow: var(--shadow);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                        box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                        border-color 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
             overflow: hidden;
             user-select: none;
         }
+        
+        .workspace-card--student {
+            --glow-color: rgba(99, 102, 241, 0.12);
+            --glow-border: rgba(99, 102, 241, 0.4);
+            --icon-bg: rgba(99, 102, 241, 0.08);
+            --icon-color: var(--primary-color);
+        }
+        .workspace-card--cr {
+            --glow-color: rgba(16, 185, 129, 0.12);
+            --glow-border: rgba(16, 185, 129, 0.4);
+            --icon-bg: rgba(16, 185, 129, 0.08);
+            --icon-color: #10b981;
+        }
+        body.dark-mode .workspace-card--student {
+            --glow-color: rgba(129, 140, 248, 0.15);
+            --glow-border: rgba(129, 140, 248, 0.45);
+            --icon-bg: rgba(129, 140, 248, 0.12);
+            --icon-color: #818cf8;
+        }
+        body.dark-mode .workspace-card--cr {
+            --glow-color: rgba(52, 211, 153, 0.15);
+            --glow-border: rgba(52, 211, 153, 0.45);
+            --icon-bg: rgba(52, 211, 153, 0.12);
+            --icon-color: #34d399;
+        }
+
         .workspace-card::before {
             content: '';
             position: absolute;
             inset: 0;
-            border-radius: 18px;
+            background: radial-gradient(circle at center, var(--glow-color) 0%, transparent 70%);
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             pointer-events: none;
+            z-index: 0;
         }
-        .workspace-card--student::before {
-            background: radial-gradient(ellipse at top left, rgba(99,102,241,0.08) 0%, transparent 65%);
-        }
-        .workspace-card--cr::before {
-            background: radial-gradient(ellipse at top left, rgba(16,185,129,0.08) 0%, transparent 65%);
-        }
-        .workspace-card:hover::before,
-        .workspace-card:focus-within::before {
+        .workspace-card:hover::before {
             opacity: 1;
         }
         .workspace-card:hover {
-            transform: translateY(-6px) scale(1.01);
-            border-color: var(--primary-color);
-            box-shadow: 0 20px 48px rgba(99, 102, 241, 0.14), 0 4px 12px rgba(0,0,0,0.06);
-        }
-        .workspace-card--cr:hover {
-            border-color: #10b981;
-            box-shadow: 0 20px 48px rgba(16,185,129, 0.14), 0 4px 12px rgba(0,0,0,0.06);
-        }
-        body.dark-mode .workspace-card:hover {
-            box-shadow: 0 20px 48px rgba(99, 102, 241, 0.22), 0 4px 20px rgba(0,0,0,0.4);
+            transform: translateY(-8px) scale(1.015);
+            border-color: var(--glow-border);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06), 0 0 30px var(--glow-color);
         }
         .workspace-card:active,
         .workspace-card.ws-selected {
@@ -2895,27 +2895,44 @@
             transition-duration: 0.1s !important;
         }
         .workspace-card-icon {
-            font-size: 36px;
-            line-height: 1;
-            margin-bottom: 16px;
-            display: block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: var(--icon-bg);
+            color: var(--icon-color);
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: transform 0.3s ease;
+            z-index: 2;
+        }
+        .workspace-card:hover .workspace-card-icon {
+            transform: scale(1.1) rotate(-3deg);
+        }
+        .workspace-card-icon svg {
+            width: 24px;
+            height: 24px;
         }
         .workspace-card-body {
             flex: 1;
+            width: 100%;
+            z-index: 2;
         }
         .workspace-card-body h2 {
-            font-size: 18px;
+            font-size: 19px;
             font-weight: 800;
             color: var(--text-color);
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             letter-spacing: -0.02em;
             font-family: 'Space Grotesk', 'Inter', sans-serif;
         }
         .workspace-card-body p {
-            font-size: 13px;
+            font-size: 13.5px;
             color: var(--text-muted);
             line-height: 1.5;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
         .workspace-features {
             list-style: none;
@@ -2923,45 +2940,64 @@
             margin: 0;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
         }
         .workspace-features li {
-            font-size: 12px;
+            font-size: 12.5px;
             color: var(--text-muted);
             display: flex;
             align-items: center;
-            gap: 7px;
+            gap: 8px;
             font-weight: 500;
         }
         .workspace-features li::before {
             content: '✓';
             font-size: 11px;
             font-weight: 800;
-            color: var(--primary-color);
+            color: var(--icon-color);
             flex-shrink: 0;
-        }
-        .workspace-card--cr .workspace-features li::before {
-            color: #10b981;
-        }
-        body.dark-mode .workspace-card--cr .workspace-features li::before {
-            color: #34d399;
         }
         .workspace-card-arrow {
             position: absolute;
-            bottom: 20px;
-            right: 20px;
-            font-size: 18px;
+            bottom: 24px;
+            right: 24px;
+            font-size: 20px;
             color: var(--text-muted);
-            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s ease, opacity 0.3s;
             opacity: 0.5;
+            z-index: 2;
         }
         .workspace-card:hover .workspace-card-arrow {
-            transform: translateX(4px);
-            color: var(--primary-color);
+            transform: translateX(6px) scale(1.1);
+            color: var(--icon-color);
             opacity: 1;
         }
-        .workspace-card--cr:hover .workspace-card-arrow {
-            color: #10b981;
+
+        /* Centered viewport layout for workspace and login screens */
+        .landing-page.login-locked ~ .container {
+            margin-top: 66px !important;
+            margin-bottom: 0 !important;
+            min-height: calc(100dvh - 66px - 100px) !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+            box-sizing: border-box !important;
+            padding: 20px 24px !important;
+        }
+        @media (max-width: 768px) {
+            .landing-page.login-locked ~ .container {
+                min-height: auto !important;
+                display: block !important;
+                margin-top: 66px !important;
+                padding: 40px 16px 48px !important;
+            }
+        }
+
+        /* Hide CTA buttons in navbar on workspace selection screen */
+        .landing-page.login-locked .landing-nav-cta,
+        .landing-page.login-locked .landing-mobile-cta {
+            display: none !important;
         }
 
 
