@@ -475,12 +475,20 @@
                                 </select>
                             </div>
 
-                            <a href="manage-subjects.html" style="display: block;">
-                                <button class="btn btn-secondary" type="button"
-                                    style="margin: 0; background: var(--tab-bg); color: var(--text-color); border: 1px solid var(--input-border); width: 100%;">
-                                    📚 Manage Subjects
-                                </button>
-                            </a>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; margin-bottom: 10px;">
+                                <a href="manage-subjects.html" style="text-decoration: none; display: block;">
+                                    <button class="btn btn-secondary" type="button"
+                                        style="margin: 0; background: var(--tab-bg); color: var(--text-color); border: 1px solid var(--input-border); width: 100%; font-size: 13px; padding: 12px 4px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                        📚 Subjects
+                                    </button>
+                                </a>
+                                <a href="manage-timetable.html" style="text-decoration: none; display: block;">
+                                    <button class="btn btn-secondary" type="button"
+                                        style="margin: 0; background: var(--tab-bg); color: var(--text-color); border: 1px solid var(--input-border); width: 100%; font-size: 13px; padding: 12px 4px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                        📅 Timetable
+                                    </button>
+                                </a>
+                            </div>
 
                             <div class="form-group" style="margin-top: 15px; margin-bottom: 15px;">
                                 <label style="color: var(--text-color); display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px;">📍 Geofencing (Allowed Area)</label>
