@@ -65,7 +65,7 @@
             to { transform: rotate(360deg); }
         }
     </style>
-    <link rel="stylesheet" href="assets/css/style.css?v=26">
+    <link rel="stylesheet" href="assets/css/style.css?v=27">
     <script src="assets/js/theme.js" defer></script>
 </head>
 
@@ -1565,9 +1565,9 @@
     <script src="capacitor.js"></script>
 
     <!-- Core Logic Scripts -->
-    <script src="assets/js/firebase-config.js?v=5"></script>
-    <script src="assets/js/auth.js?v=11"></script>
-    <script src="assets/js/ui.js?v=19"></script>
+    <script src="assets/js/firebase-config.js?v=6"></script>
+    <script src="assets/js/auth.js?v=12"></script>
+    <script src="assets/js/ui.js?v=20"></script>
     <script src="assets/js/history.js?v=10"></script>
     <script src="assets/js/export.js?v=11"></script>
 
@@ -2561,14 +2561,21 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
 
             const elapsed = Date.now() - pageLoadTime;
             const remaining = minLoadingDuration - elapsed;
+            const revealLanding = () => {
+                if (typeof scheduleLandingReveal === 'function') {
+                    requestAnimationFrame(scheduleLandingReveal);
+                }
+            };
 
             if (remaining > 0) {
                 setTimeout(() => {
                     loadingScreen.classList.add('fade-out');
+                    revealLanding();
                     clearTimeout(loadingSafetyTimeout);
                 }, remaining);
             } else {
                 loadingScreen.classList.add('fade-out');
+                revealLanding();
                 clearTimeout(loadingSafetyTimeout);
             }
         }

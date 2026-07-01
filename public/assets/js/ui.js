@@ -272,6 +272,7 @@ let landingRevealItems = [];
 let landingRevealObserver = null;
 let landingRevealStarted = false;
 let landingRevealScrollBound = false;
+let landingRevealFallbackId = null;
 
 function prepareLandingReveal() {
     const landingPage = document.getElementById('landing-page');
@@ -306,6 +307,7 @@ function scheduleLandingReveal() {
     const landingPage = document.getElementById('landing-page');
     if (!landingPage || landingPage.classList.contains('is-hidden')) return;
     prepareLandingReveal();
+    scheduleLandingRevealFallback();
 
     const loadingScreen = document.getElementById('loading-screen');
     if (loadingScreen && !loadingScreen.classList.contains('fade-out')) {
@@ -320,6 +322,7 @@ function scheduleLandingReveal() {
 function startLandingReveal() {
     if (landingRevealStarted) return;
     landingRevealStarted = true;
+    clearLandingRevealFallback();
     prepareLandingReveal();
     if (!landingRevealItems.length) return;
 
@@ -347,6 +350,29 @@ function startLandingReveal() {
     });
 
     landingRevealItems.forEach(item => landingRevealObserver.observe(item));
+}
+
+function scheduleLandingRevealFallback() {
+    clearLandingRevealFallback();
+    landingRevealFallbackId = setTimeout(() => {
+        const landingPage = document.getElementById('landing-page');
+        if (!landingPage || landingPage.classList.contains('is-hidden')) return;
+        const hasVisibleItem = landingRevealItems.some(item => item.classList.contains('is-visible'));
+        if (!hasVisibleItem) {
+            landingPage.classList.add('reveal-fallback');
+            landingRevealItems.forEach(item => {
+                item.classList.add('is-visible');
+                item.style.transitionDelay = '';
+            });
+        }
+    }, 1200);
+}
+
+function clearLandingRevealFallback() {
+    if (landingRevealFallbackId) {
+        clearTimeout(landingRevealFallbackId);
+        landingRevealFallbackId = null;
+    }
 }
 
 function bindLandingRevealScroll() {

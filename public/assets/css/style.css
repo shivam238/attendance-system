@@ -408,6 +408,11 @@
             transform: translateY(0);
         }
 
+        .landing-page.reveal-fallback .landing-reveal {
+            opacity: 1;
+            transform: none;
+        }
+
         .landing-badge {
             display: inline-flex;
             align-items: center;
@@ -4028,5 +4033,4 @@
     font-weight: 700;
     text-align: center;
 }
-
 
