@@ -54,10 +54,10 @@ function showScreen(screenId) {
         }
 
         const landingPage = document.getElementById('landing-page');
+        const isAuthScreen = screenId === 'login-screen' || screenId === 'workspace-screen';
         if (landingPage) {
-            // workspace-screen hides the landing page (same as app-screen) — only login-screen shows it
-            landingPage.classList.toggle('is-hidden', screenId !== 'login-screen');
-            if (screenId === 'login-screen') {
+            landingPage.classList.toggle('is-hidden', !isAuthScreen);
+            if (isAuthScreen) {
                 const showLandingTop = consumeLandingTopLaunchRequest();
                 if ((isNative || localStorage.getItem('attendify_skip_landing') === 'true') && !showLandingTop) {
                     landingPage.classList.add('login-locked');

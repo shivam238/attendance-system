@@ -142,6 +142,12 @@
             transition: none !important;
         }
 
+        /* Workspace screen fills viewport from top — no nav offset needed */
+        .landing-page.login-locked ~ .container:has(#workspace-screen.active) {
+            margin-top: 0 !important;
+            padding: 0 !important;
+            max-width: 100% !important;
+        }
 
         .landing-page * {
             box-sizing: border-box;
@@ -902,6 +908,13 @@
             transition: all 0.3s ease;
         }
 
+        /* Remove container spacing when workspace screen is active */
+        .container:has(#workspace-screen.active) {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            padding: 0 !important;
+            max-width: 100% !important;
+        }
 
         @media (max-width: 768px) {
             .container {
@@ -2723,24 +2736,25 @@
             0% { transform: translate(-50%, -50%) translate(0, 0) scale(1); }
             100% { transform: translate(-50%, -50%) translate(-60px, 60px) scale(1.15); }
         }
+
         /* =====================================================
            WORKSPACE SELECTION SCREEN
            ===================================================== */
         #workspace-screen {
             display: none;
         }
+        /* Override generic .screen.active {display:block} */
         #workspace-screen.active {
             display: flex !important;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            position: fixed;
-            inset: 0;
-            z-index: 950;
-            overflow-y: auto;
-            background: transparent;
-            padding: 32px 24px 32px;
+            /* Break out of .container's padding/max-width */
+            width: 100vw;
+            margin-left: calc(-50vw + 50%);
+            min-height: 100vh;
             box-sizing: border-box;
+            padding: 40px 24px 48px;
         }
         .workspace-shell {
             width: 100%;
@@ -2748,15 +2762,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100%;
-            justify-content: space-between;
-            gap: 24px;
         }
-        /* Hide global app footer when landing page is hidden */
-        .landing-page.is-hidden ~ .app-footer {
-            display: none !important;
-        }
-
         .workspace-top-bar {
             width: 100%;
             display: flex;
@@ -2958,23 +2964,16 @@
             color: #10b981;
         }
 
-        .workspace-footer-note {
-            font-size: 12px;
-            color: var(--text-muted);
-            text-align: center;
-            line-height: 1.8;
-            opacity: 0.75;
-        }
-        .workspace-footer-note a {
-            color: var(--text-muted);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        .workspace-footer-note a:hover {
-            color: var(--primary-color);
-        }
 
-        @media (max-width: 768px) {
+        /* Mobile workspace layout */
+        @media (max-width: 600px) {
+            #workspace-screen.active {
+                padding: 24px 16px 36px;
+                justify-content: flex-start;
+            }
+            .workspace-shell {
+                width: 100%;
+            }
             .workspace-top-bar {
                 margin-bottom: 32px;
             }
