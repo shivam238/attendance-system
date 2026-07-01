@@ -54,15 +54,9 @@ function showScreen(screenId) {
         }
 
         const landingPage = document.getElementById('landing-page');
-        const appFooter = document.querySelector('.app-footer');
         if (landingPage) {
             // workspace-screen hides the landing page (same as app-screen) — only login-screen shows it
-            const hideLanding = screenId !== 'login-screen';
-            landingPage.classList.toggle('is-hidden', hideLanding);
-            if (appFooter) {
-                appFooter.classList.toggle('is-hidden', hideLanding);
-            }
-            
+            landingPage.classList.toggle('is-hidden', screenId !== 'login-screen');
             if (screenId === 'login-screen') {
                 const showLandingTop = consumeLandingTopLaunchRequest();
                 if ((isNative || localStorage.getItem('attendify_skip_landing') === 'true') && !showLandingTop) {

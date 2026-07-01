@@ -125,8 +125,8 @@
             overflow: hidden;
         }
 
-        .is-hidden {
-            display: none !important;
+        .landing-page.is-hidden {
+            display: none;
         }
 
         .landing-page.login-locked .landing-hero,
