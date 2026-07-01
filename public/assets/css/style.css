@@ -142,6 +142,13 @@
             transition: none !important;
         }
 
+        /* Workspace screen fills viewport from top — no nav offset needed */
+        .landing-page.login-locked ~ .container:has(#workspace-screen.active) {
+            margin-top: 0 !important;
+            padding: 0 !important;
+            max-width: 100% !important;
+        }
+
         .landing-page * {
             box-sizing: border-box;
         }
@@ -899,6 +906,14 @@
             margin-bottom: 60px;
             padding: 0 20px;
             transition: all 0.3s ease;
+        }
+
+        /* Remove container spacing when workspace screen is active */
+        .container:has(#workspace-screen.active) {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            padding: 0 !important;
+            max-width: 100% !important;
         }
 
         @media (max-width: 768px) {
@@ -2727,13 +2742,16 @@
            ===================================================== */
         #workspace-screen {
             display: none;
-            min-height: 100vh;
-            width: 100%;
-            align-items: center;
-            justify-content: center;
         }
+        /* Override generic .screen.active {display:block} */
         #workspace-screen.active {
-            display: flex;
+            display: flex !important;
+            flex-direction: column;
+            /* Break out of .container's padding/max-width */
+            width: 100vw;
+            margin-left: calc(-50vw + 50%);
+            min-height: 100vh;
+            box-sizing: border-box;
         }
         .workspace-shell {
             width: 100%;
