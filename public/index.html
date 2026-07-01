@@ -1623,19 +1623,21 @@
         let otpStore = {};
 
         // Connection status monitoring
-        const connectedRef = db.ref('.info/connected');
-        connectedRef.on('value', (snapshot) => {
-            const statusBadge = document.getElementById('connection-status');
-            if (statusBadge) {
-                if (snapshot.val() === true) {
-                    statusBadge.className = 'status-badge online';
-                    statusBadge.innerHTML = '<span class="status-dot"></span><span>Connected</span>';
-                } else {
-                    statusBadge.className = 'status-badge offline';
-                    statusBadge.innerHTML = '<span class="status-dot"></span><span>Offline</span>';
+        const connectedRef = db ? db.ref('.info/connected') : null;
+        if (connectedRef) {
+            connectedRef.on('value', (snapshot) => {
+                const statusBadge = document.getElementById('connection-status');
+                if (statusBadge) {
+                    if (snapshot.val() === true) {
+                        statusBadge.className = 'status-badge online';
+                        statusBadge.innerHTML = '<span class="status-dot"></span><span>Connected</span>';
+                    } else {
+                        statusBadge.className = 'status-badge offline';
+                        statusBadge.innerHTML = '<span class="status-dot"></span><span>Offline</span>';
+                    }
                 }
-            }
-        });
+            });
+        }
 
         window.onload = function () {
             const urlParams = new URLSearchParams(window.location.search);
@@ -2572,14 +2574,24 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
         }
 
         // Safety timeout for loading screen
-        const loadingSafetyTimeout = setTimeout(() => {
+        let loadingSafetyTimeout = setTimeout(() => {
             console.warn('Loading taking too long, forcing fade-out...');
             hideLoadingScreen();
         }, 5000);
 
         // Auth state observer with Smart Flicker Prevention
         let isFirstAuthCheck = true;
-        auth.onAuthStateChanged((user) => {
+        if (!auth || !db) {
+            console.error('Firebase is not ready. Showing workspace instead of keeping the loading screen visible.');
+            currentUser = null;
+            showScreen('workspace-screen');
+            const loginMessage = document.getElementById('login-message');
+            if (loginMessage) {
+                loginMessage.innerHTML = '<div class="message error">Firebase could not load. Please check your internet connection and refresh.</div>';
+            }
+            hideLoadingScreen();
+        } else {
+            auth.onAuthStateChanged((user) => {
             const urlParams = new URLSearchParams(window.location.search);
             const isStudentFlow = urlParams.has('code');
 
@@ -2634,7 +2646,8 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
                     hideLoadingScreen();
                 }
             }
-        });
+            });
+        }
 
 
 

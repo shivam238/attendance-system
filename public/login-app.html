@@ -314,6 +314,9 @@
         }
 
         function resolveGoogleOAuthIdToken(result) {
+            if (typeof firebase === 'undefined') {
+                return null;
+            }
             var credential = firebase.auth.GoogleAuthProvider.credentialFromResult(result);
             if ((!credential || !credential.idToken) && result.credential && result.credential.idToken) {
                 credential = firebase.auth.GoogleAuthProvider.credential(result.credential.idToken);
@@ -352,6 +355,11 @@
             msgDiv.textContent = '';
             msgDiv.className = '';
 
+            if (typeof firebase === 'undefined' || !auth) {
+                showFatalAuthError('Google sign-in could not load. Please check your internet connection and refresh.');
+                return;
+            }
+
             var provider = new firebase.auth.GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
 
@@ -389,6 +397,9 @@
             }
             document.getElementById('connecting-state').style.display = 'none';
             document.getElementById('login-section').style.display = 'block';
+            if (window.attendifyFirebaseUnavailable || !auth) {
+                showFatalAuthError('Google sign-in could not load. Please check your internet connection and refresh.');
+            }
         });
 
     </script>

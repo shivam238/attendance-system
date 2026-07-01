@@ -266,6 +266,14 @@
             document.getElementById('login-section').style.display = 'none';
             msgDiv.innerHTML = '';
 
+            if (typeof firebase === 'undefined' || !auth) {
+                connectingClassroom = false;
+                document.getElementById('connecting-state').style.display = 'none';
+                document.getElementById('login-section').style.display = 'block';
+                msgDiv.innerHTML = '<span class="error">❌ Google sign-in could not load. Please check your internet connection and refresh.</span>';
+                return;
+            }
+
             const provider = new firebase.auth.GoogleAuthProvider();
 
             // Set Scopes depending on role
@@ -304,6 +312,9 @@
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('connecting-state').style.display = 'none';
             document.getElementById('login-section').style.display = 'block';
+            if (window.attendifyFirebaseUnavailable || !auth) {
+                document.getElementById('message').innerHTML = '<span class="error">❌ Google sign-in could not load. Please check your internet connection and refresh.</span>';
+            }
         });
 
         function handleSuccessfulConnection(accessToken) {

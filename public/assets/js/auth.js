@@ -6,6 +6,9 @@ function signInWithGoogleOAuthCredential(googleOAuthIdToken) {
     if (!googleOAuthIdToken) {
         return Promise.reject(new Error('Google OAuth ID token is required'));
     }
+    if (typeof firebase === 'undefined' || !auth) {
+        return Promise.reject(new Error('Google sign-in is not ready'));
+    }
     const credential = firebase.auth.GoogleAuthProvider.credential(googleOAuthIdToken);
     const currentUser = auth.currentUser;
     if (currentUser && currentUser.isAnonymous) {
@@ -52,6 +55,14 @@ function startCapacitorGoogleLogin(options) {
 }
 
 function signInWithGoogle() {
+    if (typeof firebase === 'undefined' || !auth) {
+        const msgDiv = document.getElementById('login-message');
+        if (msgDiv) {
+            msgDiv.innerHTML = '<div class="message error">❌ Google sign-in could not load. Please check your internet connection and refresh.</div>';
+        }
+        return;
+    }
+
     if (window.Capacitor) {
         startCapacitorGoogleLogin({ openModal: 'cr' });
         return;

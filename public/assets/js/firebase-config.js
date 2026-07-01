@@ -11,13 +11,17 @@ const firebaseConfig = {
 };
 
 
-// Initialize Firebase
-if (!firebase.apps.length) {
+// Initialize Firebase. Keep the app shell usable even if the CDN SDK is blocked
+// or fails to load, otherwise the loading screen can stay up forever.
+if (typeof firebase === 'undefined') {
+    window.attendifyFirebaseUnavailable = true;
+    console.error("Firebase SDK failed to load. Authentication and database features are unavailable.");
+} else if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
-const auth = firebase.auth();
-const db = firebase.database();
+const auth = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : null;
+const db = (typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : null;
 
 // Safe global helper for logging analytics events
 let analytics = null;
@@ -55,4 +59,3 @@ if (typeof firebase !== 'undefined' && firebase.auth) {
         });
     }
 }
-
