@@ -3865,12 +3865,12 @@
 
         /* Optimize login card for mobile viewports without scroll */
         @media (max-width: 600px) {
-            .landing-page.login-locked .landing-nav {
-                display: none !important;
-            }
             .landing-page.login-locked ~ .container {
-                margin-top: 0 !important;
+                margin-top: 66px !important;
                 transition: none !important;
+            }
+            .landing-page.login-locked ~ .container:has(#workspace-screen.active) {
+                margin-top: 66px !important;
             }
             .container {
                 margin: 0 auto !important;
