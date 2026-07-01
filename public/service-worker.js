@@ -1,15 +1,15 @@
-const CACHE_NAME = 'attendify-cache-v46';
+const CACHE_NAME = 'attendify-cache-v45';
 const ASSETS = [
     './',
     './index.html',
-    './assets/css/style.css?v=27',
+    './assets/css/style.css?v=25',
     './assets/css/subjects.css',
     './assets/js/theme.js',
-    './assets/js/auth.js?v=11',
-    './assets/js/ui.js?v=20',
+    './assets/js/auth.js',
+    './assets/js/ui.js?v=16',
     './assets/js/history.js?v=10',
-    './assets/js/firebase-config.js?v=5',
-    './assets/js/export.js?v=11',
+    './assets/js/firebase-config.js',
+    './assets/js/export.js?v=10',
     './logo.webp',
     './logo-opt.png',
     './icon-192.png',

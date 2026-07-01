@@ -1,8 +1,7 @@
 // Native app / PWA detection
 (function() {
     const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    const isCapacitorNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
-    if (isCapacitorNative || isPWA) {
+    if (window.Capacitor || isPWA) {
         document.documentElement.classList.add('is-native-app');
     }
 })();
@@ -40,10 +39,7 @@ function showScreen(screenId) {
         target.classList.add('active');
         
         const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-        const isCapacitorNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
-        const isNative = isCapacitorNative || isPWA;
-        document.body.classList.toggle('native-cr-login-screen', screenId === 'login-screen' && isNative);
-        document.body.classList.toggle('native-workspace-screen', screenId === 'workspace-screen' && isNative);
+        const isNative = !!(window.Capacitor) || isPWA;
 
         // Handle native-app viewport height locking
         if (screenId === 'app-screen') {
@@ -82,26 +78,6 @@ function showScreen(screenId) {
 }
 
 function showCRLogin() {
-    if (!window._attendifyNativeBackHandlerRegistered
-        && window.Capacitor
-        && window.Capacitor.isNativePlatform
-        && window.Capacitor.isNativePlatform()
-        && window.Capacitor.Plugins
-        && window.Capacitor.Plugins.App) {
-        try {
-            window._attendifyNativeBackHandlerRegistered = true;
-            window.Capacitor.Plugins.App.addListener('backButton', () => {
-                const loginScreen = document.getElementById('login-screen');
-                if (loginScreen && loginScreen.classList.contains('active')) {
-                    showScreen('workspace-screen');
-                }
-            });
-        } catch (e) {
-            window._attendifyNativeBackHandlerRegistered = false;
-            console.warn('Native back handler setup failed:', e);
-        }
-    }
-
     const card = document.getElementById('ws-card-cr');
     if (card) {
         card.classList.add('ws-selected');
