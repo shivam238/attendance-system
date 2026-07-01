@@ -1874,21 +1874,45 @@ Convert the student list from the attached file/image, or the text enclosed in t
                 return;
             }
 
-            const allowedMimeTypes = ['application/pdf', 'text/csv', 'text/plain', 'image/jpeg', 'image/png', 'image/webp'];
-            if (!allowedMimeTypes.includes(file.type) && !file.name.endsWith('.csv') && !file.name.endsWith('.txt')) {
-                alert("Please select a valid file (PDF, Image, CSV, or Text).");
+            const fileName = file.name.toLowerCase();
+
+            // Word / Excel warning
+            if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls') || fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
+                alert("Microsoft Word/Excel (.docx, .xlsx) files cannot be read directly. Please save the sheet as a PDF, CSV, or Copy-Paste the text directly here!");
                 event.target.value = '';
                 return;
             }
 
-            // Enforce file size limit of 1.5MB
-            if (file.size > 1.5 * 1024 * 1024) {
-                alert("File is too large! Please upload a file smaller than 1.5MB.");
+            // CSV, TSV, TXT, XML - read as text client-side
+            if (file.type.startsWith('text/') || fileName.endsWith('.csv') || fileName.endsWith('.tsv') || fileName.endsWith('.txt')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('setup-student-raw-text').value = e.target.result;
+                    switchSetupStudentTab('text');
+                    alert(`📄 Loaded ${file.name} text successfully into Paste Text tab!`);
+                };
+                reader.readAsText(file);
                 event.target.value = '';
                 return;
             }
 
-            selectedSetupStudentFileMime = file.type || 'text/plain';
+            // Enforce file size limit of 4MB for PDF/Image
+            if (file.size > 4 * 1024 * 1024) {
+                alert("File is too large! Please upload a file smaller than 4MB.");
+                event.target.value = '';
+                return;
+            }
+
+            const isImage = file.type.startsWith('image/');
+            const isPdf = file.type === 'application/pdf' || fileName.endsWith('.pdf');
+
+            if (!isImage && !isPdf) {
+                alert("Unsupported file format! Please upload an Image, PDF, CSV, or TXT file.");
+                event.target.value = '';
+                return;
+            }
+
+            selectedSetupStudentFileMime = isPdf ? 'application/pdf' : file.type;
             const reader = new FileReader();
             reader.onload = function(e) {
                 selectedSetupStudentFileBase64 = e.target.result.split(',')[1];
@@ -2063,21 +2087,45 @@ AMAN KUMAR - 3`;
                 return;
             }
 
-            const allowedMimeTypes = ['application/pdf', 'text/csv', 'text/plain', 'image/jpeg', 'image/png', 'image/webp'];
-            if (!allowedMimeTypes.includes(file.type) && !file.name.endsWith('.csv') && !file.name.endsWith('.txt')) {
-                alert("Please select a valid file (PDF, Image, CSV, or Text).");
+            const fileName = file.name.toLowerCase();
+
+            // Word / Excel warning
+            if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls') || fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
+                alert("Microsoft Word/Excel (.docx, .xlsx) files cannot be read directly. Please save the sheet as a PDF, CSV, or Copy-Paste the text directly here!");
                 event.target.value = '';
                 return;
             }
 
-            // Enforce file size limit of 1.5MB
-            if (file.size > 1.5 * 1024 * 1024) {
-                alert("File is too large! Please upload a file smaller than 1.5MB.");
+            // CSV, TSV, TXT, XML - read as text client-side
+            if (file.type.startsWith('text/') || fileName.endsWith('.csv') || fileName.endsWith('.tsv') || fileName.endsWith('.txt')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('setup-ai-raw-text').value = e.target.result;
+                    switchSetupAiTab('text');
+                    alert(`📄 Loaded ${file.name} text successfully into Paste Text tab!`);
+                };
+                reader.readAsText(file);
                 event.target.value = '';
                 return;
             }
 
-            selectedSetupAiFileMime = file.type || 'text/plain';
+            // Enforce file size limit of 4MB for PDF/Image
+            if (file.size > 4 * 1024 * 1024) {
+                alert("File is too large! Please upload a file smaller than 4MB.");
+                event.target.value = '';
+                return;
+            }
+
+            const isImage = file.type.startsWith('image/');
+            const isPdf = file.type === 'application/pdf' || fileName.endsWith('.pdf');
+
+            if (!isImage && !isPdf) {
+                alert("Unsupported file format! Please upload an Image, PDF, CSV, or TXT file.");
+                event.target.value = '';
+                return;
+            }
+
+            selectedSetupAiFileMime = isPdf ? 'application/pdf' : file.type;
             const reader = new FileReader();
             reader.onload = function(e) {
                 selectedSetupAiFileBase64 = e.target.result.split(',')[1];
