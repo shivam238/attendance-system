@@ -265,6 +265,14 @@
             padding: 9px 18px;
         }
 
+        /* Theme toggle in navbar: hidden on landing hero, visible on workspace section */
+        .navbar-theme-btn {
+            display: none !important;
+        }
+        body.on-workspace .navbar-theme-btn {
+            display: inline-flex !important;
+        }
+
         .landing-menu-btn {
             display: none;
             width: 42px;
@@ -3651,7 +3659,7 @@
             padding: 28px 20px 20px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             flex-wrap: wrap;
             gap: 12px;
             width: 100%;
