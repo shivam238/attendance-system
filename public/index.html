@@ -418,6 +418,7 @@
                         placeholder="JOHN DOE - 25/B09/001&#10;JANE SMITH - 25/B09/002&#10;AMIT KUMAR - 25/B09/003"></textarea>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                         <button class="copy-prompt-btn" onclick="copyStudentPrompt()" style="margin-top: 12px;">📋 Copy ChatGPT Prompt</button>
+                        <button class="copy-prompt-btn" onclick="openSetupStudentModal()" style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); margin-top: 12px; border: none; font-weight: 700; display: flex; align-items: center; gap: 4px;">🤖 Auto-fill with AI (Beta)</button>
                         <button class="copy-prompt-btn" onclick="openClassroomModal(true)" style="background: #4f46e5; margin-top: 12px;">🎓 Google Classroom Import</button>
                     </div>
                 </div>
@@ -1217,6 +1218,51 @@
         </div>
     </div>
 
+    <!-- SETUP STUDENT LIST AUTOFILL MODAL -->
+    <div id="setup-student-modal" class="modal">
+        <div class="modal-content" style="max-width: 500px; width: 100%; border-radius: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 8px;">🤖 Student List AI Extractor</h3>
+                <button onclick="closeSetupStudentModal()" style="background: var(--tab-bg); border: 1px solid var(--border-color); width: 32px; height: 32px; border-radius: 50%; font-size: 18px; cursor: pointer; color: var(--text-color); display: flex; align-items: center; justify-content: center;">×</button>
+            </div>
+            
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+                Upload a screenshot/image of your student roll sheet or paste raw names/details, and our AI will automatically format them as <b>NAME - ROLLNO</b>.
+            </p>
+
+            <div class="ai-tabs">
+                <button id="setup-student-tab-text" class="ai-tab-btn active" onclick="switchSetupStudentTab('text')">📝 Paste Text</button>
+                <button id="setup-student-tab-image" class="ai-tab-btn" onclick="switchSetupStudentTab('image')">📷 Upload Image</button>
+            </div>
+
+            <!-- Tab: Paste Text -->
+            <div id="setup-student-pane-text" class="ai-pane active">
+                <textarea id="setup-student-raw-text" class="custom-input" style="width: 100%; height: 120px; font-family: inherit; font-size: 13px; resize: vertical; box-sizing: border-box; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--tab-bg); color: var(--text-color);" placeholder="Paste student list here...&#10;e.g.&#10;1. JOHN DOE - 25/B09/001&#10;2. JANE SMITH (25/B09/002)"></textarea>
+            </div>
+
+            <!-- Tab: Upload Image -->
+            <div id="setup-student-pane-image" class="ai-pane">
+                <div class="upload-dropzone" onclick="document.getElementById('setup-student-file-input').click()">
+                    <span>📷</span>
+                    <p>Click to select or drag & drop a screenshot/image of your student list</p>
+                    <input type="file" id="setup-student-file-input" style="display: none;" accept="image/*" onchange="handleSetupStudentFileSelect(event)">
+                </div>
+                <div id="setup-student-file-info" class="file-selected-info"></div>
+            </div>
+
+            <button class="btn btn-primary" id="setup-student-parse-btn" onclick="parseSetupStudentWithAi()" style="width: 100%; margin-top: 20px; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); border: none; font-weight: 700; height: 46px;">
+                🤖 EXTRACT & FORMAT
+            </button>
+
+            <!-- Loading indicator -->
+            <div id="setup-student-loading" style="display: none; text-align: center; margin-top: 15px; padding: 10px; background: rgba(99, 102, 241, 0.05); border-radius: 10px; border: 1px dashed var(--primary-color);">
+                <div style="font-size: 13px; font-weight: 700; color: var(--primary-color);">🤖 AI is parsing student list... Please wait...</div>
+            </div>
+            
+            <div id="setup-student-status" style="margin-top: 15px;"></div>
+        </div>
+    </div>
+
     <!-- ===== AI ATTENDANCE ASSISTANT BUTTON + POPUP ===== -->
     <!-- Floating trigger button (only shown after CR logs in) -->
     <button id="ai-assistant-fab" onclick="handleAIFABClick(event)" aria-label="Open AI Attendance Assistant">
@@ -1777,6 +1823,192 @@ Convert the student list from the attached file/image, or the text enclosed in t
         }
 
 
+
+        // Setup Student list AI Autofill Variables & Logic
+        let selectedSetupStudentFileBase64 = null;
+        let selectedSetupStudentFileMime = null;
+        let activeSetupStudentTab = 'text';
+
+        function openSetupStudentModal() {
+            document.getElementById('setup-student-modal').classList.add('active');
+            selectedSetupStudentFileBase64 = null;
+            selectedSetupStudentFileMime = null;
+            document.getElementById('setup-student-raw-text').value = '';
+            document.getElementById('setup-student-file-input').value = '';
+            document.getElementById('setup-student-file-info').style.display = 'none';
+            document.getElementById('setup-student-status').innerHTML = '';
+            switchSetupStudentTab('text');
+        }
+
+        function closeSetupStudentModal() {
+            document.getElementById('setup-student-modal').classList.remove('active');
+        }
+
+        function switchSetupStudentTab(tab) {
+            activeSetupStudentTab = tab;
+            const textBtn = document.getElementById('setup-student-tab-text');
+            const imgBtn = document.getElementById('setup-student-tab-image');
+            const textPane = document.getElementById('setup-student-pane-text');
+            const imgPane = document.getElementById('setup-student-pane-image');
+
+            if (tab === 'text') {
+                textBtn.classList.add('active');
+                imgBtn.classList.remove('active');
+                textPane.classList.add('active');
+                imgPane.classList.remove('active');
+            } else {
+                imgBtn.classList.add('active');
+                textBtn.classList.remove('active');
+                imgPane.classList.add('active');
+                textPane.classList.remove('active');
+            }
+        }
+
+        function handleSetupStudentFileSelect(event) {
+            const file = event.target.files[0];
+            const infoDiv = document.getElementById('setup-student-file-info');
+            if (!file) {
+                selectedSetupStudentFileBase64 = null;
+                selectedSetupStudentFileMime = null;
+                infoDiv.style.display = 'none';
+                return;
+            }
+
+            if (!file.type.startsWith('image/')) {
+                alert("Please select an image file.");
+                event.target.value = '';
+                return;
+            }
+
+            // Enforce file size limit of 1.5MB
+            if (file.size > 1.5 * 1024 * 1024) {
+                alert("File is too large! Please upload a file smaller than 1.5MB.");
+                event.target.value = '';
+                return;
+            }
+
+            selectedSetupStudentFileMime = file.type;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                selectedSetupStudentFileBase64 = e.target.result.split(',')[1];
+                infoDiv.textContent = `📁 File selected: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+                infoDiv.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function parseSetupStudentWithAi() {
+            const btn = document.getElementById('setup-student-parse-btn');
+            const loading = document.getElementById('setup-student-loading');
+            const statusDiv = document.getElementById('setup-student-status');
+
+            statusDiv.innerHTML = '';
+            
+            const promptText = `You are a precise data-formatting assistant. Your sole task is to extract a list of students from the provided input—which may be an image/screenshot or text pasted inside the user input—and convert it into a standardized format.
+
+STRICT FORMAT TO OUTPUT (DO NOT DEVIATE):
+NAME - ROLLNO
+
+RULES:
+1. Output ONLY the formatted student list. Do NOT wrap the output in markdown code blocks (e.g., do not use \`\`\`text or \`\`\`csv).
+2. Write exactly one student per line.
+3. Every single line in your response must strictly match this regular expression pattern:
+   ^[A-Z .'-]+ - [A-Z0-9/().\\s-]+$
+4. NAME must come FIRST, followed by a single space, a hyphen, another single space, and then the ROLLNO (e.g., "NAME - ROLLNO").
+5. Both NAME and ROLLNO must be in UPPERCASE.
+6. Do NOT add numbering, bullets, commas, headings, intro text, outro text, explanations, or blank lines.
+7. Do NOT alter, correct, guess, or reorder any names or roll numbers. Ignore page headers, footers, column titles (like "Name", "Roll No", "S.No"), or page numbers from the input.
+8. The output must contain EVERY student from the input list. Do NOT truncate, skip, summarize, or use ellipses ("...") under any circumstances, even if the list is extremely long.
+9. If extracting from an image, perform high-accuracy OCR to capture names and roll numbers correctly, ignoring layout tables or grids.
+10. Double-check that the total number of output lines matches the total number of students in the input source exactly.
+11. If a student record does not contain an actual roll number, leave that record unchanged and do not invent, generate, or substitute serial numbers, row numbers, or IDs. Only extract values explicitly present as roll numbers in the source. Do not treat S.NO, SERIAL NO, ROW NUMBER, INDEX, or POSITION as a roll number unless the source explicitly identifies it as the student's roll number.
+
+Example output:
+RAHUL SHARMA - 25/B09/001
+PRIYA SINGH - 25/B09/002
+AMAN KUMAR - 3`;
+
+            const messages = [];
+            const userMessage = { role: "user" };
+
+            if (activeSetupStudentTab === 'text') {
+                const rawText = document.getElementById('setup-student-raw-text').value.trim();
+                if (!rawText) {
+                    statusDiv.innerHTML = `<div class="message error">❌ Please paste student list text first</div>`;
+                    return;
+                }
+                if (rawText.length > 3000) {
+                    statusDiv.innerHTML = `<div class="message error">❌ Text too long! Please paste max 3000 characters.</div>`;
+                    return;
+                }
+                userMessage.content = rawText;
+            } else {
+                if (!selectedSetupStudentFileBase64) {
+                    statusDiv.innerHTML = `<div class="message error">❌ Please upload a student list image first</div>`;
+                    return;
+                }
+                userMessage.content = "";
+                userMessage.attachment = {
+                    mimeType: selectedSetupStudentFileMime,
+                    base64: selectedSetupStudentFileBase64
+                };
+            }
+            messages.push(userMessage);
+
+            btn.disabled = true;
+            loading.style.display = 'block';
+
+            try {
+                const response = await fetch(`https://attendify-support-worker.sm3165599.workers.dev/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: messages,
+                        systemInstruction: promptText
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`AI Service returned status ${response.status}`);
+                }
+
+                const responseText = await response.text();
+                const match = responseText.match(/data:\s*({.*})/);
+                if (!match) {
+                    throw new Error("Invalid response format from AI service.");
+                }
+                
+                const parsedTextObj = JSON.parse(match[1]);
+                let extractedText = parsedTextObj.text.trim();
+                
+                if (extractedText.startsWith("```")) {
+                    extractedText = extractedText.replace(/^```(text|json|csv)?/, "").replace(/```$/, "").trim();
+                }
+
+                if (!extractedText) {
+                    throw new Error("Empty response returned from AI.");
+                }
+
+                // Fill students textarea
+                const studentsTextarea = document.getElementById('setup-students');
+                studentsTextarea.value = extractedText;
+
+                statusDiv.innerHTML = `<div class="message success">✅ Successfully extracted and formatted student list!</div>`;
+                
+                setTimeout(() => {
+                    closeSetupStudentModal();
+                }, 2000);
+
+            } catch (err) {
+                console.error("Setup Student AI parse error:", err);
+                statusDiv.innerHTML = `<div class="message error">❌ Extraction failed: ${err.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
 
         // Setup Timetable AI Autofill Variables & Logic
         let parsedSetupTimetable = [];
