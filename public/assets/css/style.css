@@ -282,6 +282,12 @@
             padding: unset !important;
         }
 
+        /* Mobile-only nav theme toggle (visible on mobile, hidden on desktop) */
+        .navbar-theme-btn-mobile {
+            display: none;
+            margin: 0;
+        }
+
         .landing-menu-btn {
             display: none;
             width: 42px;
@@ -990,6 +996,16 @@
 
             .landing-menu-btn {
                 display: inline-flex;
+            }
+
+            .navbar-theme-btn-mobile {
+                display: inline-flex !important;
+                margin-left: auto;
+                margin-right: 8px;
+                opacity: 1 !important;
+                pointer-events: auto !important;
+                max-width: 60px !important;
+                padding: unset !important;
             }
 
             .landing-hero {
@@ -3046,41 +3062,60 @@
         }
 
 
-        /* Mobile workspace layout */
+        /* Mobile workspace layout — compact so both cards fit on one screen */
         @media (max-width: 600px) {
             #workspace-screen.active {
-                padding: 24px 16px 36px;
+                padding: 10px 16px 16px;
                 justify-content: flex-start;
             }
             .workspace-shell {
                 width: 100%;
+                gap: 12px;
             }
             .workspace-top-bar {
-                margin-bottom: 32px;
+                margin-bottom: 0;
             }
             .workspace-hero {
-                margin-bottom: 28px;
+                margin-bottom: 0;
             }
             .workspace-badge {
                 font-size: 10px;
-                padding: 5px 12px;
+                padding: 4px 10px;
+                margin-bottom: 8px;
+            }
+            .workspace-heading {
+                font-size: 1.55rem;
+                margin-bottom: 4px;
+            }
+            .workspace-sub {
+                display: none;
             }
             .workspace-cards {
                 grid-template-columns: 1fr;
-                gap: 14px;
+                gap: 10px;
             }
             .workspace-card {
-                padding: 22px 20px 20px;
+                padding: 16px 18px 14px;
             }
             .workspace-card:hover {
                 transform: translateY(-3px) scale(1.005);
             }
             .workspace-card-icon {
-                font-size: 28px;
-                margin-bottom: 12px;
+                width: 40px;
+                height: 40px;
+                border-radius: 11px;
+                margin-bottom: 8px;
             }
             .workspace-card-body h2 {
                 font-size: 16px;
+                margin-bottom: 4px;
+            }
+            .workspace-card-body p {
+                font-size: 12.5px;
+                margin-bottom: 10px;
+            }
+            .workspace-features {
+                gap: 4px;
             }
         }
 
