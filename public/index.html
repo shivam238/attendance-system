@@ -405,7 +405,10 @@
                     <input type="tel" id="setup-phone" placeholder="e.g., 9876543210" maxlength="10">
                 </div>
                 <div class="form-group">
-                    <label>Subjects (one per line)</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label style="margin-bottom: 0;">Subjects (one per line)</label>
+                        <button class="copy-prompt-btn" onclick="openSetupTimetableModal()" style="margin: 0; padding: 4px 10px; font-size: 11px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); display: flex; align-items: center; gap: 4px; border: none; outline: none; border-radius: 6px; color: white; cursor: pointer; font-weight: 700; transition: all 0.2s;">✨ Auto-fill from Timetable (AI)</button>
+                    </div>
                     <textarea id="setup-subjects" rows="4"
                         placeholder="MATHEMATICS-1&#10;PHYSICS&#10;BASIC CIVIL ENGINEERING"></textarea>
                 </div>
@@ -1169,6 +1172,51 @@
         </div>
     </div>
 
+    <!-- SETUP TIMETABLE AUTOFILL MODAL -->
+    <div id="setup-timetable-modal" class="modal">
+        <div class="modal-content" style="max-width: 500px; width: 100%; border-radius: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 8px;">✨ Timetable AI Extractor</h3>
+                <button onclick="closeSetupTimetableModal()" style="background: var(--tab-bg); border: 1px solid var(--border-color); width: 32px; height: 32px; border-radius: 50%; font-size: 18px; cursor: pointer; color: var(--text-color); display: flex; align-items: center; justify-content: center;">×</button>
+            </div>
+            
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+                Upload a screenshot/image of your timetable or paste the raw schedule text, and our AI will automatically extract your unique subjects and configure your timetable!
+            </p>
+
+            <div class="ai-tabs">
+                <button id="setup-ai-tab-text" class="ai-tab-btn active" onclick="switchSetupAiTab('text')">📝 Paste Text</button>
+                <button id="setup-ai-tab-image" class="ai-tab-btn" onclick="switchSetupAiTab('image')">📷 Upload Image</button>
+            </div>
+
+            <!-- Tab: Paste Text -->
+            <div id="setup-ai-pane-text" class="ai-pane active">
+                <textarea id="setup-ai-raw-text" class="custom-input" style="width: 100%; height: 120px; font-family: inherit; font-size: 13px; resize: vertical; box-sizing: border-box; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--tab-bg); color: var(--text-color);" placeholder="Paste timetable here...&#10;e.g.&#10;Monday&#10;09:00 - 10:00: PHYSICS&#10;10:15 - 11:15: MATHEMATICS-1"></textarea>
+            </div>
+
+            <!-- Tab: Upload Image -->
+            <div id="setup-ai-pane-image" class="ai-pane">
+                <div class="upload-dropzone" onclick="document.getElementById('setup-ai-file-input').click()">
+                    <span>📷</span>
+                    <p>Click to select or drag & drop a screenshot/image of your timetable</p>
+                    <input type="file" id="setup-ai-file-input" style="display: none;" accept="image/*" onchange="handleSetupAiFileSelect(event)">
+                </div>
+                <div id="setup-ai-file-info" class="file-selected-info"></div>
+            </div>
+
+            <button class="btn btn-primary" id="setup-ai-parse-btn" onclick="parseSetupTimetableWithAi()" style="width: 100%; margin-top: 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; font-weight: 700; height: 46px;">
+                🤖 EXTRACT & AUTO-FILL
+            </button>
+
+            <!-- Loading indicator -->
+            <div id="setup-ai-loading" style="display: none; text-align: center; margin-top: 15px; padding: 10px; background: rgba(16, 185, 129, 0.05); border-radius: 10px; border: 1px dashed #10b981;">
+                <div style="font-size: 13px; font-weight: 700; color: #059669;">🤖 AI is parsing timetable... Please wait...</div>
+            </div>
+            
+            <div id="setup-ai-status" style="margin-top: 15px;"></div>
+        </div>
+    </div>
+
     <!-- ===== AI ATTENDANCE ASSISTANT BUTTON + POPUP ===== -->
     <!-- Floating trigger button (only shown after CR logs in) -->
     <button id="ai-assistant-fab" onclick="handleAIFABClick(event)" aria-label="Open AI Attendance Assistant">
@@ -1730,6 +1778,191 @@ Convert the student list from the attached file/image, or the text enclosed in t
 
 
 
+        // Setup Timetable AI Autofill Variables & Logic
+        let parsedSetupTimetable = [];
+        let selectedSetupAiFileBase64 = null;
+        let selectedSetupAiFileMime = null;
+        let activeSetupAiTab = 'text';
+
+        function openSetupTimetableModal() {
+            document.getElementById('setup-timetable-modal').classList.add('active');
+            parsedSetupTimetable = [];
+            selectedSetupAiFileBase64 = null;
+            selectedSetupAiFileMime = null;
+            document.getElementById('setup-ai-raw-text').value = '';
+            document.getElementById('setup-ai-file-input').value = '';
+            document.getElementById('setup-ai-file-info').style.display = 'none';
+            document.getElementById('setup-ai-status').innerHTML = '';
+            switchSetupAiTab('text');
+        }
+
+        function closeSetupTimetableModal() {
+            document.getElementById('setup-timetable-modal').classList.remove('active');
+        }
+
+        function switchSetupAiTab(tab) {
+            activeSetupAiTab = tab;
+            const textBtn = document.getElementById('setup-ai-tab-text');
+            const imgBtn = document.getElementById('setup-ai-tab-image');
+            const textPane = document.getElementById('setup-ai-pane-text');
+            const imgPane = document.getElementById('setup-ai-pane-image');
+
+            if (tab === 'text') {
+                textBtn.classList.add('active');
+                imgBtn.classList.remove('active');
+                textPane.classList.add('active');
+                imgPane.classList.remove('active');
+            } else {
+                imgBtn.classList.add('active');
+                textBtn.classList.remove('active');
+                imgPane.classList.add('active');
+                textPane.classList.remove('active');
+            }
+        }
+
+        function handleSetupAiFileSelect(event) {
+            const file = event.target.files[0];
+            const infoDiv = document.getElementById('setup-ai-file-info');
+            if (!file) {
+                selectedSetupAiFileBase64 = null;
+                selectedSetupAiFileMime = null;
+                infoDiv.style.display = 'none';
+                return;
+            }
+
+            if (!file.type.startsWith('image/')) {
+                alert("Please select an image file.");
+                event.target.value = '';
+                return;
+            }
+
+            // Enforce file size limit of 1.5MB
+            if (file.size > 1.5 * 1024 * 1024) {
+                alert("File is too large! Please upload a file smaller than 1.5MB.");
+                event.target.value = '';
+                return;
+            }
+
+            selectedSetupAiFileMime = file.type;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                selectedSetupAiFileBase64 = e.target.result.split(',')[1];
+                infoDiv.textContent = `📁 File selected: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+                infoDiv.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function parseSetupTimetableWithAi() {
+            const btn = document.getElementById('setup-ai-parse-btn');
+            const loading = document.getElementById('setup-ai-loading');
+            const statusDiv = document.getElementById('setup-ai-status');
+
+            statusDiv.innerHTML = '';
+            
+            const promptText = `You are an expert timetable parser.
+Analyze the provided timetable input and extract all unique subjects AND the detailed schedule slots.
+Allowed days of the week: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday.
+
+For each class slot, extract:
+- "day": Name of the day (must be Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, or Sunday)
+- "subject": The subject name
+- "startTime": The class start time in 24-hour HH:MM format (e.g. "09:30")
+- "endTime": The class end time in 24-hour HH:MM format (e.g. "10:30")
+
+Respond ONLY with a valid JSON object containing exactly two keys:
+1. "subjects": An array of strings representing the unique subjects found (e.g. ["PHYSICS", "MATHEMATICS-1"])
+2. "timetable": A JSON array of objects representing class slots (each having keys "day", "subject", "startTime", "endTime").
+
+Do not wrap it in markdown block. Do not include any explanation or other text.`;
+
+            const messages = [];
+            const userMessage = { role: "user" };
+
+            if (activeSetupAiTab === 'text') {
+                const rawText = document.getElementById('setup-ai-raw-text').value.trim();
+                if (!rawText) {
+                    statusDiv.innerHTML = `<div class="message error">❌ Please paste timetable text first</div>`;
+                    return;
+                }
+                if (rawText.length > 2000) {
+                    statusDiv.innerHTML = `<div class="message error">❌ Text too long! Please paste max 2000 characters.</div>`;
+                    return;
+                }
+                userMessage.content = rawText;
+            } else {
+                if (!selectedSetupAiFileBase64) {
+                    statusDiv.innerHTML = `<div class="message error">❌ Please upload a timetable image first</div>`;
+                    return;
+                }
+                userMessage.content = "";
+                userMessage.attachment = {
+                    mimeType: selectedSetupAiFileMime,
+                    base64: selectedSetupAiFileBase64
+                };
+            }
+            messages.push(userMessage);
+
+            btn.disabled = true;
+            loading.style.display = 'block';
+
+            try {
+                const response = await fetch(`https://attendify-support-worker.sm3165599.workers.dev/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: messages,
+                        systemInstruction: promptText
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`AI Service returned status ${response.status}`);
+                }
+
+                const responseText = await response.text();
+                const match = responseText.match(/data:\s*({.*})/);
+                if (!match) {
+                    throw new Error("Invalid response format from AI service.");
+                }
+                
+                const parsedTextObj = JSON.parse(match[1]);
+                let jsonText = parsedTextObj.text.trim();
+                
+                if (jsonText.startsWith("```")) {
+                    jsonText = jsonText.replace(/^```(json)?/, "").replace(/```$/, "").trim();
+                }
+
+                const result = JSON.parse(jsonText);
+
+                if (!result.subjects || !Array.isArray(result.subjects)) {
+                    throw new Error("No subjects array returned from AI.");
+                }
+
+                // Fill subjects textarea
+                const subjectsTextarea = document.getElementById('setup-subjects');
+                subjectsTextarea.value = result.subjects.map(s => s.toUpperCase()).join('\n');
+
+                // Save timetable slots temporarily
+                parsedSetupTimetable = result.timetable || [];
+
+                statusDiv.innerHTML = `<div class="message success">✅ Successfully extracted ${result.subjects.length} subjects and ${parsedSetupTimetable.length} timetable slots! They will be saved when you submit class setup.</div>`;
+                
+                setTimeout(() => {
+                    closeSetupTimetableModal();
+                }, 2000);
+
+            } catch (err) {
+                console.error("Setup AI parse error:", err);
+                statusDiv.innerHTML = `<div class="message error">❌ Extraction failed: ${err.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
         function saveClassSetup() {
             const year = document.getElementById('setup-year').value.trim();
             const college = document.getElementById('setup-college').value.trim().toUpperCase();
@@ -1792,7 +2025,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
 
             msgDiv.innerHTML = '<div class="message">💾 Saving class data...</div>';
 
-            db.ref('users/' + user.uid).set({
+            const classSetupData = {
                 year, college, branch, section, phone, website,
                 username: year + college + branch + section,
                 subjects: subjects,
@@ -1800,7 +2033,24 @@ Convert the student list from the attached file/image, or the text enclosed in t
                 email: user.email || "",
                 displayName: user.displayName || "",
                 createdAt: Date.now()
-            }).then(() => {
+            };
+
+            // If AI timetable slots were parsed, save them to the database
+            if (parsedSetupTimetable && parsedSetupTimetable.length > 0) {
+                const timetableObj = {};
+                parsedSetupTimetable.forEach(slot => {
+                    const slotKey = db.ref().child('temp').push().key;
+                    timetableObj[slotKey] = {
+                        day: slot.day,
+                        subject: slot.subject.toUpperCase().trim(),
+                        startTime: slot.startTime,
+                        endTime: slot.endTime
+                    };
+                });
+                classSetupData.timetable = timetableObj;
+            }
+
+            db.ref('users/' + user.uid).set(classSetupData).then(() => {
                 msgDiv.innerHTML = '<div class="message success">✅ Setup complete! Redirecting...</div>';
                 setTimeout(() => {
                     handleUserSignedIn(user);
