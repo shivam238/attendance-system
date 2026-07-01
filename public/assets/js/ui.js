@@ -45,7 +45,7 @@ function showScreen(screenId) {
         if (screenId === 'app-screen') {
             document.body.classList.remove('native-login-active');
             document.body.classList.add('app-layout-active');
-        } else if (screenId === 'login-screen' && isNative) {
+        } else if ((screenId === 'login-screen' || screenId === 'workspace-screen') && isNative) {
             document.body.classList.remove('app-layout-active');
             document.body.classList.add('native-login-active');
         } else {
