@@ -297,6 +297,7 @@ function prepareLandingReveal() {
     landingRevealItems = Array.from(landingPage.querySelectorAll(revealGroups.join(',')));
     if (!landingRevealItems.length) return;
 
+    landingPage.classList.add('reveal-ready');
     landingRevealItems.forEach((item, index) => {
         item.classList.add('landing-reveal');
         item.style.transitionDelay = `${Math.min((index % 6) * 70, 280)}ms`;
@@ -360,6 +361,7 @@ function scheduleLandingRevealFallback() {
         const hasVisibleItem = landingRevealItems.some(item => item.classList.contains('is-visible'));
         if (!hasVisibleItem) {
             landingPage.classList.add('reveal-fallback');
+            landingPage.classList.remove('reveal-ready');
             landingRevealItems.forEach(item => {
                 item.classList.add('is-visible');
                 item.style.transitionDelay = '';

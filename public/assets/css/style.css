@@ -397,10 +397,15 @@
         }
 
         .landing-reveal {
-            opacity: 0;
-            transform: translateY(26px);
+            opacity: 1;
+            transform: none;
             transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
             will-change: opacity, transform;
+        }
+
+        .landing-page.reveal-ready .landing-reveal {
+            opacity: 0;
+            transform: translateY(26px);
         }
 
         .landing-reveal.is-visible {
@@ -4033,4 +4038,3 @@
     font-weight: 700;
     text-align: center;
 }
-
