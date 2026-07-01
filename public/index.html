@@ -2094,13 +2094,18 @@ AMAN KUMAR - 3`;
                 }
 
                 const responseText = await response.text();
-                const match = responseText.match(/data:\s*({.*})/);
-                if (!match) {
-                    throw new Error("Invalid response format from AI service.");
-                }
-                
-                const parsedTextObj = JSON.parse(match[1]);
-                let extractedText = parsedTextObj.text.trim();
+                let extractedText = '';
+
+                responseText.split('\n').forEach(line => {
+                    if (line.startsWith('data: ') && !line.includes('[DONE]')) {
+                        try {
+                            const parsed = JSON.parse(line.slice(6));
+                            if (parsed.text) extractedText = parsed.text;
+                        } catch (_) {}
+                    }
+                });
+
+                extractedText = extractedText.trim();
                 
                 if (extractedText.startsWith("```")) {
                     extractedText = extractedText.replace(/^```(text|json|csv)?/, "").replace(/```$/, "").trim();
@@ -2333,13 +2338,18 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
                 }
 
                 const responseText = await response.text();
-                const match = responseText.match(/data:\s*({.*})/);
-                if (!match) {
-                    throw new Error("Invalid response format from AI service.");
-                }
-                
-                const parsedTextObj = JSON.parse(match[1]);
-                let jsonText = parsedTextObj.text.trim();
+                let jsonText = '';
+
+                responseText.split('\n').forEach(line => {
+                    if (line.startsWith('data: ') && !line.includes('[DONE]')) {
+                        try {
+                            const parsed = JSON.parse(line.slice(6));
+                            if (parsed.text) jsonText = parsed.text;
+                        } catch (_) {}
+                    }
+                });
+
+                jsonText = jsonText.trim();
                 
                 if (jsonText.startsWith("```")) {
                     jsonText = jsonText.replace(/^```(json)?/, "").replace(/```$/, "").trim();
