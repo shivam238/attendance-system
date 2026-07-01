@@ -1200,7 +1200,7 @@
                 <div class="upload-dropzone" onclick="document.getElementById('setup-ai-file-input').click()">
                     <span>📂</span>
                     <p>Click to select or drag & drop a PDF, Image, CSV, or Text file of your timetable</p>
-                    <input type="file" id="setup-ai-file-input" style="display: none;" accept="image/*,application/pdf,text/plain,text/csv" onchange="handleSetupAiFileSelect(event)">
+                    <input type="file" id="setup-ai-file-input" style="display: none;" accept="image/*,.pdf,.csv,.txt,.xlsx,.xls,.docx" onchange="handleSetupAiFileSelect(event)">
                 </div>
                 <div id="setup-ai-file-info" class="file-selected-info"></div>
             </div>
@@ -1245,7 +1245,7 @@
                 <div class="upload-dropzone" onclick="document.getElementById('setup-student-file-input').click()">
                     <span>📂</span>
                     <p>Click to select or drag & drop a PDF, Image, CSV, or Text file of your student list</p>
-                    <input type="file" id="setup-student-file-input" style="display: none;" accept="image/*,application/pdf,text/plain,text/csv" onchange="handleSetupStudentFileSelect(event)">
+                    <input type="file" id="setup-student-file-input" style="display: none;" accept="image/*,.pdf,.csv,.txt,.xlsx,.xls,.docx" onchange="handleSetupStudentFileSelect(event)">
                 </div>
                 <div id="setup-student-file-info" class="file-selected-info"></div>
             </div>
@@ -1824,6 +1824,66 @@ Convert the student list from the attached file/image, or the text enclosed in t
 
 
 
+        // Dynamic script loader for XLSX and Mammoth
+        function loadScript(url) {
+            return new Promise((resolve, reject) => {
+                if (document.querySelector(`script[src="${url}"]`)) {
+                    resolve();
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = () => resolve();
+                script.onerror = () => reject(new Error(`Failed to load script ${url}`));
+                document.head.appendChild(script);
+            });
+        }
+
+        async function readExcelFile(file) {
+            if (!window.XLSX) {
+                await loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
+            }
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        let text = '';
+                        workbook.SheetNames.forEach(sheetName => {
+                            const sheet = workbook.Sheets[sheetName];
+                            const csv = XLSX.utils.sheet_to_csv(sheet);
+                            if (csv.trim()) {
+                                text += csv + '\n';
+                            }
+                        });
+                        resolve(text.trim());
+                    } catch (err) {
+                        reject(err);
+                    }
+                };
+                reader.onerror = (err) => reject(err);
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        async function readDocxFile(file) {
+            if (!window.mammoth) {
+                await loadScript('https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js');
+            }
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const arrayBuffer = e.target.result;
+                    mammoth.extractRawText({ arrayBuffer: arrayBuffer })
+                        .then(result => resolve(result.value.trim()))
+                        .catch(err => reject(err));
+                };
+                reader.onerror = (err) => reject(err);
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
         // Setup Student list AI Autofill Variables & Logic
         let selectedSetupStudentFileBase64 = null;
         let selectedSetupStudentFileMime = null;
@@ -1876,9 +1936,43 @@ Convert the student list from the attached file/image, or the text enclosed in t
 
             const fileName = file.name.toLowerCase();
 
-            // Word / Excel warning
-            if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls') || fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
-                alert("Microsoft Word/Excel (.docx, .xlsx) files cannot be read directly. Please save the sheet as a PDF, CSV, or Copy-Paste the text directly here!");
+            // Word / Excel parsing
+            if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+                infoDiv.textContent = `⏳ Reading Excel file...`;
+                infoDiv.style.display = 'block';
+                readExcelFile(file).then(text => {
+                    document.getElementById('setup-student-raw-text').value = text;
+                    switchSetupStudentTab('text');
+                    infoDiv.style.display = 'none';
+                    alert(`📄 Loaded data from Excel sheet successfully!`);
+                }).catch(err => {
+                    console.error(err);
+                    infoDiv.style.display = 'none';
+                    alert("Failed to parse Excel file. Please try pasting the text or saving as PDF/CSV.");
+                });
+                event.target.value = '';
+                return;
+            }
+
+            if (fileName.endsWith('.docx')) {
+                infoDiv.textContent = `⏳ Reading Word document...`;
+                infoDiv.style.display = 'block';
+                readDocxFile(file).then(text => {
+                    document.getElementById('setup-student-raw-text').value = text;
+                    switchSetupStudentTab('text');
+                    infoDiv.style.display = 'none';
+                    alert(`📄 Loaded text from Word document successfully!`);
+                }).catch(err => {
+                    console.error(err);
+                    infoDiv.style.display = 'none';
+                    alert("Failed to parse Word document. Please try pasting the text or saving as PDF/CSV.");
+                });
+                event.target.value = '';
+                return;
+            }
+
+            if (fileName.endsWith('.doc')) {
+                alert("Old Word format (.doc) is not supported. Please save the file as modern Word format (.docx) or PDF/CSV first!");
                 event.target.value = '';
                 return;
             }
@@ -2089,9 +2183,43 @@ AMAN KUMAR - 3`;
 
             const fileName = file.name.toLowerCase();
 
-            // Word / Excel warning
-            if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls') || fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
-                alert("Microsoft Word/Excel (.docx, .xlsx) files cannot be read directly. Please save the sheet as a PDF, CSV, or Copy-Paste the text directly here!");
+            // Word / Excel parsing
+            if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+                infoDiv.textContent = `⏳ Reading Excel file...`;
+                infoDiv.style.display = 'block';
+                readExcelFile(file).then(text => {
+                    document.getElementById('setup-ai-raw-text').value = text;
+                    switchSetupAiTab('text');
+                    infoDiv.style.display = 'none';
+                    alert(`📄 Loaded data from Excel sheet successfully!`);
+                }).catch(err => {
+                    console.error(err);
+                    infoDiv.style.display = 'none';
+                    alert("Failed to parse Excel file. Please try pasting the text or saving as PDF/CSV.");
+                });
+                event.target.value = '';
+                return;
+            }
+
+            if (fileName.endsWith('.docx')) {
+                infoDiv.textContent = `⏳ Reading Word document...`;
+                infoDiv.style.display = 'block';
+                readDocxFile(file).then(text => {
+                    document.getElementById('setup-ai-raw-text').value = text;
+                    switchSetupAiTab('text');
+                    infoDiv.style.display = 'none';
+                    alert(`📄 Loaded text from Word document successfully!`);
+                }).catch(err => {
+                    console.error(err);
+                    infoDiv.style.display = 'none';
+                    alert("Failed to parse Word document. Please try pasting the text or saving as PDF/CSV.");
+                });
+                event.target.value = '';
+                return;
+            }
+
+            if (fileName.endsWith('.doc')) {
+                alert("Old Word format (.doc) is not supported. Please save the file as modern Word format (.docx) or PDF/CSV first!");
                 event.target.value = '';
                 return;
             }
