@@ -63,7 +63,7 @@ function signInWithGoogle() {
         return;
     }
 
-    if (window.Capacitor) {
+    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
         startCapacitorGoogleLogin({ openModal: 'cr' });
         return;
     }
@@ -704,7 +704,7 @@ function handleLoginDeepLink(urlObj) {
 }
 
 // Register deep link listener for Capacitor environment (once only)
-if (window.Capacitor && !window._attendifyAuthDeepLinkRegistered) {
+if (window.Capacitor && window.Capacitor.isNativePlatform() && !window._attendifyAuthDeepLinkRegistered) {
     window._attendifyAuthDeepLinkRegistered = true;
     document.addEventListener('DOMContentLoaded', () => {
         const checkDeepLink = (url) => {

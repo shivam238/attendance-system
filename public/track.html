@@ -1410,7 +1410,7 @@
         let studentClassroomToken = null;
 
         // Classroom-only deep links (login tokens handled by auth.js)
-        if (window.Capacitor) {
+        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
             document.addEventListener('DOMContentLoaded', () => {
                 if (window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
                     window.Capacitor.Plugins.App.addListener('appUrlOpen', (data) => {
@@ -1542,7 +1542,7 @@
             const msgDiv = document.getElementById('classroom-feed-message');
             msgDiv.innerHTML = '<div class="message">🔄 Connecting to Google...</div>';
 
-            if (window.Capacitor) {
+            if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                 // For mobile app, redirect to hosted classroom-auth.html
                 msgDiv.innerHTML = '<div class="message">🔄 Redirecting to browser for Classroom authorization...</div>';
                 const domain = (typeof firebaseConfig !== 'undefined' && firebaseConfig.authDomain) 
@@ -1884,7 +1884,7 @@
         function loginWithGoogle() {
             const msgDiv = document.getElementById('portal-auth-message');
             
-            if (window.Capacitor) {
+            if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                 window._trackLoginPending = true;
                 startCapacitorGoogleLogin({
                     studentFlow: true,
@@ -2478,7 +2478,7 @@
         }
 
         async function requestStudentNotificationPermission() {
-            if (window.Capacitor && window.Capacitor.isPluginAvailable('LocalNotifications')) {
+            if (window.Capacitor && window.Capacitor.isNativePlatform() && window.Capacitor.isPluginAvailable('LocalNotifications')) {
                 try {
                     const { LocalNotifications } = window.Capacitor.Plugins;
                     let permStatus = await LocalNotifications.checkPermissions();
@@ -2494,7 +2494,7 @@
                 }
             }
 
-            if (window.Capacitor && window.Capacitor.isPluginAvailable('PushNotifications')) {
+            if (window.Capacitor && window.Capacitor.isNativePlatform() && window.Capacitor.isPluginAvailable('PushNotifications')) {
                 try {
                     const { PushNotifications } = window.Capacitor.Plugins;
                     
@@ -2538,7 +2538,7 @@
         }
 
         function checkAttendanceShortageAlerts(classId, rollNo, subjects, subjectStats, threshold) {
-            if (!('Notification' in window) && !(window.Capacitor && window.Capacitor.isPluginAvailable('LocalNotifications'))) {
+            if (!('Notification' in window) && !(window.Capacitor && window.Capacitor.isNativePlatform() && window.Capacitor.isPluginAvailable('LocalNotifications'))) {
                 return;
             }
 
@@ -2564,7 +2564,7 @@
         }
 
         function triggerStudentLocalNotification(title, body) {
-            if (window.Capacitor && window.Capacitor.isPluginAvailable('LocalNotifications')) {
+            if (window.Capacitor && window.Capacitor.isNativePlatform() && window.Capacitor.isPluginAvailable('LocalNotifications')) {
                 try {
                     const { LocalNotifications } = window.Capacitor.Plugins;
                     LocalNotifications.schedule({

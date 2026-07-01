@@ -1,7 +1,8 @@
 // Native app / PWA detection
 (function() {
     const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    if (window.Capacitor || isPWA) {
+    const isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform()) || isPWA;
+    if (isNative) {
         document.documentElement.classList.add('is-native-app');
     }
 })();
@@ -39,7 +40,7 @@ function showScreen(screenId) {
         target.classList.add('active');
         
         const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-        const isNative = !!(window.Capacitor) || isPWA;
+        const isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform()) || isPWA;
 
         // Handle native-app viewport height locking
         if (screenId === 'app-screen') {
@@ -150,7 +151,7 @@ function handleLandingScroll() {
 
         // Lock viewport for login/workspace screen in native/PWA modes
         const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-        const isNative = !!(window.Capacitor) || isPWA;
+        const isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform()) || isPWA;
         if (isNative) {
             document.body.classList.add('native-login-active');
         }

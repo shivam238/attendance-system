@@ -331,6 +331,7 @@
                         </div>
                         <div class="workspace-card-arrow">→</div>
                     </div>
+                </div>
             </div>
         </div>
 
@@ -1665,7 +1666,7 @@
 
         function studentGoogleLogin() {
             // In Capacitor (Android app), popup is blocked — use external browser + deep link flow
-            if (window.Capacitor) {
+            if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                 openStudentCapacitorLoginFlow();
                 return;
             }
@@ -1853,7 +1854,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
 
             navigator.clipboard.writeText(prompt).then(() => {
                 const chatgptUrl = 'https://chatgpt.com/?q=' + encodeURIComponent(prompt);
-                if (window.Capacitor) {
+                if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                     window.open(chatgptUrl, '_system');
                 } else {
                     window.open(chatgptUrl, '_blank');
@@ -2776,7 +2777,7 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
             // Show manual paste box if inside Capacitor
             const manualDiv = document.getElementById('capacitor-classroom-manual');
             if (manualDiv) {
-                manualDiv.style.display = window.Capacitor ? 'block' : 'none';
+                manualDiv.style.display = (window.Capacitor && window.Capacitor.isNativePlatform()) ? 'block' : 'none';
                 const input = document.getElementById('capacitor-classroom-token-input');
                 if (input) input.value = '';
             }
@@ -2821,7 +2822,7 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
                 return;
             }
 
-            if (window.Capacitor) {
+            if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                 // For mobile app, redirect to hosted classroom-auth.html
                 msgDiv.innerHTML = '<div class="message">🔄 Redirecting to browser for Classroom authorization...</div>';
                 const domain = (typeof firebaseConfig !== 'undefined' && firebaseConfig.authDomain) 
@@ -4694,7 +4695,7 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
         }
 
         async function requestNotificationPermission() {
-            if (window.Capacitor && window.Capacitor.isPluginAvailable('LocalNotifications')) {
+            if (window.Capacitor && window.Capacitor.isNativePlatform() && window.Capacitor.isPluginAvailable('LocalNotifications')) {
                 try {
                     const { LocalNotifications } = window.Capacitor.Plugins;
                     let permStatus = await LocalNotifications.checkPermissions();
@@ -4771,7 +4772,7 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
                 ? `${record.name} (${record.rollNo}) marked attendance from a shared device. Reason: ${record.suspiciousReason}`
                 : `${record.name} (${record.rollNo}) marked present for ${currentSubject || 'Class'}.`;
             
-            if (window.Capacitor && window.Capacitor.isPluginAvailable('LocalNotifications')) {
+            if (window.Capacitor && window.Capacitor.isNativePlatform() && window.Capacitor.isPluginAvailable('LocalNotifications')) {
                 try {
                     const { LocalNotifications } = window.Capacitor.Plugins;
                     LocalNotifications.schedule({
@@ -5557,7 +5558,7 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
                                         msgDiv.innerHTML = '<div class="message info" style="color: var(--primary-color);">📍 Verifying classroom location... Please allow GPS access.</div>';
 
                                         // Try native Capacitor plugin MockLocationChecker first for Android security
-                                        if (window.Capacitor && window.Capacitor.Plugins.MockLocationChecker) {
+                                        if (window.Capacitor && window.Capacitor.isNativePlatform() && window.Capacitor.Plugins.MockLocationChecker) {
                                             const { MockLocationChecker } = window.Capacitor.Plugins;
                                             MockLocationChecker.getCurrentPosition().then((result) => {
                                                 if (result.isMock) {
