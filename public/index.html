@@ -1572,6 +1572,59 @@
     <script src="assets/js/export.js?v=11"></script>
 
     <script>
+        (function() {
+            var isNativePlatform = !!(window.Capacitor
+                && window.Capacitor.isNativePlatform
+                && window.Capacitor.isNativePlatform());
+            if (!isNativePlatform) return;
+
+            function showNativeCrashOverlay(error) {
+                var message = error && (error.stack || error.message || String(error));
+                var existing = document.getElementById('native-error-boundary');
+                if (existing) {
+                    existing.querySelector('pre').textContent = message;
+                    return;
+                }
+
+                var overlay = document.createElement('div');
+                overlay.id = 'native-error-boundary';
+                overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#0b1020;color:#f8fafc;padding:18px;box-sizing:border-box;overflow:auto;font-family:Inter,system-ui,sans-serif;';
+                overlay.innerHTML = '<h2 style="margin:0 0 10px;font-size:18px;color:#fca5a5;">ATTENDIFY crashed while opening the CR dashboard</h2><p style="margin:0 0 12px;color:#cbd5e1;font-size:13px;line-height:1.5;">This diagnostic is shown only inside the Android app.</p><pre style="white-space:pre-wrap;word-break:break-word;background:#111827;border:1px solid #334155;border-radius:8px;padding:12px;font-size:12px;line-height:1.5;"></pre>';
+                overlay.querySelector('pre').textContent = message;
+                document.body.appendChild(overlay);
+            }
+
+            window.addEventListener('error', function(event) {
+                showNativeCrashOverlay(event.error || event.message);
+            });
+
+            window.addEventListener('unhandledrejection', function(event) {
+                showNativeCrashOverlay(event.reason || 'Unhandled promise rejection');
+            });
+
+            window.attendifyNativeCacheCleanup = function() {
+                if (!('serviceWorker' in navigator)) return;
+
+                navigator.serviceWorker.getRegistrations()
+                    .then(function(registrations) {
+                        return Promise.all(registrations.map(function(registration) {
+                            return registration.unregister();
+                        }));
+                    })
+                    .then(function() {
+                        if (!window.caches || !caches.keys) return null;
+                        return caches.keys().then(function(keys) {
+                            return Promise.all(keys
+                                .filter(function(key) { return key.indexOf('attendify-cache-') === 0; })
+                                .map(function(key) { return caches.delete(key); }));
+                        });
+                    })
+                    .catch(function(error) {
+                        console.warn('[Native] Service worker cleanup failed:', error);
+                    });
+            };
+        })();
+
         // Redirect to student portal if student session exists
         if (!window.attendifyShowLandingTopOnLaunch && localStorage.getItem('student_session')) {
             window.location.replace('track.html');
@@ -1606,6 +1659,13 @@
 
         function buildInlineCall(name, args) {
             return escapeAttribute(`${name}(${args.map(arg => JSON.stringify(String(arg ?? ''))).join(', ')})`);
+        }
+
+        function normalizeCRUser(user) {
+            if (!user) return user;
+            if (!Array.isArray(user.subjects)) user.subjects = [];
+            if (!Array.isArray(user.students)) user.students = [];
+            return user;
         }
 
 
@@ -2604,13 +2664,16 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
                 if (cachedProfile) {
                     try {
                         const userData = JSON.parse(cachedProfile);
-                        currentUser = { uid: user.uid, email: user.email, displayName: user.displayName, ...userData };
+                        currentUser = normalizeCRUser({ uid: user.uid, email: user.email, displayName: user.displayName, ...userData });
                         showScreen('app-screen');
                         initializeApp();
                         hideLoadingScreen();
                         console.log("🚀 App loaded from cache (Instant-On)");
                     } catch (e) {
                         console.error("Cache error:", e);
+                        if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+                            localStorage.removeItem('user_profile_' + user.uid);
+                        }
                     }
                 }
 
@@ -2643,7 +2706,7 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
 
             db.ref('users/' + userId).once('value', (snapshot) => {
                 if (snapshot.exists()) {
-                    const userData = snapshot.val();
+                    const userData = normalizeCRUser(snapshot.val());
 
                     // --- CLOUD SETTINGS SYNC ---
                     if (userData.settings) {
@@ -2666,7 +2729,7 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
 
                     if (isProfileComplete) {
                         localStorage.setItem('user_profile_' + userId, JSON.stringify(userData));
-                        currentUser = { uid: userId, email: user.email, displayName: user.displayName, ...userData };
+                        currentUser = normalizeCRUser({ uid: userId, email: user.email, displayName: user.displayName, ...userData });
 
                         if (!document.getElementById('app-screen').classList.contains('active')) {
                             showScreen('app-screen');
@@ -6838,7 +6901,9 @@ Submissions/Timestamps/Top Performers: Not available in current session database
 
     <!-- PWA Service Worker Registration -->
     <script>
-        if ('serviceWorker' in navigator) {
+        if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform() && typeof window.attendifyNativeCacheCleanup === 'function') {
+            window.attendifyNativeCacheCleanup();
+        } else if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./service-worker.js')
                     .then((reg) => {
