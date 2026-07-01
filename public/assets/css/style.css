@@ -267,10 +267,19 @@
 
         /* Theme toggle in navbar: hidden on landing hero, visible on workspace section */
         .navbar-theme-btn {
-            display: none !important;
+            opacity: 0;
+            pointer-events: none;
+            max-width: 0;
+            overflow: hidden;
+            margin: 0 !important;
+            padding: 0 !important;
+            transition: opacity 0.4s ease, max-width 0.4s ease, padding 0.4s ease;
         }
         body.on-workspace .navbar-theme-btn {
-            display: inline-flex !important;
+            opacity: 1;
+            pointer-events: auto;
+            max-width: 60px;
+            padding: unset !important;
         }
 
         .landing-menu-btn {
@@ -2779,7 +2788,6 @@
             100% { transform: translate(-50%, -50%) translate(-60px, 60px) scale(1.15); }
         }
 
-        [ignoring loop detection]
         /* =====================================================
            WORKSPACE SELECTION SCREEN
            ===================================================== */
