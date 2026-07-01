@@ -405,7 +405,10 @@
                     <input type="tel" id="setup-phone" placeholder="e.g., 9876543210" maxlength="10">
                 </div>
                 <div class="form-group">
-                    <label>Subjects (one per line)</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label style="margin-bottom: 0;">Subjects (one per line)</label>
+                        <button class="copy-prompt-btn" onclick="openSetupTimetableModal()" style="margin: 0; padding: 4px 10px; font-size: 11px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); display: flex; align-items: center; gap: 4px; border: none; outline: none; border-radius: 6px; color: white; cursor: pointer; font-weight: 700; transition: all 0.2s;">✨ Auto-fill from Timetable (AI)</button>
+                    </div>
                     <textarea id="setup-subjects" rows="4"
                         placeholder="MATHEMATICS-1&#10;PHYSICS&#10;BASIC CIVIL ENGINEERING"></textarea>
                 </div>
@@ -415,6 +418,7 @@
                         placeholder="JOHN DOE - 25/B09/001&#10;JANE SMITH - 25/B09/002&#10;AMIT KUMAR - 25/B09/003"></textarea>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                         <button class="copy-prompt-btn" onclick="copyStudentPrompt()" style="margin-top: 12px;">📋 Copy ChatGPT Prompt</button>
+                        <button class="copy-prompt-btn" onclick="openSetupStudentModal()" style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); margin-top: 12px; border: none; font-weight: 700; display: flex; align-items: center; gap: 4px;">🤖 Auto-fill with AI (Beta)</button>
                         <button class="copy-prompt-btn" onclick="openClassroomModal(true)" style="background: #4f46e5; margin-top: 12px;">🎓 Google Classroom Import</button>
                     </div>
                 </div>
@@ -475,12 +479,20 @@
                                 </select>
                             </div>
 
-                            <a href="manage-subjects.html" style="display: block;">
-                                <button class="btn btn-secondary" type="button"
-                                    style="margin: 0; background: var(--tab-bg); color: var(--text-color); border: 1px solid var(--input-border); width: 100%;">
-                                    📚 Manage Subjects
-                                </button>
-                            </a>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; margin-bottom: 10px;">
+                                <a href="manage-subjects.html" style="text-decoration: none; display: block;">
+                                    <button class="btn btn-secondary" type="button"
+                                        style="margin: 0; background: var(--tab-bg); color: var(--text-color); border: 1px solid var(--input-border); width: 100%; font-size: 13px; padding: 12px 4px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                        📚 Subjects
+                                    </button>
+                                </a>
+                                <a href="manage-timetable.html" style="text-decoration: none; display: block;">
+                                    <button class="btn btn-secondary" type="button"
+                                        style="margin: 0; background: var(--tab-bg); color: var(--text-color); border: 1px solid var(--input-border); width: 100%; font-size: 13px; padding: 12px 4px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                        📅 Timetable
+                                    </button>
+                                </a>
+                            </div>
 
                             <div class="form-group" style="margin-top: 15px; margin-bottom: 15px;">
                                 <label style="color: var(--text-color); display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px;">📍 Geofencing (Allowed Area)</label>
@@ -1161,6 +1173,96 @@
         </div>
     </div>
 
+    <!-- SETUP TIMETABLE AUTOFILL MODAL -->
+    <div id="setup-timetable-modal" class="modal">
+        <div class="modal-content" style="max-width: 500px; width: 100%; border-radius: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 8px;">✨ Timetable AI Extractor</h3>
+                <button onclick="closeSetupTimetableModal()" style="background: var(--tab-bg); border: 1px solid var(--border-color); width: 32px; height: 32px; border-radius: 50%; font-size: 18px; cursor: pointer; color: var(--text-color); display: flex; align-items: center; justify-content: center;">×</button>
+            </div>
+            
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+                Upload an image, PDF, or text file of your timetable, or paste the raw schedule text, and our AI will automatically extract your unique subjects and configure your timetable!
+            </p>
+
+            <div class="ai-tabs">
+                <button id="setup-ai-tab-text" class="ai-tab-btn active" onclick="switchSetupAiTab('text')">📝 Paste Text</button>
+                <button id="setup-ai-tab-image" class="ai-tab-btn" onclick="switchSetupAiTab('image')">📂 Upload File</button>
+            </div>
+
+            <!-- Tab: Paste Text -->
+            <div id="setup-ai-pane-text" class="ai-pane active">
+                <textarea id="setup-ai-raw-text" class="custom-input" style="width: 100%; height: 120px; font-family: inherit; font-size: 13px; resize: vertical; box-sizing: border-box; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--tab-bg); color: var(--text-color);" placeholder="Paste timetable here...&#10;e.g.&#10;Monday&#10;09:00 - 10:00: PHYSICS&#10;10:15 - 11:15: MATHEMATICS-1"></textarea>
+            </div>
+
+            <!-- Tab: Upload Image -->
+            <div id="setup-ai-pane-image" class="ai-pane">
+                <div class="upload-dropzone" onclick="document.getElementById('setup-ai-file-input').click()">
+                    <span>📂</span>
+                    <p>Click to select or drag & drop a PDF, Image, CSV, or Text file of your timetable</p>
+                    <input type="file" id="setup-ai-file-input" style="display: none;" accept="image/*,.pdf,.csv,.txt,.xlsx,.xls,.docx" onchange="handleSetupAiFileSelect(event)">
+                </div>
+                <div id="setup-ai-file-info" class="file-selected-info"></div>
+            </div>
+
+            <button class="btn btn-primary" id="setup-ai-parse-btn" onclick="parseSetupTimetableWithAi()" style="width: 100%; margin-top: 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; font-weight: 700; height: 46px;">
+                🤖 EXTRACT & AUTO-FILL
+            </button>
+
+            <!-- Loading indicator -->
+            <div id="setup-ai-loading" style="display: none; text-align: center; margin-top: 15px; padding: 10px; background: rgba(16, 185, 129, 0.05); border-radius: 10px; border: 1px dashed #10b981;">
+                <div style="font-size: 13px; font-weight: 700; color: #059669;">🤖 AI is parsing timetable... Please wait...</div>
+            </div>
+            
+            <div id="setup-ai-status" style="margin-top: 15px;"></div>
+        </div>
+    </div>
+
+    <!-- SETUP STUDENT LIST AUTOFILL MODAL -->
+    <div id="setup-student-modal" class="modal">
+        <div class="modal-content" style="max-width: 500px; width: 100%; border-radius: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 8px;">🤖 Student List AI Extractor</h3>
+                <button onclick="closeSetupStudentModal()" style="background: var(--tab-bg); border: 1px solid var(--border-color); width: 32px; height: 32px; border-radius: 50%; font-size: 18px; cursor: pointer; color: var(--text-color); display: flex; align-items: center; justify-content: center;">×</button>
+            </div>
+            
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+                Upload a PDF, Image, CSV, or Text file of your student roll sheet, or paste raw names/details, and our AI will automatically format them as <b>NAME - ROLLNO</b>.
+            </p>
+
+            <div class="ai-tabs">
+                <button id="setup-student-tab-text" class="ai-tab-btn active" onclick="switchSetupStudentTab('text')">📝 Paste Text</button>
+                <button id="setup-student-tab-image" class="ai-tab-btn" onclick="switchSetupStudentTab('image')">📂 Upload File</button>
+            </div>
+
+            <!-- Tab: Paste Text -->
+            <div id="setup-student-pane-text" class="ai-pane active">
+                <textarea id="setup-student-raw-text" class="custom-input" style="width: 100%; height: 120px; font-family: inherit; font-size: 13px; resize: vertical; box-sizing: border-box; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--tab-bg); color: var(--text-color);" placeholder="Paste student list here...&#10;e.g.&#10;1. JOHN DOE - 25/B09/001&#10;2. JANE SMITH (25/B09/002)"></textarea>
+            </div>
+
+            <!-- Tab: Upload Image -->
+            <div id="setup-student-pane-image" class="ai-pane">
+                <div class="upload-dropzone" onclick="document.getElementById('setup-student-file-input').click()">
+                    <span>📂</span>
+                    <p>Click to select or drag & drop a PDF, Image, CSV, or Text file of your student list</p>
+                    <input type="file" id="setup-student-file-input" style="display: none;" accept="image/*,.pdf,.csv,.txt,.xlsx,.xls,.docx" onchange="handleSetupStudentFileSelect(event)">
+                </div>
+                <div id="setup-student-file-info" class="file-selected-info"></div>
+            </div>
+
+            <button class="btn btn-primary" id="setup-student-parse-btn" onclick="parseSetupStudentWithAi()" style="width: 100%; margin-top: 20px; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); border: none; font-weight: 700; height: 46px;">
+                🤖 EXTRACT & FORMAT
+            </button>
+
+            <!-- Loading indicator -->
+            <div id="setup-student-loading" style="display: none; text-align: center; margin-top: 15px; padding: 10px; background: rgba(99, 102, 241, 0.05); border-radius: 10px; border: 1px dashed var(--primary-color);">
+                <div style="font-size: 13px; font-weight: 700; color: var(--primary-color);">🤖 AI is parsing student list... Please wait...</div>
+            </div>
+            
+            <div id="setup-student-status" style="margin-top: 15px;"></div>
+        </div>
+    </div>
+
     <!-- ===== AI ATTENDANCE ASSISTANT BUTTON + POPUP ===== -->
     <!-- Floating trigger button (only shown after CR logs in) -->
     <button id="ai-assistant-fab" onclick="handleAIFABClick(event)" aria-label="Open AI Attendance Assistant">
@@ -1722,6 +1824,565 @@ Convert the student list from the attached file/image, or the text enclosed in t
 
 
 
+        // Dynamic script loader for XLSX and Mammoth
+        function loadScript(url) {
+            return new Promise((resolve, reject) => {
+                if (document.querySelector(`script[src="${url}"]`)) {
+                    resolve();
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = () => resolve();
+                script.onerror = () => reject(new Error(`Failed to load script ${url}`));
+                document.head.appendChild(script);
+            });
+        }
+
+        async function readExcelFile(file) {
+            if (!window.XLSX) {
+                await loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
+            }
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        let text = '';
+                        workbook.SheetNames.forEach(sheetName => {
+                            const sheet = workbook.Sheets[sheetName];
+                            const csv = XLSX.utils.sheet_to_csv(sheet);
+                            if (csv.trim()) {
+                                text += csv + '\n';
+                            }
+                        });
+                        resolve(text.trim());
+                    } catch (err) {
+                        reject(err);
+                    }
+                };
+                reader.onerror = (err) => reject(err);
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        async function readDocxFile(file) {
+            if (!window.mammoth) {
+                await loadScript('https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js');
+            }
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const arrayBuffer = e.target.result;
+                    mammoth.extractRawText({ arrayBuffer: arrayBuffer })
+                        .then(result => resolve(result.value.trim()))
+                        .catch(err => reject(err));
+                };
+                reader.onerror = (err) => reject(err);
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        // Setup Student list AI Autofill Variables & Logic
+        let selectedSetupStudentFileBase64 = null;
+        let selectedSetupStudentFileMime = null;
+        let activeSetupStudentTab = 'text';
+
+        function openSetupStudentModal() {
+            document.getElementById('setup-student-modal').classList.add('active');
+            selectedSetupStudentFileBase64 = null;
+            selectedSetupStudentFileMime = null;
+            document.getElementById('setup-student-raw-text').value = '';
+            document.getElementById('setup-student-file-input').value = '';
+            document.getElementById('setup-student-file-info').style.display = 'none';
+            document.getElementById('setup-student-status').innerHTML = '';
+            switchSetupStudentTab('text');
+        }
+
+        function closeSetupStudentModal() {
+            document.getElementById('setup-student-modal').classList.remove('active');
+        }
+
+        function switchSetupStudentTab(tab) {
+            activeSetupStudentTab = tab;
+            const textBtn = document.getElementById('setup-student-tab-text');
+            const imgBtn = document.getElementById('setup-student-tab-image');
+            const textPane = document.getElementById('setup-student-pane-text');
+            const imgPane = document.getElementById('setup-student-pane-image');
+
+            if (tab === 'text') {
+                textBtn.classList.add('active');
+                imgBtn.classList.remove('active');
+                textPane.classList.add('active');
+                imgPane.classList.remove('active');
+            } else {
+                imgBtn.classList.add('active');
+                textBtn.classList.remove('active');
+                imgPane.classList.add('active');
+                textPane.classList.remove('active');
+            }
+        }
+
+        function handleSetupStudentFileSelect(event) {
+            const file = event.target.files[0];
+            const infoDiv = document.getElementById('setup-student-file-info');
+            if (!file) {
+                selectedSetupStudentFileBase64 = null;
+                selectedSetupStudentFileMime = null;
+                infoDiv.style.display = 'none';
+                return;
+            }
+
+            const fileName = file.name.toLowerCase();
+
+            // Word / Excel parsing
+            if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+                infoDiv.textContent = `⏳ Reading Excel file...`;
+                infoDiv.style.display = 'block';
+                readExcelFile(file).then(text => {
+                    document.getElementById('setup-student-raw-text').value = text;
+                    switchSetupStudentTab('text');
+                    infoDiv.style.display = 'none';
+                    alert(`📄 Loaded data from Excel sheet successfully!`);
+                }).catch(err => {
+                    console.error(err);
+                    infoDiv.style.display = 'none';
+                    alert("Failed to parse Excel file. Please try pasting the text or saving as PDF/CSV.");
+                });
+                event.target.value = '';
+                return;
+            }
+
+            if (fileName.endsWith('.docx')) {
+                infoDiv.textContent = `⏳ Reading Word document...`;
+                infoDiv.style.display = 'block';
+                readDocxFile(file).then(text => {
+                    document.getElementById('setup-student-raw-text').value = text;
+                    switchSetupStudentTab('text');
+                    infoDiv.style.display = 'none';
+                    alert(`📄 Loaded text from Word document successfully!`);
+                }).catch(err => {
+                    console.error(err);
+                    infoDiv.style.display = 'none';
+                    alert("Failed to parse Word document. Please try pasting the text or saving as PDF/CSV.");
+                });
+                event.target.value = '';
+                return;
+            }
+
+            if (fileName.endsWith('.doc')) {
+                alert("Old Word format (.doc) is not supported. Please save the file as modern Word format (.docx) or PDF/CSV first!");
+                event.target.value = '';
+                return;
+            }
+
+            // CSV, TSV, TXT, XML - read as text client-side
+            if (file.type.startsWith('text/') || fileName.endsWith('.csv') || fileName.endsWith('.tsv') || fileName.endsWith('.txt')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('setup-student-raw-text').value = e.target.result;
+                    switchSetupStudentTab('text');
+                    alert(`📄 Loaded ${file.name} text successfully into Paste Text tab!`);
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+                return;
+            }
+
+            // Enforce file size limit of 4MB for PDF/Image
+            if (file.size > 4 * 1024 * 1024) {
+                alert("File is too large! Please upload a file smaller than 4MB.");
+                event.target.value = '';
+                return;
+            }
+
+            const isImage = file.type.startsWith('image/');
+            const isPdf = file.type === 'application/pdf' || fileName.endsWith('.pdf');
+
+            if (!isImage && !isPdf) {
+                alert("Unsupported file format! Please upload an Image, PDF, CSV, or TXT file.");
+                event.target.value = '';
+                return;
+            }
+
+            selectedSetupStudentFileMime = isPdf ? 'application/pdf' : file.type;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                selectedSetupStudentFileBase64 = e.target.result.split(',')[1];
+                infoDiv.textContent = `📁 File selected: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+                infoDiv.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function parseSetupStudentWithAi() {
+            const btn = document.getElementById('setup-student-parse-btn');
+            const loading = document.getElementById('setup-student-loading');
+            const statusDiv = document.getElementById('setup-student-status');
+
+            statusDiv.innerHTML = '';
+            
+            const promptText = `You are a precise data-formatting assistant. Your sole task is to extract a list of students from the provided input—which may be an image/screenshot or text pasted inside the user input—and convert it into a standardized format.
+
+STRICT FORMAT TO OUTPUT (DO NOT DEVIATE):
+NAME - ROLLNO
+
+RULES:
+1. Output ONLY the formatted student list. Do NOT wrap the output in markdown code blocks (e.g., do not use \`\`\`text or \`\`\`csv).
+2. Write exactly one student per line.
+3. Every single line in your response must strictly match this regular expression pattern:
+   ^[A-Z .'-]+ - [A-Z0-9/().\\s-]+$
+4. NAME must come FIRST, followed by a single space, a hyphen, another single space, and then the ROLLNO (e.g., "NAME - ROLLNO").
+5. Both NAME and ROLLNO must be in UPPERCASE.
+6. Do NOT add numbering, bullets, commas, headings, intro text, outro text, explanations, or blank lines.
+7. Do NOT alter, correct, guess, or reorder any names or roll numbers. Ignore page headers, footers, column titles (like "Name", "Roll No", "S.No"), or page numbers from the input.
+8. The output must contain EVERY student from the input list. Do NOT truncate, skip, summarize, or use ellipses ("...") under any circumstances, even if the list is extremely long.
+9. If extracting from an image, perform high-accuracy OCR to capture names and roll numbers correctly, ignoring layout tables or grids.
+10. Double-check that the total number of output lines matches the total number of students in the input source exactly.
+11. If a student record does not contain an actual roll number, leave that record unchanged and do not invent, generate, or substitute serial numbers, row numbers, or IDs. Only extract values explicitly present as roll numbers in the source. Do not treat S.NO, SERIAL NO, ROW NUMBER, INDEX, or POSITION as a roll number unless the source explicitly identifies it as the student's roll number.
+
+Example output:
+RAHUL SHARMA - 25/B09/001
+PRIYA SINGH - 25/B09/002
+AMAN KUMAR - 3`;
+
+            const messages = [];
+            const userMessage = { role: "user" };
+
+            if (activeSetupStudentTab === 'text') {
+                const rawText = document.getElementById('setup-student-raw-text').value.trim();
+                if (!rawText) {
+                    statusDiv.innerHTML = `<div class="message error">❌ Please paste student list text first</div>`;
+                    return;
+                }
+                if (rawText.length > 3000) {
+                    statusDiv.innerHTML = `<div class="message error">❌ Text too long! Please paste max 3000 characters.</div>`;
+                    return;
+                }
+                userMessage.content = rawText;
+            } else {
+                if (!selectedSetupStudentFileBase64) {
+                    statusDiv.innerHTML = `<div class="message error">❌ Please upload a student list file first</div>`;
+                    return;
+                }
+                userMessage.content = "";
+                userMessage.attachment = {
+                    mimeType: selectedSetupStudentFileMime,
+                    base64: selectedSetupStudentFileBase64
+                };
+            }
+            messages.push(userMessage);
+
+            btn.disabled = true;
+            loading.style.display = 'block';
+
+            try {
+                const response = await fetch(`https://attendify-support-worker.sm3165599.workers.dev/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: messages,
+                        systemInstruction: promptText
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`AI Service returned status ${response.status}`);
+                }
+
+                const responseText = await response.text();
+                let extractedText = '';
+
+                responseText.split('\n').forEach(line => {
+                    if (line.startsWith('data: ') && !line.includes('[DONE]')) {
+                        try {
+                            const parsed = JSON.parse(line.slice(6));
+                            if (parsed.text) extractedText = parsed.text;
+                        } catch (_) {}
+                    }
+                });
+
+                extractedText = extractedText.trim();
+                
+                if (extractedText.startsWith("```")) {
+                    extractedText = extractedText.replace(/^```(text|json|csv)?/, "").replace(/```$/, "").trim();
+                }
+
+                if (!extractedText) {
+                    throw new Error("Empty response returned from AI.");
+                }
+
+                // Fill students textarea
+                const studentsTextarea = document.getElementById('setup-students');
+                studentsTextarea.value = extractedText;
+
+                statusDiv.innerHTML = `<div class="message success">✅ Successfully extracted and formatted student list!</div>`;
+                
+                setTimeout(() => {
+                    closeSetupStudentModal();
+                }, 2000);
+
+            } catch (err) {
+                console.error("Setup Student AI parse error:", err);
+                statusDiv.innerHTML = `<div class="message error">❌ Extraction failed: ${err.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        // Setup Timetable AI Autofill Variables & Logic
+        let parsedSetupTimetable = [];
+        let selectedSetupAiFileBase64 = null;
+        let selectedSetupAiFileMime = null;
+        let activeSetupAiTab = 'text';
+
+        function openSetupTimetableModal() {
+            document.getElementById('setup-timetable-modal').classList.add('active');
+            parsedSetupTimetable = [];
+            selectedSetupAiFileBase64 = null;
+            selectedSetupAiFileMime = null;
+            document.getElementById('setup-ai-raw-text').value = '';
+            document.getElementById('setup-ai-file-input').value = '';
+            document.getElementById('setup-ai-file-info').style.display = 'none';
+            document.getElementById('setup-ai-status').innerHTML = '';
+            switchSetupAiTab('text');
+        }
+
+        function closeSetupTimetableModal() {
+            document.getElementById('setup-timetable-modal').classList.remove('active');
+        }
+
+        function switchSetupAiTab(tab) {
+            activeSetupAiTab = tab;
+            const textBtn = document.getElementById('setup-ai-tab-text');
+            const imgBtn = document.getElementById('setup-ai-tab-image');
+            const textPane = document.getElementById('setup-ai-pane-text');
+            const imgPane = document.getElementById('setup-ai-pane-image');
+
+            if (tab === 'text') {
+                textBtn.classList.add('active');
+                imgBtn.classList.remove('active');
+                textPane.classList.add('active');
+                imgPane.classList.remove('active');
+            } else {
+                imgBtn.classList.add('active');
+                textBtn.classList.remove('active');
+                imgPane.classList.add('active');
+                textPane.classList.remove('active');
+            }
+        }
+
+        function handleSetupAiFileSelect(event) {
+            const file = event.target.files[0];
+            const infoDiv = document.getElementById('setup-ai-file-info');
+            if (!file) {
+                selectedSetupAiFileBase64 = null;
+                selectedSetupAiFileMime = null;
+                infoDiv.style.display = 'none';
+                return;
+            }
+
+            const fileName = file.name.toLowerCase();
+
+            // Word / Excel parsing
+            if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+                infoDiv.textContent = `⏳ Reading Excel file...`;
+                infoDiv.style.display = 'block';
+                readExcelFile(file).then(text => {
+                    document.getElementById('setup-ai-raw-text').value = text;
+                    switchSetupAiTab('text');
+                    infoDiv.style.display = 'none';
+                    alert(`📄 Loaded data from Excel sheet successfully!`);
+                }).catch(err => {
+                    console.error(err);
+                    infoDiv.style.display = 'none';
+                    alert("Failed to parse Excel file. Please try pasting the text or saving as PDF/CSV.");
+                });
+                event.target.value = '';
+                return;
+            }
+
+            if (fileName.endsWith('.docx')) {
+                infoDiv.textContent = `⏳ Reading Word document...`;
+                infoDiv.style.display = 'block';
+                readDocxFile(file).then(text => {
+                    document.getElementById('setup-ai-raw-text').value = text;
+                    switchSetupAiTab('text');
+                    infoDiv.style.display = 'none';
+                    alert(`📄 Loaded text from Word document successfully!`);
+                }).catch(err => {
+                    console.error(err);
+                    infoDiv.style.display = 'none';
+                    alert("Failed to parse Word document. Please try pasting the text or saving as PDF/CSV.");
+                });
+                event.target.value = '';
+                return;
+            }
+
+            if (fileName.endsWith('.doc')) {
+                alert("Old Word format (.doc) is not supported. Please save the file as modern Word format (.docx) or PDF/CSV first!");
+                event.target.value = '';
+                return;
+            }
+
+            // CSV, TSV, TXT, XML - read as text client-side
+            if (file.type.startsWith('text/') || fileName.endsWith('.csv') || fileName.endsWith('.tsv') || fileName.endsWith('.txt')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('setup-ai-raw-text').value = e.target.result;
+                    switchSetupAiTab('text');
+                    alert(`📄 Loaded ${file.name} text successfully into Paste Text tab!`);
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+                return;
+            }
+
+            // Enforce file size limit of 4MB for PDF/Image
+            if (file.size > 4 * 1024 * 1024) {
+                alert("File is too large! Please upload a file smaller than 4MB.");
+                event.target.value = '';
+                return;
+            }
+
+            const isImage = file.type.startsWith('image/');
+            const isPdf = file.type === 'application/pdf' || fileName.endsWith('.pdf');
+
+            if (!isImage && !isPdf) {
+                alert("Unsupported file format! Please upload an Image, PDF, CSV, or TXT file.");
+                event.target.value = '';
+                return;
+            }
+
+            selectedSetupAiFileMime = isPdf ? 'application/pdf' : file.type;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                selectedSetupAiFileBase64 = e.target.result.split(',')[1];
+                infoDiv.textContent = `📁 File selected: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+                infoDiv.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function parseSetupTimetableWithAi() {
+            const btn = document.getElementById('setup-ai-parse-btn');
+            const loading = document.getElementById('setup-ai-loading');
+            const statusDiv = document.getElementById('setup-ai-status');
+
+            statusDiv.innerHTML = '';
+            
+            const promptText = `You are an expert timetable parser.
+Analyze the provided timetable input and extract all unique subjects AND the detailed schedule slots.
+Allowed days of the week: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday.
+
+For each class slot, extract:
+- "day": Name of the day (must be Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, or Sunday)
+- "subject": The subject name
+- "startTime": The class start time in 24-hour HH:MM format (e.g. "09:30")
+- "endTime": The class end time in 24-hour HH:MM format (e.g. "10:30")
+
+Respond ONLY with a valid JSON object containing exactly two keys:
+1. "subjects": An array of strings representing the unique subjects found (e.g. ["PHYSICS", "MATHEMATICS-1"])
+2. "timetable": A JSON array of objects representing class slots (each having keys "day", "subject", "startTime", "endTime").
+
+Do not wrap it in markdown block. Do not include any explanation or other text.`;
+
+            const messages = [];
+            const userMessage = { role: "user" };
+
+            if (activeSetupAiTab === 'text') {
+                const rawText = document.getElementById('setup-ai-raw-text').value.trim();
+                if (!rawText) {
+                    statusDiv.innerHTML = `<div class="message error">❌ Please paste timetable text first</div>`;
+                    return;
+                }
+                if (rawText.length > 2000) {
+                    statusDiv.innerHTML = `<div class="message error">❌ Text too long! Please paste max 2000 characters.</div>`;
+                    return;
+                }
+                userMessage.content = rawText;
+            } else {
+                if (!selectedSetupAiFileBase64) {
+                    statusDiv.innerHTML = `<div class="message error">❌ Please upload a timetable file first</div>`;
+                    return;
+                }
+                userMessage.content = "";
+                userMessage.attachment = {
+                    mimeType: selectedSetupAiFileMime,
+                    base64: selectedSetupAiFileBase64
+                };
+            }
+            messages.push(userMessage);
+
+            btn.disabled = true;
+            loading.style.display = 'block';
+
+            try {
+                const response = await fetch(`https://attendify-support-worker.sm3165599.workers.dev/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: messages,
+                        systemInstruction: promptText
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`AI Service returned status ${response.status}`);
+                }
+
+                const responseText = await response.text();
+                let jsonText = '';
+
+                responseText.split('\n').forEach(line => {
+                    if (line.startsWith('data: ') && !line.includes('[DONE]')) {
+                        try {
+                            const parsed = JSON.parse(line.slice(6));
+                            if (parsed.text) jsonText = parsed.text;
+                        } catch (_) {}
+                    }
+                });
+
+                jsonText = jsonText.trim();
+                
+                if (jsonText.startsWith("```")) {
+                    jsonText = jsonText.replace(/^```(json)?/, "").replace(/```$/, "").trim();
+                }
+
+                const result = JSON.parse(jsonText);
+
+                if (!result.subjects || !Array.isArray(result.subjects)) {
+                    throw new Error("No subjects array returned from AI.");
+                }
+
+                // Fill subjects textarea
+                const subjectsTextarea = document.getElementById('setup-subjects');
+                subjectsTextarea.value = result.subjects.map(s => s.toUpperCase()).join('\n');
+
+                // Save timetable slots temporarily
+                parsedSetupTimetable = result.timetable || [];
+
+                statusDiv.innerHTML = `<div class="message success">✅ Successfully extracted ${result.subjects.length} subjects and ${parsedSetupTimetable.length} timetable slots! They will be saved when you submit class setup.</div>`;
+                
+                setTimeout(() => {
+                    closeSetupTimetableModal();
+                }, 2000);
+
+            } catch (err) {
+                console.error("Setup AI parse error:", err);
+                statusDiv.innerHTML = `<div class="message error">❌ Extraction failed: ${err.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
         function saveClassSetup() {
             const year = document.getElementById('setup-year').value.trim();
             const college = document.getElementById('setup-college').value.trim().toUpperCase();
@@ -1784,7 +2445,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
 
             msgDiv.innerHTML = '<div class="message">💾 Saving class data...</div>';
 
-            db.ref('users/' + user.uid).set({
+            const classSetupData = {
                 year, college, branch, section, phone, website,
                 username: year + college + branch + section,
                 subjects: subjects,
@@ -1792,7 +2453,24 @@ Convert the student list from the attached file/image, or the text enclosed in t
                 email: user.email || "",
                 displayName: user.displayName || "",
                 createdAt: Date.now()
-            }).then(() => {
+            };
+
+            // If AI timetable slots were parsed, save them to the database
+            if (parsedSetupTimetable && parsedSetupTimetable.length > 0) {
+                const timetableObj = {};
+                parsedSetupTimetable.forEach(slot => {
+                    const slotKey = db.ref().child('temp').push().key;
+                    timetableObj[slotKey] = {
+                        day: slot.day,
+                        subject: slot.subject.toUpperCase().trim(),
+                        startTime: slot.startTime,
+                        endTime: slot.endTime
+                    };
+                });
+                classSetupData.timetable = timetableObj;
+            }
+
+            db.ref('users/' + user.uid).set(classSetupData).then(() => {
                 msgDiv.innerHTML = '<div class="message success">✅ Setup complete! Redirecting...</div>';
                 setTimeout(() => {
                     handleUserSignedIn(user);
@@ -2522,6 +3200,9 @@ Convert the student list from the attached file/image, or the text enclosed in t
             // Show AI Assistant FAB and load context data
             showCRAIFAB();
             loadCRContextData();
+
+            // Set up push notifications listener
+            setupAttendanceListenerForPush();
         }
 
         // 👇👇👇 YAHAN SE ADD KARO 👇👇👇
@@ -5703,6 +6384,134 @@ Submissions/Timestamps/Top Performers: Not available in current session database
             }, 5000); // Give slightly more time (5s) so the user can click it
         }
         // ===== END CR AI ASSISTANT =====
+
+        // ===== AUTOMATED STUDENT PUSH NOTIFICATIONS =====
+        let _pushDebounceTimer = null;
+        function setupAttendanceListenerForPush() {
+            if (!currentUser || !currentUser.username) return;
+            if (window.attendancePushListenerActive) return;
+            window.attendancePushListenerActive = true;
+
+            const classId = currentUser.username;
+            const attendancePath = db.ref('attendance');
+
+            attendancePath.orderByKey().startAt(classId + '_').endAt(classId + '_\uf8ff')
+                .on('value', () => {
+                    if (_pushDebounceTimer) clearTimeout(_pushDebounceTimer);
+                    _pushDebounceTimer = setTimeout(() => {
+                        checkAndTriggerPushAlerts(classId);
+                    }, 5000); // Debounce by 5 seconds to optimize database reading and prevent network spam
+                });
+        }
+
+        function checkAndTriggerPushAlerts(classId) {
+            if (!classId) return;
+            console.log("📢 checkAndTriggerPushAlerts check running for class:", classId);
+
+            db.ref('users').orderByChild('username').equalTo(classId).once('value').then(userSnap => {
+                let students = [];
+                let subjects = [];
+                userSnap.forEach(child => {
+                    const val = child.val();
+                    if (val.students) students = val.students;
+                    if (val.subjects) subjects = val.subjects;
+                });
+
+                if (students.length === 0) return;
+
+                db.ref('attendance').orderByKey().startAt(classId + '_').endAt(classId + '_\uf8ff').once('value').then(attendanceSnap => {
+                    db.ref('student_preferences/' + classId).once('value').then(prefSnap => {
+                        const preferences = prefSnap.val() || {};
+
+                        db.ref('fcm_tokens/' + classId).once('value').then(tokenSnap => {
+                            const tokens = tokenSnap.val() || {};
+
+                            db.ref('sent_push_alerts/' + classId).once('value').then(sentAlertsSnap => {
+                                const sentAlerts = sentAlertsSnap.val() || {};
+
+                                students.forEach(student => {
+                                    const rollNo = student.rollNo;
+                                    const studentToken = tokens[rollNo];
+                                    if (!studentToken) return;
+
+                                    const studentPref = preferences[rollNo] || {};
+                                    const threshold = parseInt(studentPref.threshold) || 75;
+
+                                    const subjectStats = {};
+                                    subjects.forEach(sub => {
+                                        subjectStats[sub] = { attended: 0, total: 0 };
+                                    });
+
+                                    attendanceSnap.forEach(sessionSnap => {
+                                        const sessionKey = sessionSnap.key;
+                                        const parts = sessionKey.split('_');
+                                        if (parts.length < 4) return;
+                                        const subject = parts.slice(3).join('_');
+
+                                        if (!subjectStats[subject]) {
+                                            subjectStats[subject] = { attended: 0, total: 0 };
+                                        }
+
+                                        let isPresent = false;
+                                        sessionSnap.forEach(recordSnap => {
+                                            if (recordSnap.child('rollNo').val() === rollNo) {
+                                                isPresent = true;
+                                            }
+                                        });
+
+                                        subjectStats[subject].total++;
+                                        if (isPresent) {
+                                            subjectStats[subject].attended++;
+                                        }
+                                    });
+
+                                    subjects.forEach(sub => {
+                                        const stats = subjectStats[sub];
+                                        if (!stats || stats.total === 0) return;
+
+                                        const percentage = (stats.attended / stats.total) * 100;
+                                        if (percentage < threshold) {
+                                            const alertState = `${stats.attended}_${stats.total}_${threshold}`;
+                                            const studentSentAlerts = sentAlerts[rollNo] || {};
+                                            const lastAlertedState = studentSentAlerts[sub];
+
+                                            if (lastAlertedState !== alertState) {
+                                                const title = `⚠️ Attendance Shortage Alert`;
+                                                const body = `Your attendance in "${sub}" has dropped to ${percentage.toFixed(1)}% (Target: ${threshold}%).`;
+
+                                                fetch('https://attendify-support-worker.sm3165599.workers.dev/send-notification', {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'Content-Type': 'application/json'
+                                                    },
+                                                    body: JSON.stringify({
+                                                        token: studentToken,
+                                                        title: title,
+                                                        notificationBody: body
+                                                    })
+                                                })
+                                                .then(res => res.json())
+                                                .then(data => {
+                                                    if (data.success) {
+                                                        console.log(`Push notification sent successfully to ${student.name} (${rollNo}) for ${sub}`);
+                                                        db.ref(`sent_push_alerts/${classId}/${rollNo}/${sub}`).set(alertState);
+                                                    }
+                                                })
+                                                .catch(err => {
+                                                    console.error("Network error sending push notification:", err);
+                                                });
+                                            }
+                                        }
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            }).catch(e => {
+                console.error("Error in checkAndTriggerPushAlerts:", e);
+            });
+        }
 
     </script>
 
