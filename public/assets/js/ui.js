@@ -164,7 +164,59 @@ function handleLandingScroll() {
                 window.scrollTo(0, 0);
             }, 30);
         });
+
+        // Web only: double-scroll-up to go back to landing
+        if (!isNative) {
+            setupScrollUnlockForWeb(landingPage);
+        }
     }
+}
+
+// Web-only: scroll up twice to unlock and return to landing page top
+function setupScrollUnlockForWeb(landingPage) {
+    let upScrollCount = 0;
+    let lastScrollTime = 0;
+
+    function onWheelUp(e) {
+        if (e.deltaY >= 0) {
+            // Scrolling down — reset counter
+            upScrollCount = 0;
+            return;
+        }
+
+        const now = Date.now();
+        // Reset count if more than 1.5s gap between scrolls
+        if (now - lastScrollTime > 1500) {
+            upScrollCount = 0;
+        }
+        lastScrollTime = now;
+        upScrollCount++;
+
+        if (upScrollCount >= 2) {
+            upScrollCount = 0;
+            window.removeEventListener('wheel', onWheelUp);
+
+            // Unlock the landing page
+            landingPage.classList.remove('login-locked');
+            document.body.classList.remove('native-login-active');
+
+            // Re-enable bypass so the scroll listener doesn't immediately re-lock
+            isBypassingScrollLock = true;
+
+            // Re-attach scroll listener for future scroll-to-workspace detection
+            window.addEventListener('scroll', handleLandingScroll, { passive: true });
+
+            // Smooth scroll back to top of page
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Re-enable scroll lock detection after scroll settles
+            setTimeout(() => {
+                isBypassingScrollLock = false;
+            }, 1200);
+        }
+    }
+
+    window.addEventListener('wheel', onWheelUp, { passive: true });
 }
 
 function scrollToLandingSection(event, sectionId) {
