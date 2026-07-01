@@ -1182,12 +1182,12 @@
             </div>
             
             <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
-                Upload a screenshot/image of your timetable or paste the raw schedule text, and our AI will automatically extract your unique subjects and configure your timetable!
+                Upload an image, PDF, or text file of your timetable, or paste the raw schedule text, and our AI will automatically extract your unique subjects and configure your timetable!
             </p>
 
             <div class="ai-tabs">
                 <button id="setup-ai-tab-text" class="ai-tab-btn active" onclick="switchSetupAiTab('text')">📝 Paste Text</button>
-                <button id="setup-ai-tab-image" class="ai-tab-btn" onclick="switchSetupAiTab('image')">📷 Upload Image</button>
+                <button id="setup-ai-tab-image" class="ai-tab-btn" onclick="switchSetupAiTab('image')">📂 Upload File</button>
             </div>
 
             <!-- Tab: Paste Text -->
@@ -1198,9 +1198,9 @@
             <!-- Tab: Upload Image -->
             <div id="setup-ai-pane-image" class="ai-pane">
                 <div class="upload-dropzone" onclick="document.getElementById('setup-ai-file-input').click()">
-                    <span>📷</span>
-                    <p>Click to select or drag & drop a screenshot/image of your timetable</p>
-                    <input type="file" id="setup-ai-file-input" style="display: none;" accept="image/*" onchange="handleSetupAiFileSelect(event)">
+                    <span>📂</span>
+                    <p>Click to select or drag & drop a PDF, Image, CSV, or Text file of your timetable</p>
+                    <input type="file" id="setup-ai-file-input" style="display: none;" accept="image/*,application/pdf,text/plain,text/csv" onchange="handleSetupAiFileSelect(event)">
                 </div>
                 <div id="setup-ai-file-info" class="file-selected-info"></div>
             </div>
@@ -1227,12 +1227,12 @@
             </div>
             
             <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
-                Upload a screenshot/image of your student roll sheet or paste raw names/details, and our AI will automatically format them as <b>NAME - ROLLNO</b>.
+                Upload a PDF, Image, CSV, or Text file of your student roll sheet, or paste raw names/details, and our AI will automatically format them as <b>NAME - ROLLNO</b>.
             </p>
 
             <div class="ai-tabs">
                 <button id="setup-student-tab-text" class="ai-tab-btn active" onclick="switchSetupStudentTab('text')">📝 Paste Text</button>
-                <button id="setup-student-tab-image" class="ai-tab-btn" onclick="switchSetupStudentTab('image')">📷 Upload Image</button>
+                <button id="setup-student-tab-image" class="ai-tab-btn" onclick="switchSetupStudentTab('image')">📂 Upload File</button>
             </div>
 
             <!-- Tab: Paste Text -->
@@ -1243,9 +1243,9 @@
             <!-- Tab: Upload Image -->
             <div id="setup-student-pane-image" class="ai-pane">
                 <div class="upload-dropzone" onclick="document.getElementById('setup-student-file-input').click()">
-                    <span>📷</span>
-                    <p>Click to select or drag & drop a screenshot/image of your student list</p>
-                    <input type="file" id="setup-student-file-input" style="display: none;" accept="image/*" onchange="handleSetupStudentFileSelect(event)">
+                    <span>📂</span>
+                    <p>Click to select or drag & drop a PDF, Image, CSV, or Text file of your student list</p>
+                    <input type="file" id="setup-student-file-input" style="display: none;" accept="image/*,application/pdf,text/plain,text/csv" onchange="handleSetupStudentFileSelect(event)">
                 </div>
                 <div id="setup-student-file-info" class="file-selected-info"></div>
             </div>
@@ -1874,8 +1874,9 @@ Convert the student list from the attached file/image, or the text enclosed in t
                 return;
             }
 
-            if (!file.type.startsWith('image/')) {
-                alert("Please select an image file.");
+            const allowedMimeTypes = ['application/pdf', 'text/csv', 'text/plain', 'image/jpeg', 'image/png', 'image/webp'];
+            if (!allowedMimeTypes.includes(file.type) && !file.name.endsWith('.csv') && !file.name.endsWith('.txt')) {
+                alert("Please select a valid file (PDF, Image, CSV, or Text).");
                 event.target.value = '';
                 return;
             }
@@ -1887,7 +1888,7 @@ Convert the student list from the attached file/image, or the text enclosed in t
                 return;
             }
 
-            selectedSetupStudentFileMime = file.type;
+            selectedSetupStudentFileMime = file.type || 'text/plain';
             const reader = new FileReader();
             reader.onload = function(e) {
                 selectedSetupStudentFileBase64 = e.target.result.split(',')[1];
@@ -1944,7 +1945,7 @@ AMAN KUMAR - 3`;
                 userMessage.content = rawText;
             } else {
                 if (!selectedSetupStudentFileBase64) {
-                    statusDiv.innerHTML = `<div class="message error">❌ Please upload a student list image first</div>`;
+                    statusDiv.innerHTML = `<div class="message error">❌ Please upload a student list file first</div>`;
                     return;
                 }
                 userMessage.content = "";
@@ -2062,8 +2063,9 @@ AMAN KUMAR - 3`;
                 return;
             }
 
-            if (!file.type.startsWith('image/')) {
-                alert("Please select an image file.");
+            const allowedMimeTypes = ['application/pdf', 'text/csv', 'text/plain', 'image/jpeg', 'image/png', 'image/webp'];
+            if (!allowedMimeTypes.includes(file.type) && !file.name.endsWith('.csv') && !file.name.endsWith('.txt')) {
+                alert("Please select a valid file (PDF, Image, CSV, or Text).");
                 event.target.value = '';
                 return;
             }
@@ -2075,7 +2077,7 @@ AMAN KUMAR - 3`;
                 return;
             }
 
-            selectedSetupAiFileMime = file.type;
+            selectedSetupAiFileMime = file.type || 'text/plain';
             const reader = new FileReader();
             reader.onload = function(e) {
                 selectedSetupAiFileBase64 = e.target.result.split(',')[1];
@@ -2124,7 +2126,7 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
                 userMessage.content = rawText;
             } else {
                 if (!selectedSetupAiFileBase64) {
-                    statusDiv.innerHTML = `<div class="message error">❌ Please upload a timetable image first</div>`;
+                    statusDiv.innerHTML = `<div class="message error">❌ Please upload a timetable file first</div>`;
                     return;
                 }
                 userMessage.content = "";
