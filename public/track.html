@@ -10,41 +10,6 @@
     <link rel="apple-touch-icon" href="logo-opt.png">
     
     <!-- App Styles -->
-    <style>
-        #loading-screen {
-            position: fixed;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            background: #1e1b4b;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
-        }
-
-        #loading-screen.fade-out {
-            opacity: 0;
-            visibility: hidden;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(255, 255, 255, 0.1);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 20px;
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-    </style>
     <link rel="stylesheet" href="assets/css/style.css?v=17">
     <script src="assets/js/theme.js" defer></script>
 
@@ -766,92 +731,6 @@
                 font-size: 11px !important;
             }
         }
-
-        /* Timetable & Countdown styles */
-        @keyframes pulseGlow {
-            0% { box-shadow: 0 4px 15px rgba(99, 102, 241, 0.1); border-color: rgba(99, 102, 241, 0.3); }
-            100% { box-shadow: 0 8px 30px rgba(99, 102, 241, 0.25); border-color: var(--primary-color); }
-        }
-        @keyframes ringBell {
-            0% { transform: rotate(-8deg); }
-            100% { transform: rotate(8deg); }
-        }
-        .timetable-collapse-btn {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--tab-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 16px 20px;
-            border-radius: 16px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 32px;
-            transition: all 0.2s ease;
-        }
-        .timetable-collapse-btn:hover {
-            border-color: var(--primary-color);
-            background: rgba(99, 102, 241, 0.04);
-        }
-        .timetable-collapse-content {
-            display: none;
-            margin-top: 12px;
-            padding: 16px;
-            background: var(--tab-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            animation: fadeInUp 0.3s ease;
-        }
-        .timetable-collapse-content.active {
-            display: block;
-        }
-        .timetable-day-card {
-            margin-bottom: 16px;
-            border-bottom: 1px dashed var(--border-color);
-            padding-bottom: 12px;
-        }
-        .timetable-day-card:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-            margin-bottom: 0;
-        }
-        .timetable-day-title {
-            font-size: 14px;
-            font-weight: 800;
-            color: var(--primary-color);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .timetable-slot-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 12px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            margin-bottom: 6px;
-        }
-        .timetable-slot-subject {
-            font-weight: 700;
-            font-size: 14px;
-            color: var(--text-color);
-        }
-        .timetable-slot-time {
-            font-size: 12px;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-        .timetable-empty-day {
-            font-size: 12px;
-            color: var(--text-muted);
-            font-style: italic;
-            padding-left: 12px;
-        }
     </style>
 </head>
 <body>
@@ -968,20 +847,6 @@
                 </div>
             </div>
 
-            <!-- Countdown Reminder Banner for Timetable -->
-            <div id="timetable-reminder-banner" style="display: none; background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%); border: 1.5px solid var(--primary-light); border-radius: 20px; padding: 18px 24px; margin-bottom: 24px; box-shadow: 0 8px 30px rgba(99, 102, 241, 0.15); align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; animation: pulseGlow 2.5s infinite alternate;">
-                <div style="display: flex; align-items: center; gap: 16px; flex: 1; min-width: 200px;">
-                    <span style="font-size: 32px; animation: ringBell 1s infinite alternate; display: inline-block;">🔔</span>
-                    <div>
-                        <h4 id="reminder-subject-name" style="margin: 0; font-size: 16px; font-weight: 800; color: var(--text-color); font-family: 'Space Grotesk', sans-serif;">Upcoming Class</h4>
-                        <p id="reminder-time-label" style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-muted); font-weight: 600;">Starts in 5 minutes</p>
-                    </div>
-                </div>
-                <div style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 10px 20px; border-radius: 14px; font-weight: 800; font-size: 24px; color: var(--primary-light); font-family: monospace; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; min-width: 110px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
-                    <span id="reminder-countdown">05:00</span>
-                </div>
-            </div>
-
             <!-- Overall Progress ring -->
             <div style="text-align: center; padding: 10px 0;">
                 <div class="progress-ring-container">
@@ -1061,17 +926,6 @@
             <h3 style="margin-top: 32px; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--primary-color);">Subject Wise Attendance</h3>
             <div class="subject-grid" id="portal-subject-grid">
                 <!-- Dynamic subject cards will go here -->
-            </div>
-
-            <!-- Collapsible Class Timetable -->
-            <button class="timetable-collapse-btn" onclick="toggleTimetableCollapse()">
-                <span style="display: flex; align-items: center; gap: 8px;">📅 Class Timetable</span>
-                <span id="timetable-toggle-icon">▼</span>
-            </button>
-            <div id="timetable-collapse-content" class="timetable-collapse-content">
-                <div id="student-timetable-list">
-                    <p style="text-align: center; color: var(--text-muted); font-size: 14px; font-style: italic; margin: 10px 0;">No timetable configured for this class.</p>
-                </div>
             </div>
 
             <!-- Visual Calendar Section -->
@@ -2072,179 +1926,6 @@
             });
         }
 
-        function toggleTimetableCollapse() {
-            const content = document.getElementById('timetable-collapse-content');
-            const icon = document.getElementById('timetable-toggle-icon');
-            if (content && icon) {
-                const isActive = content.classList.toggle('active');
-                icon.textContent = isActive ? '▲' : '▼';
-            }
-        }
-
-        function formatTime12h(time24) {
-            if (!time24) return "";
-            const [hourStr, minStr] = time24.split(':');
-            let hour = parseInt(hourStr);
-            const ampm = hour >= 12 ? 'PM' : 'AM';
-            hour = hour % 12;
-            hour = hour ? hour : 12; // hour 0 should be 12
-            return `${String(hour).padStart(2, '0')}:${minStr} ${ampm}`;
-        }
-
-        function renderStudentTimetable() {
-            if (!classUserData) return;
-            const timetable = classUserData.timetable;
-            const container = document.getElementById('student-timetable-list');
-            if (!container) return;
-
-            if (!timetable || Object.keys(timetable).length === 0) {
-                container.innerHTML = `<p style="text-align: center; color: var(--text-muted); font-size: 14px; font-style: italic; margin: 10px 0;">No timetable configured for this class.</p>`;
-                return;
-            }
-
-            const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-            let html = '';
-
-            daysOfWeek.forEach(day => {
-                const daySlots = [];
-                Object.values(timetable).forEach(slot => {
-                    if (slot && slot.day === day) {
-                        daySlots.push(slot);
-                    }
-                });
-
-                if (daySlots.length > 0) {
-                    // Sort by start time
-                    daySlots.sort((a, b) => a.startTime.localeCompare(b.startTime));
-
-                    html += `
-                        <div class="timetable-day-card">
-                            <div class="timetable-day-title">📅 ${day}</div>
-                    `;
-
-                    daySlots.forEach(slot => {
-                        html += `
-                            <div class="timetable-slot-row">
-                                <span class="timetable-slot-subject">${escapeHtml(slot.subject)}</span>
-                                <span class="timetable-slot-time">⏱️ ${formatTime12h(slot.startTime)} - ${formatTime12h(slot.endTime)}</span>
-                            </div>
-                        `;
-                    });
-
-                    html += `</div>`;
-                }
-            });
-
-            if (!html) {
-                container.innerHTML = `<p style="text-align: center; color: var(--text-muted); font-size: 14px; font-style: italic; margin: 10px 0;">No timetable configured for this class.</p>`;
-            } else {
-                container.innerHTML = html;
-            }
-        }
-
-        let timetableIntervalId = null;
-        let countdownIntervalId = null;
-
-        function startTimetableReminderService() {
-            if (timetableIntervalId) clearInterval(timetableIntervalId);
-            
-            // Check every 10 seconds for any upcoming classes
-            timetableIntervalId = setInterval(checkUpcomingClasses, 10000);
-            checkUpcomingClasses(); // Initial check
-        }
-
-        function checkUpcomingClasses() {
-            if (!classUserData) return;
-            const timetable = classUserData.timetable;
-            if (!timetable || Object.keys(timetable).length === 0) return;
-
-            const now = new Date();
-            const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-            const currentDayName = days[now.getDay()];
-
-            let nearestSlot = null;
-            let nearestDiffMs = Infinity;
-
-            Object.values(timetable).forEach(slot => {
-                if (slot && slot.day === currentDayName) {
-                    const [startHour, startMin] = slot.startTime.split(':').map(Number);
-                    const classTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMin, 0, 0);
-                    const diffMs = classTime.getTime() - now.getTime();
-
-                    // Class starts in 5 mins or less and is in the future
-                    if (diffMs > 0 && diffMs <= 5 * 60 * 1000) {
-                        if (diffMs < nearestDiffMs) {
-                            nearestDiffMs = diffMs;
-                            nearestSlot = slot;
-                        }
-                    }
-                }
-            });
-
-            const banner = document.getElementById('timetable-reminder-banner');
-            if (nearestSlot) {
-                // We have an upcoming class starting within 5 minutes!
-                document.getElementById('reminder-subject-name').textContent = `${nearestSlot.subject} Class Starting`;
-                document.getElementById('reminder-time-label').textContent = `Starts at ${formatTime12h(nearestSlot.startTime)}`;
-                banner.style.display = 'flex';
-
-                // Start or update countdown timer
-                updateCountdown(nearestSlot);
-
-                // Trigger local notification if not done yet
-                const dateKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
-                const notificationKey = `notified_${dateKey}_${nearestSlot.subject}_${nearestSlot.startTime}`;
-                if (!localStorage.getItem(notificationKey)) {
-                    localStorage.setItem(notificationKey, 'true');
-                    triggerStudentLocalNotification(
-                        `Upcoming Class: ${nearestSlot.subject}`,
-                        `Starts in 5 minutes (${formatTime12h(nearestSlot.startTime)}). Open the portal to view the countdown.`
-                    );
-                }
-            } else {
-                // No upcoming classes starting within 5 minutes
-                banner.style.display = 'none';
-                if (countdownIntervalId) {
-                    clearInterval(countdownIntervalId);
-                    countdownIntervalId = null;
-                }
-            }
-        }
-
-        function updateCountdown(slot) {
-            if (countdownIntervalId) clearInterval(countdownIntervalId);
-
-            const timerEl = document.getElementById('reminder-countdown');
-
-            function tick() {
-                const now = new Date();
-                const [startHour, startMin] = slot.startTime.split(':').map(Number);
-                const classTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMin, 0, 0);
-                const diffMs = classTime.getTime() - now.getTime();
-
-                if (diffMs <= 0) {
-                    timerEl.textContent = "00:00";
-                    document.getElementById('reminder-time-label').textContent = `Class has started!`;
-                    clearInterval(countdownIntervalId);
-                    countdownIntervalId = null;
-                    // Hide banner after 1 minute of class start
-                    setTimeout(() => {
-                        const b = document.getElementById('timetable-reminder-banner');
-                        if (b) b.style.display = 'none';
-                    }, 60000);
-                    return;
-                }
-
-                const totalSec = Math.floor(diffMs / 1000);
-                const min = Math.floor(totalSec / 60);
-                const sec = totalSec % 60;
-                timerEl.textContent = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-            }
-
-            countdownIntervalId = setInterval(tick, 1000);
-            tick(); // initial tick
-        }
-
         function fetchAndBuildDashboard(classId, rollNo) {
             // 1. Fetch attendance records
             const attendancePromise = db.ref('attendance').orderByKey().startAt(classId + '_').endAt(classId + '_\uf8ff').once('value');
@@ -2283,9 +1964,6 @@
                 document.getElementById('portal-logout-btn').style.display = 'block';
                 // Show AI Assistant FAB
                 showAIFAB();
-                requestStudentNotificationPermission();
-                renderStudentTimetable();
-                startTimetableReminderService();
             }).catch(err => {
                 document.getElementById('loading-screen').classList.add('fade-out');
                 alert("Failed to fetch attendance records: " + err.message);
@@ -2472,130 +2150,6 @@
 
             // Render Smart Planner
             updateSmartPlanner();
-
-            // Check for shortage alerts
-            checkAttendanceShortageAlerts(classId, rollNo, subjects, subjectStats, threshold);
-        }
-
-        async function requestStudentNotificationPermission() {
-            if (window.Capacitor && window.Capacitor.isPluginAvailable('LocalNotifications')) {
-                try {
-                    const { LocalNotifications } = window.Capacitor.Plugins;
-                    let permStatus = await LocalNotifications.checkPermissions();
-                    if (permStatus.display !== 'granted') {
-                        permStatus = await LocalNotifications.requestPermissions();
-                    }
-                } catch (e) {
-                    console.error('Capacitor LocalNotifications permission request failed:', e);
-                }
-            } else if ('Notification' in window) {
-                if (Notification.permission === 'default') {
-                    Notification.requestPermission();
-                }
-            }
-
-            if (window.Capacitor && window.Capacitor.isPluginAvailable('PushNotifications')) {
-                try {
-                    const { PushNotifications } = window.Capacitor.Plugins;
-                    
-                    if (!window.pushListenersInitialized) {
-                        window.pushListenersInitialized = true;
-                        
-                        PushNotifications.addListener('registration', (token) => {
-                            console.log('Push registration success, token:', token.value);
-                            window.lastFCMToken = token.value;
-                            if (currentClassId && currentRollNo) {
-                                db.ref('fcm_tokens/' + currentClassId + '/' + currentRollNo).set(token.value)
-                                    .catch(e => console.error('Failed to save FCM token:', e));
-                            }
-                        });
-
-                        PushNotifications.addListener('registrationError', (error) => {
-                            console.error('Push registration error:', JSON.stringify(error));
-                        });
-
-                        PushNotifications.addListener('pushNotificationReceived', (notification) => {
-                            console.log('Push received:', notification);
-                        });
-                    }
-
-                    let permStatus = await PushNotifications.checkPermissions();
-                    if (permStatus.receive !== 'granted') {
-                        permStatus = await PushNotifications.requestPermissions();
-                    }
-                    if (permStatus.receive === 'granted') {
-                        await PushNotifications.register();
-                    }
-                    
-                    if (window.lastFCMToken && currentClassId && currentRollNo) {
-                        db.ref('fcm_tokens/' + currentClassId + '/' + currentRollNo).set(window.lastFCMToken)
-                            .catch(e => console.error('Failed to save cached FCM token:', e));
-                    }
-                } catch (e) {
-                    console.error('Capacitor PushNotifications registration failed:', e);
-                }
-            }
-        }
-
-        function checkAttendanceShortageAlerts(classId, rollNo, subjects, subjectStats, threshold) {
-            if (!('Notification' in window) && !(window.Capacitor && window.Capacitor.isPluginAvailable('LocalNotifications'))) {
-                return;
-            }
-
-            subjects.forEach(sub => {
-                const stats = subjectStats[sub];
-                if (!stats || stats.total === 0) return;
-
-                const percentage = (stats.attended / stats.total) * 100;
-                if (percentage < threshold) {
-                    const alertKey = `shortage_alert_${classId}_${rollNo}_${sub}`;
-                    const currentState = `${stats.attended}_${stats.total}_${threshold}`;
-                    const lastAlertedState = localStorage.getItem(alertKey);
-
-                    if (lastAlertedState !== currentState) {
-                        const title = `⚠️ Attendance Shortage Alert`;
-                        const body = `Your attendance in "${sub}" has dropped to ${percentage.toFixed(1)}% (Target: ${threshold}%).`;
-
-                        triggerStudentLocalNotification(title, body);
-                        localStorage.setItem(alertKey, currentState);
-                    }
-                }
-            });
-        }
-
-        function triggerStudentLocalNotification(title, body) {
-            if (window.Capacitor && window.Capacitor.isPluginAvailable('LocalNotifications')) {
-                try {
-                    const { LocalNotifications } = window.Capacitor.Plugins;
-                    LocalNotifications.schedule({
-                        notifications: [
-                            {
-                                title: title,
-                                body: body,
-                                id: Math.floor(Math.random() * 1000000),
-                                schedule: null,
-                                sound: null,
-                                attachments: null,
-                                actionTypeId: "",
-                                extra: null
-                            }
-                        ]
-                    });
-                } catch (e) {
-                    console.error("Capacitor LocalNotifications failed", e);
-                }
-            } else if ('Notification' in window && Notification.permission === 'granted') {
-                try {
-                    new Notification(title, {
-                        body: body,
-                        icon: 'logo-opt.png',
-                        tag: 'attendify-shortage',
-                        renotify: true
-                    });
-                } catch (e) {
-                    console.error("Web Notification failed", e);
-                }
-            }
         }
 
         function updateThreshold() {
@@ -2613,8 +2167,6 @@
             console.log("currentClassId:", currentClassId, "currentRollNo:", currentRollNo);
 
             if (currentClassId && currentRollNo) {
-                db.ref('student_preferences/' + currentClassId + '/' + currentRollNo).update({ threshold: val })
-                    .catch(e => console.error("Failed to save threshold to database:", e));
                 buildDashboardUI(currentClassId, currentRollNo);
             } else {
                 console.warn("Cannot re-render: currentClassId or currentRollNo is null");
@@ -3007,7 +2559,7 @@
                 closeAIAssistant();
 
                 const finishLogout = () => {
-                    window.location.href = 'index.html?showLanding=1';
+                    window.location.href = 'track.html';
                 };
 
                 if (typeof auth !== 'undefined' && auth.currentUser) {
