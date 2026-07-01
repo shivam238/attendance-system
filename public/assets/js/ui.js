@@ -60,7 +60,7 @@ function showScreen(screenId) {
             landingPage.classList.toggle('is-hidden', !isAuthScreen);
             if (isAuthScreen) {
                 const showLandingTop = consumeLandingTopLaunchRequest();
-                if (isNative && !showLandingTop) {
+                if ((isNative || localStorage.getItem('attendify_skip_landing') === 'true') && !showLandingTop) {
                     landingPage.classList.add('login-locked');
                 } else {
                     document.body.classList.remove('native-login-active');
