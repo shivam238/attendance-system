@@ -282,9 +282,17 @@
             padding: unset !important;
         }
 
+        /* Also show desktop theme btn in login-locked state (workspace/login screens) */
+        .landing-page.login-locked .navbar-theme-btn {
+            opacity: 1;
+            pointer-events: auto;
+            max-width: 60px;
+            padding: unset !important;
+        }
+
         /* Mobile-only nav theme toggle (visible on mobile, hidden on desktop) */
         .navbar-theme-btn-mobile {
-            display: none;
+            display: none !important;
             margin: 0;
         }
 
