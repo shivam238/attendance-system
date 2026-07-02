@@ -40,10 +40,14 @@ def make_request(url, method="GET", headers=None, data=None):
     
     req = urllib.request.Request(url, headers=headers, method=method, data=data)
     try:
-        with urllib.request.urlopen(req) as response:
+        # Add a timeout of 30 seconds to regular API calls to avoid hanging indefinitely
+        with urllib.request.urlopen(req, timeout=30) as response:
             return response.status, response.read()
     except urllib.error.HTTPError as e:
         print(f"HTTP Error {e.code}: {e.read().decode('utf-8')}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error during request: {e}")
         sys.exit(1)
 
 def main():
@@ -75,24 +79,57 @@ def main():
             print("Failed to delete existing asset.")
             sys.exit(1)
 
-    print(f"Uploading new '{FILE_NAME}'...")
+    print(f"Uploading new '{FILE_NAME}' via curl...")
     upload_url = f"https://uploads.github.com/repos/{REPO}/releases/{release_id}/assets?name={FILE_NAME}"
     
-    # Read file data
-    with open(FILE_PATH, "rb") as f:
-        file_data = f.read()
-
-    headers = {
-        "Content-Type": "application/vnd.android.package-archive",
-        "Content-Length": str(len(file_data))
-    }
+    import subprocess
+    import tempfile
     
-    status, body = make_request(upload_url, method="POST", headers=headers, data=file_data)
-    if status == 201:
-        print("Successfully uploaded new asset to latest release!")
-    else:
-        print(f"Failed to upload asset. Status: {status}")
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+        tmp_name = tmp.name
+        
+    cmd = [
+        "curl",
+        "-L",
+        "-X", "POST",
+        "-H", f"Authorization: token {TOKEN}",
+        "-H", "Accept: application/vnd.github.v3+json",
+        "-H", "Content-Type: application/vnd.android.package-archive",
+        "--data-binary", f"@{FILE_PATH}",
+        "-o", tmp_name,
+        "--progress-bar",
+        upload_url
+    ]
+    
+    try:
+        # Run curl. The progress bar will be shown on screen
+        res = subprocess.run(cmd)
+        
+        with open(tmp_name, "r") as tmp:
+            response_text = tmp.read()
+            
+        os.unlink(tmp_name)
+        
+        if res.returncode == 0:
+            try:
+                resp_data = json.loads(response_text)
+                if "id" in resp_data:
+                    print("Successfully uploaded new asset to latest release!")
+                else:
+                    print(f"Failed to upload asset. Response: {response_text}")
+                    sys.exit(1)
+            except Exception as e:
+                print(f"Failed to parse response: {e}. Output: {response_text}")
+                sys.exit(1)
+        else:
+            print(f"Curl failed with exit code {res.returncode}")
+            sys.exit(1)
+    except Exception as e:
+        if os.path.exists(tmp_name):
+            os.unlink(tmp_name)
+        print(f"Error executing curl: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":
     main()
+
