@@ -9,6 +9,7 @@ const statePath = path.join(__dirname, '..', 'attendify-config-state.json');
 // Files to update
 const targetFiles = [
     path.join(__dirname, '..', 'README.md'),
+    path.join(__dirname, '..', 'SECURITY.md'),
     path.join(__dirname, '..', 'public', 'manual.html'),
     path.join(__dirname, '..', 'public', 'about.html'),
     path.join(__dirname, '..', 'public', 'contact.html'),
