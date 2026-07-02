@@ -10,6 +10,8 @@ const statePath = path.join(__dirname, '..', 'attendify-config-state.json');
 const targetFiles = [
     path.join(__dirname, '..', 'README.md'),
     path.join(__dirname, '..', 'SECURITY.md'),
+    path.join(__dirname, '..', 'CONTRIBUTING.md'),
+    path.join(__dirname, '..', 'CODE_OF_CONDUCT.md'),
     path.join(__dirname, '..', 'public', 'manual.html'),
     path.join(__dirname, '..', 'public', 'about.html'),
     path.join(__dirname, '..', 'public', 'contact.html'),

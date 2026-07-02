@@ -205,7 +205,7 @@ We take security issues seriously. If you discover a vulnerability in ATTENDIFY,
 
 **Contact the developer privately:**
 
-- 📧 **Email**: shivamkumarmahto@protonmail.com *(preferred for sensitive disclosures)*
+- 📧 **Email**: attendifycore@gmail.com *(preferred for sensitive disclosures)*
 - 💬 **WhatsApp Community**: [ATTENDIFY Community](https://chat.whatsapp.com/GDOjvKK7nxGFvQ7NSrQNiG)
 - 💼 **LinkedIn**: [Shivam Kumar Mahto](https://www.linkedin.com/in/shivam-kumar-mahto-046228361/)
 
