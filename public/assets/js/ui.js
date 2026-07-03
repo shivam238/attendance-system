@@ -79,14 +79,24 @@ function showScreen(screenId) {
 }
 
 function showCRLogin() {
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform()) || isPWA;
+
     const card = document.getElementById('ws-card-cr');
     if (card) {
         card.classList.add('ws-selected');
         setTimeout(() => {
             card.classList.remove('ws-selected');
+            // Push a history entry so browser back returns to workspace (web only)
+            if (!isNative) {
+                history.pushState({ attendifyScreen: 'login-screen' }, '', window.location.href);
+            }
             showScreen('login-screen');
         }, 220);
     } else {
+        if (!isNative) {
+            history.pushState({ attendifyScreen: 'login-screen' }, '', window.location.href);
+        }
         showScreen('login-screen');
     }
 }
@@ -267,6 +277,28 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Bind scroll listener on initial page load
     window.addEventListener('scroll', handleLandingScroll, { passive: true });
+
+    // ── Browser back-button guard for CR Dashboard (web only) ──────────────
+    // When user is on login-screen (CR Dashboard) and presses browser back,
+    // intercept it and return to workspace-screen instead of exiting the app.
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const isNativeEnv = !!(window.Capacitor && window.Capacitor.isNativePlatform()) || isPWA;
+
+    if (!isNativeEnv) {
+        // Seed the initial history entry so we have something to fall back to
+        history.replaceState({ attendifyScreen: 'root' }, '', window.location.href);
+
+        window.addEventListener('popstate', (e) => {
+            const activeScreen = document.querySelector('.screen.active');
+            // Only intercept if user is currently on the CR login screen
+            if (activeScreen && activeScreen.id === 'login-screen') {
+                // Push a fresh root state so back works again next time
+                history.pushState({ attendifyScreen: 'root' }, '', window.location.href);
+                showScreen('workspace-screen');
+            }
+        });
+    }
+    // ────────────────────────────────────────────────────────────────────────
 });
 
 let landingRevealItems = [];
