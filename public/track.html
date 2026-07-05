@@ -1836,27 +1836,31 @@
                 }
 
                 let userData = null;
-                snapshot.forEach(child => {
-                    userData = child.val();
-                });
-                
-                classUserData = userData;
+                let student = null;
 
-                // Check if student exists in the list (handle both array and object formats)
-                const studentsRaw = userData.students;
-                let studentsArray = [];
-                if (Array.isArray(studentsRaw)) {
-                    studentsArray = studentsRaw;
-                } else if (studentsRaw && typeof studentsRaw === 'object') {
-                    studentsArray = Object.values(studentsRaw);
-                }
-                const student = studentsArray.find(s => s && s.rollNo && s.rollNo.toUpperCase() === rollNo);
+                snapshot.forEach(child => {
+                    const data = child.val();
+                    const studentsRaw = data.students;
+                    let studentsArray = [];
+                    if (Array.isArray(studentsRaw)) {
+                        studentsArray = studentsRaw;
+                    } else if (studentsRaw && typeof studentsRaw === 'object') {
+                        studentsArray = Object.values(studentsRaw);
+                    }
+                    const found = studentsArray.find(s => s && s.rollNo && s.rollNo.toUpperCase() === rollNo);
+                    if (found) {
+                        userData = data;
+                        student = found;
+                    }
+                });
+
                 if (!student) {
                     document.getElementById('loading-screen').classList.add('fade-out');
                     showAuthError(`Roll Number "${rollNo}" not found in Class ${classId}. Check your roll number and try again.`);
                     return;
                 }
 
+                classUserData = userData;
                 currentStudent = student;
 
                 // Save session to LocalStorage
@@ -2043,25 +2047,30 @@
                 }
 
                 let userData = null;
-                snapshot.forEach(child => {
-                    userData = child.val();
-                });
-                classUserData = userData;
+                let student = null;
 
-                // Handle both array and object formats for students
-                const studentsRawAuto = userData.students;
-                let studentsArrayAuto = [];
-                if (Array.isArray(studentsRawAuto)) {
-                    studentsArrayAuto = studentsRawAuto;
-                } else if (studentsRawAuto && typeof studentsRawAuto === 'object') {
-                    studentsArrayAuto = Object.values(studentsRawAuto);
-                }
-                const student = studentsArrayAuto.find(s => s && s.rollNo && s.rollNo.toUpperCase() === rollNo);
+                snapshot.forEach(child => {
+                    const data = child.val();
+                    const studentsRawAuto = data.students;
+                    let studentsArrayAuto = [];
+                    if (Array.isArray(studentsRawAuto)) {
+                        studentsArrayAuto = studentsRawAuto;
+                    } else if (studentsRawAuto && typeof studentsRawAuto === 'object') {
+                        studentsArrayAuto = Object.values(studentsRawAuto);
+                    }
+                    const found = studentsArrayAuto.find(s => s && s.rollNo && s.rollNo.toUpperCase() === rollNo);
+                    if (found) {
+                        userData = data;
+                        student = found;
+                    }
+                });
+
                 if (!student) {
                     localStorage.removeItem('student_session');
                     document.getElementById('loading-screen').classList.add('fade-out');
                     return;
                 }
+                classUserData = userData;
                 currentStudent = student;
 
                 // Session validated, build dashboard

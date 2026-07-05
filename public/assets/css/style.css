@@ -1016,6 +1016,13 @@
                 padding: unset !important;
             }
 
+            /* Keep mobile theme btn visible during login-locked (workspace/login screens) */
+            .landing-page.login-locked .navbar-theme-btn-mobile {
+                display: inline-flex !important;
+                opacity: 1 !important;
+                pointer-events: auto !important;
+            }
+
             .landing-hero {
                 min-height: auto;
                 padding: 104px 6% 64px;
@@ -2913,6 +2920,14 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
             overflow: hidden;
             user-select: none;
+            /* Button element reset — ensures <button> renders like <a> */
+            font-family: inherit;
+            font-size: inherit;
+            text-align: left;
+            width: 100%;
+            box-sizing: border-box;
+            -webkit-appearance: none;
+            appearance: none;
         }
         
         .workspace-card--student {

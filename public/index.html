@@ -3,10 +3,23 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="ATTENDIFY — Smart QR-based attendance system with geofencing, real-time tracking, and export tools for CRs and teachers.">
     <meta name="referrer" content="no-referrer-when-downgrade">
     <title>ATTENDIFY — Smart Attendance System</title>
+
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="ATTENDIFY — Smart Attendance System">
+    <meta property="og:description" content="QR-based smart attendance system with geofencing, real-time tracking, and export tools for CRs and teachers.">
+    <meta property="og:image" content="https://attendify.web.app/icon-512.png">
+    <meta property="og:url" content="https://attendify.web.app/">
+    <meta property="og:site_name" content="ATTENDIFY">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ATTENDIFY — Smart Attendance System">
+    <meta name="twitter:description" content="QR-based smart attendance system with geofencing, real-time tracking, and export tools.">
+    <meta name="twitter:image" content="https://attendify.web.app/icon-512.png">
 
     <!-- Preconnect for speed -->
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
@@ -290,7 +303,7 @@
 
                 <div class="workspace-cards">
                     <!-- Student Card -->
-                    <a href="track.html?v=1.1" class="workspace-card workspace-card--student" id="ws-card-student" aria-label="Go to Student Portal">
+                    <a href="track.html?v=1.1" class="workspace-card workspace-card--student" id="ws-card-student" aria-label="Student — Go to Student Portal">
                         <div class="workspace-card-icon">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
@@ -311,7 +324,7 @@
                     </a>
 
                     <!-- Class Representative Card -->
-                    <div class="workspace-card workspace-card--cr" id="ws-card-cr" onclick="showCRLogin()" role="button" tabindex="0" aria-label="Go to CR Dashboard" onkeydown="if(event.key==='Enter'||event.key===' ')showCRLogin()">
+                    <button class="workspace-card workspace-card--cr" id="ws-card-cr" onclick="showCRLogin()" type="button" aria-label="Class Representative — Go to CR Dashboard">
                         <div class="workspace-card-icon">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M22 20V8a2 2 0 0 0-2-2h-3.9a2 2 0 0 0-1.7 1L12 10.4 9.6 7a2 2 0 0 0-1.7-1H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/>
@@ -331,7 +344,7 @@
                             </ul>
                         </div>
                         <div class="workspace-card-arrow">→</div>
-                    </div>
+                    </button>
                 </div>
             </div>
         </div>
@@ -822,7 +835,7 @@
 
             <!-- Student Verification Profile (Shown after Login) -->
             <div id="student-profile-section" style="display: none; align-items: center; gap: 12px; background: rgba(99, 102, 241, 0.08); padding: 12px; border-radius: 12px; margin-bottom: 20px; border: 1.5px solid rgba(99, 102, 241, 0.15);">
-                <img id="student-avatar" src="" style="width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--primary-color);">
+                <img id="student-avatar" src="" width="44" height="44" style="width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--primary-color);">
                 <div style="text-align: left; flex: 1;">
                     <div id="student-google-name" style="font-weight: 700; font-size: 14px; color: var(--text-color);"></div>
                     <div id="student-google-email" style="font-size: 12px; color: var(--text-muted);"></div>
@@ -5440,22 +5453,44 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
                 }
 
                 let userData = null;
+                let student = null;
+                
+                let rollMatches = [];
+                let nameMatches = [];
+
                 userQuerySnapshot.forEach(child => {
-                    userData = child.val();
+                    const data = child.val();
+                    const studentsRaw = data.students;
+                    if (!studentsRaw) return;
+
+                    let studentsArray = [];
+                    if (Array.isArray(studentsRaw)) {
+                        studentsArray = studentsRaw;
+                    } else if (typeof studentsRaw === 'object') {
+                        studentsArray = Object.values(studentsRaw);
+                    }
+
+                    const rollFound = studentsArray.find(s => s && s.rollNo && s.rollNo.toUpperCase() === roll);
+                    if (rollFound) {
+                        rollMatches.push({ student: rollFound, userData: data });
+                    }
+
+                    const matchingStudents = studentsArray.filter(s => s && s.name && s.name.toUpperCase() === roll);
+                    matchingStudents.forEach(s => {
+                        nameMatches.push({ student: s, userData: data });
+                    });
                 });
 
-                let student = userData.students.find(s => s.rollNo.toUpperCase() === roll);
-
-                if (!student) {
-                    // Try to find by exact name match
-                    const matchingStudents = userData.students.filter(s => s.name.toUpperCase() === roll);
-                    if (matchingStudents.length === 1) {
-                        student = matchingStudents[0];
-                    } else if (matchingStudents.length > 1) {
-                        msgDiv.innerHTML = '<div class="message error">⚠️ Multiple students found with this name. Please enter your Roll No.</div>';
-                        document.getElementById('student-roll').value = '';
-                        return;
-                    }
+                if (rollMatches.length > 0) {
+                    student = rollMatches[0].student;
+                    userData = rollMatches[0].userData;
+                } else if (nameMatches.length === 1) {
+                    student = nameMatches[0].student;
+                    userData = nameMatches[0].userData;
+                } else if (nameMatches.length > 1) {
+                    msgDiv.innerHTML = '<div class="message error">⚠️ Multiple students found with this name. Please enter your Roll No.</div>';
+                    document.getElementById('student-roll').value = '';
+                    return;
                 }
 
                 if (!student) {
