@@ -152,42 +152,7 @@ then
     echo -e "${YELLOW}Nothing to commit.${NC}"
 else
     git commit -m "$COMMIT_MSG"
-    CURRENT_BRANCH="$(git branch --show-current)"
-
-    # Try direct push first
-    if git push origin "$CURRENT_BRANCH" 2>/dev/null; then
-        echo -e "${GREEN}✔ Pushed directly to ${CURRENT_BRANCH}.${NC}"
-    else
-        echo -e "${YELLOW}Direct push blocked (branch protection). Using GitHub CLI to auto-merge...${NC}"
-
-        if ! command -v gh &>/dev/null; then
-            echo -e "${RED}❌ GitHub CLI (gh) not found. Install it: https://cli.github.com${NC}"
-            echo -e "${YELLOW}Your commit is saved locally. Push manually or remove branch protection.${NC}"
-            exit 1
-        fi
-
-        # Create a temp branch, push it, open PR, auto-merge, delete branch
-        TEMP_BRANCH="deploy/auto-$(date +%Y%m%d-%H%M%S)"
-        git checkout -b "$TEMP_BRANCH"
-        git push origin "$TEMP_BRANCH"
-
-        PR_URL=$(gh pr create \
-            --base "$CURRENT_BRANCH" \
-            --head "$TEMP_BRANCH" \
-            --title "$COMMIT_MSG" \
-            --body "Automated deployment PR created by deploy-all.sh" \
-            --fill 2>&1 | tail -1)
-
-        echo -e "${BLUE}PR created: ${PR_URL}${NC}"
-
-        gh pr merge "$PR_URL" --merge --auto --delete-branch
-        echo -e "${GREEN}✔ PR auto-merged into ${CURRENT_BRANCH}.${NC}"
-
-        # Switch back to main branch
-        git checkout "$CURRENT_BRANCH"
-        git pull origin "$CURRENT_BRANCH"
-        git branch -D "$TEMP_BRANCH" 2>/dev/null || true
-    fi
+    git push origin "$(git branch --show-current)"
 fi
 
 echo
