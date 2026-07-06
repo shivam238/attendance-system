@@ -39,10 +39,6 @@
       ],
       "rewrites": [
         {
-          "source": "/",
-          "destination": "/landing.html"
-        },
-        {
           "source": "**",
           "destination": "/index.html"
         }
@@ -86,10 +82,6 @@
         }
       ],
       "rewrites": [
-        {
-          "source": "/",
-          "destination": "/landing.html"
-        },
         {
           "source": "**",
           "destination": "/index.html"
