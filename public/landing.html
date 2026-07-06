@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ATTENDIFY — Smart QR-based attendance system with geofencing, real-time tracking, and export tools for CRs and teachers.">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <title>ATTENDIFY — Smart Attendance System</title>
+
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="ATTENDIFY — Smart Attendance System">
+    <meta property="og:description" content="QR-based smart attendance system with geofencing, real-time tracking, and export tools for CRs and teachers.">
+    <meta property="og:image" content="https://attendify.web.app/icon-512.png">
+    <meta property="og:url" content="https://attendify.web.app/">
+    <meta property="og:site_name" content="ATTENDIFY">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ATTENDIFY — Smart Attendance System">
+    <meta name="twitter:description" content="QR-based smart attendance system with geofencing, real-time tracking, and export tools.">
+    <meta name="twitter:image" content="https://attendify.web.app/icon-512.png">
+
+    <!-- Preconnect for speed -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="icon" type="image/webp" href="logo.webp">
+    <link rel="shortcut icon" type="image/webp" href="logo.webp">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="preload" as="image" href="logo.webp" type="image/webp">
+
+    <!-- PWA Manifest & Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="stylesheet" href="assets/css/style.css?v=28">
+    <script src="assets/js/theme.js" defer></script>
+
+    <style>
+        /* Landing-only: hide the app container, show full landing */
+        body {
+            overflow-x: hidden;
+        }
+        /* Override login-locked styles — not needed on standalone landing page */
+        .landing-page {
+            min-height: 100vh;
+        }
+        /* Mobile menu toggle for landing */
+        .landing-mobile-menu.open {
+            display: flex;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        (function() {
+            var saved = localStorage.getItem('darkMode');
+            if (saved !== null) {
+                if (saved === 'true') document.body.classList.add('dark-mode');
+            } else {
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.body.classList.add('dark-mode');
+                    localStorage.setItem('darkMode', 'true');
+                }
+            }
+        })();
+    </script>
+
+    <!-- Background Decorative Orbs -->
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+
+    <main id="landing-page" class="landing-page" aria-label="ATTENDIFY landing page">
+        <nav class="landing-nav">
+            <a href="landing.html" class="landing-logo" aria-label="ATTENDIFY home">
+                <img src="logo.webp" alt="" aria-hidden="true" width="200" height="200">
+                <span class="logo-text-block">
+                    <span class="logo-name"><strong>ATTEND</strong>IFY</span>
+                    <span class="logo-tagline">Smart Attendance Platform</span>
+                </span>
+            </a>
+            <div class="landing-links" aria-label="Landing navigation">
+                <a href="#landing-how" onclick="scrollToSection(event, 'landing-how')">How It Works</a>
+                <a href="#landing-features" onclick="scrollToSection(event, 'landing-features')">Features</a>
+                <a href="#landing-roles" onclick="scrollToSection(event, 'landing-roles')">For Whom</a>
+                <button class="theme-btn navbar-theme-btn" onclick="toggleDarkMode()" aria-label="Toggle dark mode" style="margin: 0;"></button>
+                <a href="index.html" class="landing-nav-cta">Get Started</a>
+            </div>
+            <button class="theme-btn navbar-theme-btn-mobile" onclick="toggleDarkMode()" aria-label="Toggle dark mode"></button>
+            <button class="landing-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false" onclick="toggleMenu(this)">
+                <span></span><span></span><span></span>
+            </button>
+        </nav>
+
+        <div class="landing-mobile-menu" id="landing-mobile-menu">
+            <a href="#landing-how" onclick="closeMobileMenu(); scrollToSection(event, 'landing-how')">How It Works</a>
+            <a href="#landing-features" onclick="closeMobileMenu(); scrollToSection(event, 'landing-features')">Features</a>
+            <a href="#landing-roles" onclick="closeMobileMenu(); scrollToSection(event, 'landing-roles')">For Whom</a>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; width: 100%; box-sizing: border-box;">
+                <a href="index.html" class="landing-mobile-cta" onclick="closeMobileMenu()">Get Started</a>
+            </div>
+        </div>
+
+        <section class="landing-hero">
+            <div class="landing-grid-bg" aria-hidden="true"></div>
+            <div class="landing-hero-inner">
+                <div class="landing-hero-copy">
+                    <div class="landing-badge"><span></span> QR-powered attendance system</div>
+                    <h1>Attendance, <em>simplified</em> for every class</h1>
+                    <p>Create a QR code, let students scan, and record attendance instantly with live tracking, geofencing, requests, and Excel reports.</p>
+                    <div class="landing-actions">
+                        <a href="index.html" class="landing-primary-btn">Open Dashboard</a>
+                        <a href="track.html?v=1.1" class="landing-secondary-btn">Student Portal</a>
+                        <a href="https://github.com/shivam238/attendance-system/releases/latest/download/ATTENDIFY.apk" class="landing-apk-btn">
+                            <span style="margin-right: 6px;">🤖</span> Download App
+                        </a>
+                    </div>
+                    <div class="landing-stats" aria-label="Highlights">
+                        <div><strong>5-Min QR</strong><span>Session validity</span></div>
+                        <div><strong>No App</strong><span>Students scan in browser</span></div>
+                        <div><strong>Instant</strong><span>Live sync</span></div>
+                    </div>
+                </div>
+
+                <div class="landing-qr-visual" aria-hidden="true">
+                    <div class="landing-qr-orbit"></div>
+                    <div class="landing-qr-orbit second"></div>
+                    <div class="landing-qr-card">
+                        <span class="landing-corner tl"></span><span class="landing-corner tr"></span>
+                        <span class="landing-corner bl"></span><span class="landing-corner br"></span>
+                        <div class="landing-scan-line"></div>
+                        <svg class="landing-qr-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="10" y="10" width="28" height="28" rx="3" fill="none" stroke="#8f89ff" stroke-width="2.5"/>
+                            <rect x="16" y="16" width="16" height="16" rx="2" fill="#8f89ff"/>
+                            <rect x="62" y="10" width="28" height="28" rx="3" fill="none" stroke="#8f89ff" stroke-width="2.5"/>
+                            <rect x="68" y="16" width="16" height="16" rx="2" fill="#8f89ff"/>
+                            <rect x="10" y="62" width="28" height="28" rx="3" fill="none" stroke="#8f89ff" stroke-width="2.5"/>
+                            <rect x="16" y="68" width="16" height="16" rx="2" fill="#8f89ff"/>
+                            <g fill="#22d3ee">
+                                <rect x="46" y="10" width="4" height="4" rx=".8"/><rect x="53" y="17" width="4" height="4" rx=".8"/><rect x="46" y="24" width="4" height="4" rx=".8"/>
+                                <rect x="10" y="46" width="4" height="4" rx=".8"/><rect x="24" y="46" width="4" height="4" rx=".8"/><rect x="17" y="53" width="4" height="4" rx=".8"/>
+                                <rect x="53" y="46" width="4" height="4" rx=".8"/><rect x="67" y="46" width="4" height="4" rx=".8"/><rect x="81" y="46" width="4" height="4" rx=".8"/>
+                                <rect x="46" y="60" width="4" height="4" rx=".8"/><rect x="60" y="67" width="4" height="4" rx=".8"/><rect x="74" y="74" width="4" height="4" rx=".8"/><rect x="81" y="81" width="4" height="4" rx=".8"/>
+                            </g>
+                            <g fill="#8f89ff" opacity=".78">
+                                <rect x="53" y="10" width="4" height="4" rx=".8"/><rect x="46" y="17" width="4" height="4" rx=".8"/><rect x="53" y="31" width="4" height="4" rx=".8"/>
+                                <rect x="46" y="46" width="4" height="4" rx=".8"/><rect x="60" y="46" width="4" height="4" rx=".8"/><rect x="74" y="46" width="4" height="4" rx=".8"/>
+                                <rect x="53" y="53" width="4" height="4" rx=".8"/><rect x="67" y="60" width="4" height="4" rx=".8"/><rect x="46" y="74" width="4" height="4" rx=".8"/><rect x="60" y="81" width="4" height="4" rx=".8"/>
+                            </g>
+                        </svg>
+                        <span class="landing-qr-caption">Scan to mark attendance</span>
+                        <strong id="landing-subject-chip">MATHEMATICS</strong>
+                    </div>
+                    <div class="landing-live-pill"><span></span><b id="landing-live-count">24</b> present</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="landing-how" class="landing-section landing-band">
+            <div class="landing-section-inner">
+                <span class="landing-eyebrow">How It Works</span>
+                <h2>Attendance in 4 simple steps</h2>
+                <p class="landing-section-copy">Login, generate, scan, done. The whole workflow takes under two minutes to set up.</p>
+                <div class="landing-steps">
+                    <article><span>01</span><h3>CR Logs In</h3><p>Secure Google or phone sign-in opens the class dashboard.</p></article>
+                    <article><span>02</span><h3>Generate QR</h3><p>Select a subject and generate a time-limited QR session.</p></article>
+                    <article><span>03</span><h3>Students Scan</h3><p>Students mark attendance from their browser without installing an app.</p></article>
+                    <article><span>04</span><h3>Export Reports</h3><p>Download clean attendance records by date, subject, or student.</p></article>
+                </div>
+            </div>
+        </section>
+
+        <section id="landing-features" class="landing-section">
+            <div class="landing-section-inner">
+                <span class="landing-eyebrow">Features</span>
+                <h2>Everything you need, built in</h2>
+                <p class="landing-section-copy">Modern attendance tools for real classrooms, from geofencing to student-wise history.</p>
+                <div class="landing-feature-grid">
+                    <article><span>📡</span><h3>Real-time Feed</h3><p>New scans appear on the CR dashboard instantly.</p></article>
+                    <article><span>📍</span><h3>Geofencing</h3><p>Verify classroom location and flag out-of-range submissions.</p></article>
+                    <article><span>✅</span><h3>Requests</h3><p>Review late or flagged attendance before approving.</p></article>
+                    <article><span>📁</span><h3>Excel Export</h3><p>Generate list or register-style attendance sheets.</p></article>
+                    <article><span>🎓</span><h3>Student Portal</h3><p>Students can check subject-wise attendance anytime.</p></article>
+                    <article><span>🔒</span><h3>Duplicate-proof</h3><p>One student can submit only once per active session.</p></article>
+                </div>
+            </div>
+        </section>
+
+        <section id="landing-roles" class="landing-section landing-band">
+            <div class="landing-section-inner">
+                <span class="landing-eyebrow">For Whom</span>
+                <h2>Built for both sides of the classroom</h2>
+                <div class="landing-role-grid">
+                    <article>
+                        <strong>Class Rep / Educator</strong>
+                        <h3>Full control, zero hassle</h3>
+                        <p>Generate QR codes, manage subjects, watch live attendance, handle requests, and export reports from one dashboard.</p>
+                    </article>
+                    <article>
+                        <strong>Student</strong>
+                        <h3>Scan once, you're done</h3>
+                        <p>No extra app or account setup. Scan the QR, submit your roll number, and track your attendance in the student portal.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="landing-finale">
+            <div class="landing-section-inner landing-finale-grid">
+                <div class="landing-finale-copy">
+                    <span class="landing-eyebrow">Live Class Flow</span>
+                    <h2>From QR to report without the mess</h2>
+                    <p class="landing-section-copy">A cleaner final view of what ATTENDIFY handles quietly in the background while class is running.</p>
+                </div>
+                <div class="landing-flow-panel" aria-hidden="true">
+                    <div class="landing-flow-row">
+                        <span>QR Active</span>
+                        <strong>04:58</strong>
+                    </div>
+                    <div class="landing-flow-track"><span></span></div>
+                    <div class="landing-flow-metrics">
+                        <div><b>24</b><span>Present</span></div>
+                        <div><b>03</b><span>Requests</span></div>
+                        <div><b>1</b><span>Export</span></div>
+                    </div>
+                    <div class="landing-flow-checks">
+                        <span>Location verified</span>
+                        <span>Duplicates blocked</span>
+                        <span>Excel ready</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer style="text-align: center; padding: 32px 20px; color: var(--text-muted, #888); font-size: 13px; border-top: 1px solid rgba(255,255,255,0.06);">
+            <div style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin-bottom: 12px;">
+                <a href="about.html" style="color: inherit; text-decoration: none; opacity: 0.8;">About</a>
+                <a href="contact.html" style="color: inherit; text-decoration: none; opacity: 0.8;">Contact</a>
+                <a href="manual.html" target="_blank" style="color: inherit; text-decoration: none; opacity: 0.8;">User Manual</a>
+                <a href="feedback.html" style="color: inherit; text-decoration: none; opacity: 0.8;">Feedback</a>
+                <a href="privacy-policy.html" style="color: inherit; text-decoration: none; opacity: 0.8;">Privacy Policy</a>
+                <a href="terms.html" style="color: inherit; text-decoration: none; opacity: 0.8;">Terms &amp; Conditions</a>
+            </div>
+            <span>© 2026 ATTENDIFY</span>
+        </footer>
+
+    </main>
+
+    <script>
+        // Simple dark mode toggle for landing page
+        function toggleDarkMode() {
+            var body = document.body;
+            var isDark = body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', isDark ? 'true' : 'false');
+        }
+
+        // Smooth scroll to section
+        function scrollToSection(event, sectionId) {
+            if (event) event.preventDefault();
+            var el = document.getElementById(sectionId);
+            if (el) {
+                var top = el.getBoundingClientRect().top + window.scrollY - 80;
+                window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' });
+            }
+        }
+
+        // Mobile hamburger menu
+        function toggleMenu(btn) {
+            var menu = document.getElementById('landing-mobile-menu');
+            var isOpen = menu.classList.toggle('open');
+            btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        }
+
+        function closeMobileMenu() {
+            var menu = document.getElementById('landing-mobile-menu');
+            menu.classList.remove('open');
+            var btn = document.querySelector('.landing-menu-btn');
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+        }
+
+        // Animate live count on landing page (cosmetic)
+        (function() {
+            var countEl = document.getElementById('landing-live-count');
+            var subjects = ['MATHEMATICS', 'PHYSICS', 'CHEMISTRY', 'CS THEORY', 'ENGLISH'];
+            var chipEl = document.getElementById('landing-subject-chip');
+            var i = 0;
+            setInterval(function() {
+                i = (i + 1) % subjects.length;
+                if (chipEl) chipEl.textContent = subjects[i];
+                if (countEl) {
+                    var num = Math.floor(Math.random() * 12) + 18;
+                    countEl.textContent = num;
+                }
+            }, 2800);
+        })();
+    </script>
+</body>
+</html>
