@@ -80,6 +80,7 @@
     </style>
     <link rel="stylesheet" href="assets/css/style.css?v=28">
     <script src="assets/js/theme.js" defer></script>
+     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 
 <body>
@@ -101,7 +102,7 @@
     <div class="bg-orb orb-1"></div>
     <div class="bg-orb orb-2"></div>
     <div class="bg-orb orb-3"></div>
-    <div class="bg-orb orb-4"></div>
+   
 
     <!-- LOADING SCREEN -->
     <div id="loading-screen">
@@ -109,39 +110,30 @@
         <h2 style="color: #fff;">Fast as Light... ⚡</h2>
     </div>
 
-    <main id="landing-page" class="landing-page" aria-label="ATTENDIFY landing page">
-        <nav class="landing-nav">
-            <a href="#" class="landing-logo" aria-label="ATTENDIFY home">
-                <img src="logo.webp" alt="" aria-hidden="true" width="200" height="200">
-                <span class="logo-text-block">
-                    <span class="logo-name"><strong>ATTEND</strong>IFY</span>
-                    <span class="logo-tagline">Smart Attendance Platform</span>
-                </span>
-            </a>
-            <div class="landing-links" aria-label="Landing navigation">
-                <a href="#landing-how" onclick="scrollToLandingSection(event, 'landing-how')">How It Works</a>
-                <a href="#landing-features" onclick="scrollToLandingSection(event, 'landing-features')">Features</a>
-                <a href="#landing-roles" onclick="scrollToLandingSection(event, 'landing-roles')">For Whom</a>
-                <button class="theme-btn navbar-theme-btn" onclick="toggleDarkMode()" aria-label="Toggle dark mode" style="margin: 0;"></button>
-                <a href="#workspace-screen" class="landing-nav-cta" onclick="scrollToWorkspace(event)">Get Started</a>
-            </div>
-            <button class="theme-btn navbar-theme-btn-mobile" onclick="toggleDarkMode()" aria-label="Toggle dark mode"></button>
-            <button class="landing-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false" onclick="toggleLandingMenu(this)">
-                <span></span><span></span><span></span>
-            </button>
-        </nav>
-
-        <div class="landing-mobile-menu" id="landing-mobile-menu">
-            <a href="#landing-how" onclick="scrollToLandingSection(event, 'landing-how')">How It Works</a>
-            <a href="#landing-features" onclick="scrollToLandingSection(event, 'landing-features')">Features</a>
-            <a href="#landing-roles" onclick="scrollToLandingSection(event, 'landing-roles')">For Whom</a>
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; width: 100%; box-sizing: border-box;">
-                <a href="#workspace-screen" class="landing-mobile-cta" onclick="closeLandingMenu(); scrollToWorkspace(event)">Get Started</a>
-
-            </div>
-        </div>
-
-        <section class="landing-hero">
+    <main id="landing-page" class="" aria-label="ATTENDIFY landing page">
+               <section class="hero-section">
+  <div class="hero-content">
+    <nav class="flex items-center justify-between p-4 md:p-4 lg:p-6 bg-white/80 backdrop-blur-xl text-[20px]">
+      <a href="#" class="landing-logo" aria-label="ATTENDIFY home">
+        <img src="LOGO.png" alt="" aria-hidden="true" width="200" height="200">
+        <span class="logo-text-block">
+          <span class="logo-name"><strong>Atten</strong>MO</span>
+          <span class="logo-tagline">Smart Attendance Platform</span>
+        </span>
+      </a>
+      <div class="landing-links" aria-label="Landing navigation">
+        <a href="#landing-how" onclick="scrollToLandingSection(event, 'landing-how')">How It Works</a>
+        <a href="#landing-features" onclick="scrollToLandingSection(event, 'landing-features')">Features</a>
+        <a href="#landing-roles" onclick="scrollToLandingSection(event, 'landing-roles')">For Whom</a>
+        <button class="theme-btn navbar-theme-btn" onclick="toggleDarkMode()" aria-label="Toggle dark mode" style="margin: 0;"></button>
+        <a href="#workspace-screen" class="landing-nav-cta" onclick="scrollToWorkspace(event)">Get Started</a>
+      </div>
+      <button class="theme-btn navbar-theme-btn-mobile" onclick="toggleDarkMode()" aria-label="Toggle dark mode"></button>
+      <button class="landing-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false" onclick="toggleLandingMenu(this)">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+           <section class="landing-hero">
             <div class="landing-grid-bg" aria-hidden="true"></div>
             <div class="landing-hero-inner">
                 <div class="landing-hero-copy">
@@ -149,8 +141,8 @@
                     <h1>Attendance, <em>simplified</em> for every class</h1>
                     <p>Create a QR code, let students scan, and record attendance instantly with live tracking, geofencing, requests, and Excel reports.</p>
                     <div class="landing-actions">
-                        <a href="#" class="landing-primary-btn" onclick="scrollToWorkspace(event)">Open Dashboard</a>
-                        <a href="track.html?v=1.1" class="landing-secondary-btn">Student Portal</a>
+                        <a href="#" class="flex items-center justify-center text-shadow-teal-300 bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-full shadow-md" onclick="scrollToWorkspace(event)">Open Dashboard</a>
+                        <a href="track.html?v=1.1" class="font-bold py-2 px-4 rounded-full flex items-center justify-center border-2 border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white hover:border-transparent">Student Portal</a>
                         <a href="https://github.com/shivam238/attendance-system/releases/latest/download/ATTENDIFY.apk" class="landing-apk-btn">
                             <span style="margin-right: 6px;">🤖</span> Download App
                         </a>
@@ -195,6 +187,20 @@
                 </div>
             </div>
         </section>
+
+        
+
+        <div class="landing-mobile-menu" id="landing-mobile-menu">
+            <a href="#landing-how" onclick="scrollToLandingSection(event, 'landing-how')">How It Works</a>
+            <a href="#landing-features" onclick="scrollToLandingSection(event, 'landing-features')">Features</a>
+            <a href="#landing-roles" onclick="scrollToLandingSection(event, 'landing-roles')">For Whom</a>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; width: 100%; box-sizing: border-box;">
+                <a href="#workspace-screen" class="landing-mobile-cta" onclick="closeLandingMenu(); scrollToWorkspace(event)">Get Started</a>
+
+            </div>
+        </div>
+
+        
 
         <section id="landing-how" class="landing-section landing-band">
             <div class="landing-section-inner">
@@ -349,6 +355,8 @@
                 </div>
             </div>
         </div>
+          </div>
+</section>
 
         <!-- LOGIN SCREEN (CR only) -->
         <div id="login-screen" class="screen">
