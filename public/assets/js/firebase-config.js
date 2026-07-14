@@ -1,6 +1,6 @@
 // Central Firebase Configuration for ATTENDIFY
 const firebaseConfig = {
-    apiKey: "AIzaSyDN6iWRpxLZuwzQYVX580eTQbZuz2VY-HU",
+    apiKey: "AIzaSyD1EDACdh01a2n81qKUtYsCPV0m--JfwFU",
     authDomain: "firstfile-c763521e.firebaseapp.com",
     databaseURL: "https://firstfile-c763521e-default-rtdb.firebaseio.com",
     projectId: "firstfile-c763521e",
