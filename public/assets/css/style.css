@@ -1301,10 +1301,9 @@
         }
 
         .student-list, #today-list, #requests-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 16px;
-            justify-content: start; /* Don't stretch to fill the whole container */
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         /* History tab uses its own injected flex layout */
@@ -1313,7 +1312,7 @@
         }
 
         .list-item {
-            max-width: 500px; /* Prevent cards from becoming too wide */
+            width: 100%; /* Always full width - rectangle, not square */
         }
 
         @media (max-width: 768px) {
@@ -1321,7 +1320,7 @@
                 grid-template-columns: 1fr;
             }
             .list-item {
-                max-width: 100%;
+                width: 100%;
             }
         }
 

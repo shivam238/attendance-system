@@ -1,0 +1,684 @@
+/* ============================================================
+   ATTENDIFY — NEW PREMIUM NAVIGATION SYSTEM
+   - Desktop: Fixed Left Sidebar
+   - Mobile: Floating Glassmorphic Bottom Nav Bar
+   ============================================================ */
+
+/* ── CSS VARIABLES (NEW DESIGN TOKENS) ──────────────────── */
+:root {
+    --sidebar-width: 240px;
+    --sidebar-collapsed-width: 72px;
+    --bottom-nav-height: 76px;
+
+    /* Sidebar colors */
+    --sidebar-bg: #ffffff;
+    --sidebar-border: rgba(0, 0, 0, 0.06);
+    --sidebar-item-hover-bg: rgba(79, 70, 229, 0.07);
+    --sidebar-item-active-bg: rgba(79, 70, 229, 0.12);
+    --sidebar-item-active-color: #4f46e5;
+    --sidebar-item-color: #475569;
+    --sidebar-icon-size: 20px;
+
+    /* Bottom nav colors */
+    --bottom-nav-bg: rgba(255, 255, 255, 0.82);
+    --bottom-nav-blur: 24px;
+    --bottom-nav-border: rgba(0, 0, 0, 0.08);
+    --bottom-nav-shadow: 0 -8px 32px rgba(0, 0, 0, 0.08), 0 -1px 0 rgba(0, 0, 0, 0.05);
+    --bottom-nav-active-color: #4f46e5;
+    --bottom-nav-inactive-color: #94a3b8;
+    --bottom-nav-fab-size: 56px;
+    --bottom-nav-fab-bg: linear-gradient(135deg, #4f46e5, #7c3aed);
+    --bottom-nav-fab-shadow: 0 8px 24px rgba(79, 70, 229, 0.45);
+}
+
+body.dark-mode {
+    --sidebar-bg: #0f172a;
+    --sidebar-border: rgba(255, 255, 255, 0.06);
+    --sidebar-item-hover-bg: rgba(129, 140, 248, 0.08);
+    --sidebar-item-active-bg: rgba(129, 140, 248, 0.15);
+    --sidebar-item-active-color: #818cf8;
+    --sidebar-item-color: #94a3b8;
+
+    --bottom-nav-bg: rgba(15, 23, 42, 0.88);
+    --bottom-nav-border: rgba(255, 255, 255, 0.06);
+    --bottom-nav-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4), 0 -1px 0 rgba(255, 255, 255, 0.04);
+    --bottom-nav-active-color: #818cf8;
+    --bottom-nav-inactive-color: #475569;
+    --bottom-nav-fab-bg: linear-gradient(135deg, #6366f1, #8b5cf6);
+    --bottom-nav-fab-shadow: 0 8px 24px rgba(99, 102, 241, 0.5);
+}
+
+/* ── HIDE/SHOW RULES ──────────────────────────────────────── */
+/* Only show sidebar on desktop (when app is active) */
+#app-sidebar {
+    display: none;
+}
+#app-bottom-nav {
+    display: none;
+}
+
+/* Show sidebar on desktop when app is active */
+body.app-layout-active #app-sidebar {
+    display: flex;
+}
+/* Show bottom nav on mobile when app is active */
+body.app-layout-active #app-bottom-nav {
+    display: flex;
+}
+
+/* ── GLOBAL APP LAYOUT WHEN SIDEBAR IS ACTIVE ─────────────── */
+body.app-layout-active.sidebar-active {
+    /* The body is already flex + column via app-layout-active.
+       We convert it to a flex ROW to place sidebar + main content side by side. */
+    flex-direction: row !important;
+    align-items: stretch !important;
+}
+
+/* ────────────────────────────────────────────────────────────
+   DESKTOP SIDEBAR
+──────────────────────────────────────────────────────────── */
+#app-sidebar {
+    position: relative;
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    height: 100%;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--sidebar-border);
+    flex-direction: column;
+    flex-shrink: 0;
+    z-index: 100;
+    overflow: hidden;
+    transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                min-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    /* On mobile: sidebar is hidden */
+}
+
+/* Sidebar inner layout */
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 16px 16px;
+    border-bottom: 1px solid var(--sidebar-border);
+    text-decoration: none;
+    color: var(--text-color);
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.sidebar-brand img {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1.5px solid rgba(79, 70, 229, 0.25);
+}
+
+.sidebar-brand-text {
+    display: flex;
+    flex-direction: column;
+    white-space: nowrap;
+    overflow: hidden;
+    opacity: 1;
+    transition: opacity 0.2s ease;
+}
+
+.sidebar-brand-name {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: var(--primary-color);
+    text-transform: uppercase;
+}
+
+.sidebar-brand-sub {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-top: 1px;
+}
+
+/* Sidebar user info section */
+.sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--sidebar-border);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.sidebar-user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: #fff;
+    flex-shrink: 0;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.sidebar-user-info {
+    overflow: hidden;
+    white-space: nowrap;
+    opacity: 1;
+    transition: opacity 0.2s ease;
+    flex: 1;
+    min-width: 0;
+}
+
+.sidebar-user-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-user-role {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 1px;
+}
+
+/* Connection status badge in sidebar */
+.sidebar-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px 12px;
+    border-bottom: 1px solid var(--sidebar-border);
+    flex-shrink: 0;
+}
+.sidebar-status .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    flex-shrink: 0;
+    animation: pulse 2s infinite;
+}
+.sidebar-status-text {
+    font-size: 11px;
+    color: #10b981;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity 0.2s;
+}
+
+/* Sidebar tabs navigation */
+.sidebar-nav {
+    flex: 1;
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+    width: 3px;
+}
+.sidebar-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.sidebar-nav-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 8px 10px 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    opacity: 0.7;
+}
+
+.sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--sidebar-item-color);
+    font-size: 13.5px;
+    font-weight: 600;
+    width: 100%;
+    text-align: left;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    position: relative;
+    text-decoration: none;
+}
+
+.sidebar-nav-item:hover {
+    background: var(--sidebar-item-hover-bg);
+    color: var(--primary-color);
+    transform: translateX(2px);
+}
+
+.sidebar-nav-item.active {
+    background: var(--sidebar-item-active-bg);
+    color: var(--sidebar-item-active-color);
+}
+
+.sidebar-nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    background: var(--primary-color);
+    border-radius: 0 3px 3px 0;
+}
+
+.sidebar-nav-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 17px;
+    line-height: 1;
+}
+
+.sidebar-nav-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 1;
+    transition: opacity 0.2s ease;
+}
+
+/* Sidebar divider */
+.sidebar-divider {
+    height: 1px;
+    background: var(--sidebar-border);
+    margin: 8px 8px;
+    flex-shrink: 0;
+}
+
+/* Sidebar bottom actions */
+.sidebar-actions {
+    padding: 12px 8px;
+    border-top: 1px solid var(--sidebar-border);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+/* Settings, theme and logout buttons in sidebar */
+.sidebar-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--sidebar-item-color);
+    font-size: 13px;
+    font-weight: 600;
+    width: 100%;
+    text-align: left;
+    transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-decoration: none;
+}
+
+.sidebar-action-btn:hover {
+    background: var(--sidebar-item-hover-bg);
+    color: var(--primary-color);
+}
+
+.sidebar-action-btn.logout {
+    color: #ef4444;
+}
+.sidebar-action-btn.logout:hover {
+    background: rgba(239, 68, 68, 0.08);
+    color: #dc2626;
+}
+
+/* ── MAIN CONTENT AREA (when sidebar is active) ────────────── */
+body.app-layout-active.sidebar-active .container {
+    /* Remove max-width constraint so content fills the remaining space */
+    max-width: none !important;
+    flex: 1;
+    min-width: 0;
+}
+
+/* Hide old hamburger in sidebar mode — sidebar replaces it */
+body.app-layout-active.sidebar-active .hamburger-btn {
+    display: none !important;
+}
+
+/* Hide old header controls bar in sidebar mode */
+body.app-layout-active.sidebar-active .header-controls {
+    display: none !important;
+}
+
+/* ────────────────────────────────────────────────────────────
+   MOBILE FLOATING BOTTOM NAVIGATION BAR
+──────────────────────────────────────────────────────────── */
+#app-bottom-nav {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 420px;
+    height: var(--bottom-nav-height);
+    background: var(--bottom-nav-bg);
+    backdrop-filter: blur(var(--bottom-nav-blur));
+    -webkit-backdrop-filter: blur(var(--bottom-nav-blur));
+    border: 1px solid var(--bottom-nav-border);
+    border-radius: 24px;
+    box-shadow: var(--bottom-nav-shadow), 0 0 0 0.5px rgba(255,255,255,0.1) inset;
+    z-index: 500;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 8px;
+    animation: slideUpNav 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes slideUpNav {
+    from {
+        transform: translateX(-50%) translateY(100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Bottom nav items */
+.bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 8px 10px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 16px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    color: var(--bottom-nav-inactive-color);
+    min-width: 52px;
+    flex: 1;
+    position: relative;
+}
+
+.bottom-nav-item:hover {
+    color: var(--bottom-nav-active-color);
+    background: rgba(79, 70, 229, 0.06);
+}
+
+.bottom-nav-item.active {
+    color: var(--bottom-nav-active-color);
+}
+
+.bottom-nav-item.active .bottom-nav-icon {
+    transform: translateY(-2px) scale(1.15);
+}
+
+.bottom-nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--bottom-nav-active-color);
+}
+
+.bottom-nav-icon {
+    font-size: 20px;
+    line-height: 1;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bottom-nav-label {
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-align: center;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+/* Center FAB button (Generate QR) */
+.bottom-nav-fab {
+    width: var(--bottom-nav-fab-size);
+    height: var(--bottom-nav-fab-size);
+    border-radius: 50%;
+    background: var(--bottom-nav-fab-bg);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--bottom-nav-fab-shadow);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    flex-shrink: 0;
+    flex-direction: column;
+    gap: 2px;
+    color: #fff;
+    position: relative;
+    top: -10px; /* Float above nav bar */
+    text-decoration: none;
+}
+
+.bottom-nav-fab:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 12px 32px rgba(79, 70, 229, 0.55);
+}
+
+.bottom-nav-fab:active {
+    transform: scale(0.95);
+}
+
+.bottom-nav-fab svg {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+.bottom-nav-fab-ring {
+    position: absolute;
+    width: calc(var(--bottom-nav-fab-size) + 10px);
+    height: calc(var(--bottom-nav-fab-size) + 10px);
+    border-radius: 50%;
+    border: 1.5px solid rgba(99, 102, 241, 0.3);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: fabRingPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes fabRingPulse {
+    0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 0.1; transform: translate(-50%, -50%) scale(1.12); }
+}
+
+.bottom-nav-fab-label {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: rgba(255,255,255,0.9);
+    line-height: 1;
+}
+
+/* Spacer for FAB slot */
+.bottom-nav-fab-spacer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1.2;
+}
+
+/* ── Padding at bottom so content doesn't go under the bottom nav ─── */
+body.app-layout-active:not(.sidebar-active) #app-screen .tab.active {
+    padding-bottom: calc(var(--bottom-nav-height) + 24px) !important;
+}
+
+/* ── RESPONSIVE: show sidebar only on large screens ────────── */
+@media (min-width: 769px) {
+    body.app-layout-active {
+        flex-direction: row !important;
+    }
+
+    /* Show sidebar, hide bottom nav */
+    body.app-layout-active #app-sidebar {
+        display: flex !important;
+    }
+    body.app-layout-active #app-bottom-nav {
+        display: none !important;
+    }
+
+    /* Add sidebar-active class behavior for desktop */
+    body.app-layout-active .container {
+        flex: 1;
+        min-width: 0;
+        max-width: none !important;
+    }
+
+    /* Restore old hamburger hide on desktop */
+    body.app-layout-active .hamburger-btn {
+        display: none !important;
+    }
+
+    /* Hide header controls top bar since sidebar has these controls */
+    body.app-layout-active .header-controls {
+        display: none !important;
+    }
+
+    /* Keep the tabs row for desktop (used by switchAppTab) but visually hidden */
+    body.app-layout-active .tabs-scroll-wrapper {
+        display: none !important;
+    }
+}
+
+@media (max-width: 768px) {
+    /* On mobile: no sidebar, show bottom nav */
+    body.app-layout-active #app-sidebar {
+        display: none !important;
+    }
+    body.app-layout-active #app-bottom-nav {
+        display: flex !important;
+    }
+
+    /* Mobile: keep header controls visible (has logout/settings/theme) */
+    body.app-layout-active .header-controls {
+        display: flex !important;
+    }
+
+    /* Hide old tab row — we use bottom nav */
+    body.app-layout-active .tabs-scroll-wrapper {
+        display: none !important;
+    }
+
+    /* Allow full body direction on mobile */
+    body.app-layout-active {
+        flex-direction: column !important;
+    }
+}
+
+/* ── SIDEBAR COMPACT (app-screen header on desktop) ──────────── */
+/* Desktop: top bar inside .card becomes class-info bar only */
+@media (min-width: 769px) {
+    body.app-layout-active .header {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 16px !important;
+        text-align: left !important;
+        padding: 12px 0 12px !important;
+        margin-bottom: 12px !important;
+        border-bottom: 1px solid var(--border-color);
+        flex-shrink: 0;
+    }
+    body.app-layout-active .header .logo {
+        width: 38px !important;
+        height: 38px !important;
+        margin: 0 !important;
+        display: none !important; /* Logo already in sidebar */
+    }
+    body.app-layout-active .header h1 {
+        font-size: 18px !important;
+        letter-spacing: 1px !important;
+        margin: 0 !important;
+        display: none !important; /* Title already in sidebar */
+    }
+    body.app-layout-active .header p#class-info {
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        margin: 0 !important;
+        color: var(--text-muted) !important;
+    }
+
+    /* Desktop top bar: show only useful info */
+    body.app-layout-active .header-controls {
+        display: flex !important;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 8px;
+        padding-bottom: 8px;
+        flex-shrink: 0;
+    }
+
+    /* Keep header-controls visible on desktop in the app, showing status + controls */
+    body.app-layout-active.sidebar-active .header-controls {
+        display: none !important;
+    }
+}
+
+/* ── TAB CONTENT AREA ON DESKTOP ──────────────────────────── */
+/* Since sidebar replaces tabs, tab content fills the card */
+@media (min-width: 769px) {
+    body.app-layout-active #app-screen .card {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+/* ── SMOOTH TRANSITION FOR SIDEBAR ───────────────────────── */
+#app-sidebar,
+body.app-layout-active .container {
+    transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}

@@ -79,6 +79,7 @@
         }
     </style>
     <link rel="stylesheet" href="assets/css/style.css?v=28">
+    <link rel="stylesheet" href="assets/css/nav.css?v=1">
     <script src="assets/js/theme.js" defer></script>
 </head>
 
@@ -291,7 +292,141 @@
     </div>
     <div id="nav-drawer-overlay" class="nav-drawer-overlay" onclick="toggleNavDrawer()"></div>
 
+    <!-- ════════════════════════════════════════════════════════════
+         DESKTOP SIDEBAR NAVIGATION (visible ≥ 769px in app mode)
+    ═══════════════════════════════════════════════════════════════ -->
+    <aside id="app-sidebar" aria-label="App Navigation">
+        <!-- Brand -->
+        <div class="sidebar-brand">
+            <img src="logo.webp" alt="ATTENDIFY" onclick="openLogoPopup()" style="cursor:pointer">
+            <div class="sidebar-brand-text">
+                <span class="sidebar-brand-name">ATTENDIFY</span>
+                <span class="sidebar-brand-sub">Smart Attendance</span>
+            </div>
+        </div>
+
+        <!-- User/Class Info -->
+        <div class="sidebar-user">
+            <div class="sidebar-user-avatar" id="sidebar-avatar" style="overflow:hidden; padding:0;">
+                <img id="sidebar-cr-photo" src="" alt="CR" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:none;">
+                <span id="sidebar-cr-initials">CR</span>
+            </div>
+            <div class="sidebar-user-info">
+                <div class="sidebar-user-name" id="sidebar-user-name">Class Rep</div>
+                <div class="sidebar-user-role" id="sidebar-user-role">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Connection Status -->
+        <div class="sidebar-status">
+            <span class="status-dot" id="sidebar-status-dot"></span>
+            <span class="sidebar-status-text" id="sidebar-status-text">Connected</span>
+        </div>
+
+        <!-- Navigation Items -->
+        <nav class="sidebar-nav">
+            <span class="sidebar-nav-label">Dashboard</span>
+            <button class="sidebar-nav-item" id="sidebar-tab-cr" onclick="switchAppTab('cr')">
+                <span class="sidebar-nav-icon">📲</span>
+                <span class="sidebar-nav-text">Generate QR</span>
+            </button>
+            <button class="sidebar-nav-item" id="sidebar-tab-today" onclick="switchAppTab('today')">
+                <span class="sidebar-nav-icon">📅</span>
+                <span class="sidebar-nav-text">Today</span>
+            </button>
+            <button class="sidebar-nav-item" id="sidebar-tab-students" onclick="switchAppTab('students')">
+                <span class="sidebar-nav-icon">👥</span>
+                <span class="sidebar-nav-text">Students</span>
+            </button>
+            <button class="sidebar-nav-item" id="sidebar-tab-history" onclick="switchAppTab('history')">
+                <span class="sidebar-nav-icon">📊</span>
+                <span class="sidebar-nav-text">History</span>
+            </button>
+            <button class="sidebar-nav-item" id="sidebar-tab-requests" onclick="switchAppTab('requests')">
+                <span class="sidebar-nav-icon">🙋</span>
+                <span class="sidebar-nav-text">Requests</span>
+            </button>
+
+            <div class="sidebar-divider"></div>
+
+            <span class="sidebar-nav-label">Manage</span>
+            <button class="sidebar-nav-item" onclick="openManageSubjectsModal(); closeNavDrawer();">
+                <span class="sidebar-nav-icon">📚</span>
+                <span class="sidebar-nav-text">Subjects</span>
+            </button>
+            <button class="sidebar-nav-item" onclick="openManageTimetableModal(); closeNavDrawer();">
+                <span class="sidebar-nav-icon">🗓️</span>
+                <span class="sidebar-nav-text">Timetable</span>
+            </button>
+        </nav>
+
+        <!-- Bottom Actions -->
+        <div class="sidebar-actions">
+            <button class="sidebar-action-btn" onclick="toggleDarkMode()">
+                <span class="sidebar-nav-icon">🌙</span>
+                <span class="sidebar-nav-text" id="sidebar-theme-label">Dark Mode</span>
+            </button>
+            <button class="sidebar-action-btn" onclick="openProfileModal()">
+                <span class="sidebar-nav-icon">⚙️</span>
+                <span class="sidebar-nav-text">Settings</span>
+            </button>
+            <button class="sidebar-action-btn logout" onclick="logoutUser()">
+                <span class="sidebar-nav-icon">🚪</span>
+                <span class="sidebar-nav-text">Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- ════════════════════════════════════════════════════════════
+         MOBILE FLOATING BOTTOM NAVIGATION BAR (< 769px in app mode)
+    ═══════════════════════════════════════════════════════════════ -->
+    <nav id="app-bottom-nav" aria-label="Mobile App Navigation">
+        <!-- CR Tab -->
+        <button class="bottom-nav-item" id="bnav-cr" onclick="switchAppTab('cr')">
+            <span class="bottom-nav-icon">📲</span>
+            <span class="bottom-nav-label">QR</span>
+        </button>
+
+        <!-- Today Tab -->
+        <button class="bottom-nav-item" id="bnav-today" onclick="switchAppTab('today')">
+            <span class="bottom-nav-icon">📅</span>
+            <span class="bottom-nav-label">Today</span>
+        </button>
+
+        <!-- Center FAB -->
+        <div class="bottom-nav-fab-spacer">
+            <button class="bottom-nav-fab" id="bnav-fab" onclick="switchAppTab('cr'); setTimeout(generateQRCode, 50);" title="Generate QR Code">
+                <div class="bottom-nav-fab-ring"></div>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="3" height="3" rx="0.5"/>
+                    <rect x="18" y="14" width="3" height="3" rx="0.5"/>
+                    <rect x="14" y="18" width="3" height="3" rx="0.5"/>
+                    <rect x="18" y="18" width="3" height="3" rx="0.5"/>
+                </svg>
+                <span class="bottom-nav-fab-label">SCAN</span>
+            </button>
+        </div>
+
+        <!-- Students Tab -->
+        <button class="bottom-nav-item" id="bnav-students" onclick="switchAppTab('students')">
+            <span class="bottom-nav-icon">👥</span>
+            <span class="bottom-nav-label">Students</span>
+        </button>
+
+        <!-- History Tab -->
+        <button class="bottom-nav-item" id="bnav-history" onclick="switchAppTab('history')">
+            <span class="bottom-nav-icon">📊</span>
+            <span class="bottom-nav-label">History</span>
+        </button>
+        <!-- Hidden sentinel: keeps bnav-requests sync from silently failing -->
+        <button class="bottom-nav-item" id="bnav-requests" onclick="switchAppTab('requests')" style="display:none;" aria-hidden="true"></button>
+    </nav>
+
     <div class="container">
+
         <!-- WORKSPACE SELECTION SCREEN -->
         <div id="workspace-screen" class="screen">
             <div class="workspace-shell">
@@ -458,6 +593,10 @@
                     <input type="url" id="setup-website" placeholder="e.g., https://dtu.ac.in">
                 </div>
                 <div class="form-group">
+                    <label>CR Name <span style="font-size:11px; color:var(--text-muted); font-weight:400;">(auto-filled from your Google account)</span></label>
+                    <input type="text" id="setup-crname" placeholder="e.g., Rahul Sharma" autocomplete="name">
+                </div>
+                <div class="form-group">
                     <label>CR Mobile Number (for OTP verification)</label>
                     <input type="tel" id="setup-phone" placeholder="e.g., 9876543210" maxlength="10">
                 </div>
@@ -515,17 +654,17 @@
 
                 <div class="tabs-scroll-wrapper">
                     <div class="tabs" id="main-app-tabs">
-                        <button class="tab-btn active" onclick="switchAppTab('cr')">CR</button>
-                        <button class="tab-btn" onclick="switchAppTab('today')">Today</button>
-                        <button class="tab-btn" onclick="switchAppTab('students')">Students</button>
-                        <button class="tab-btn" onclick="switchAppTab('history')">History</button>
-                        <button class="tab-btn" onclick="switchAppTab('requests')">Requests</button>
+                        <button class="tab-btn" data-tab="cr" onclick="switchAppTab('cr')">CR</button>
+                        <button class="tab-btn" data-tab="today" onclick="switchAppTab('today')">Today</button>
+                        <button class="tab-btn" data-tab="students" onclick="switchAppTab('students')">Students</button>
+                        <button class="tab-btn" data-tab="history" onclick="switchAppTab('history')">History</button>
+                        <button class="tab-btn" data-tab="requests" onclick="switchAppTab('requests')">Requests</button>
                     </div>
                 </div>
 
 
                 <!-- CR TAB -->
-                <div id="cr-tab" class="tab active">
+                <div id="cr-tab" class="tab">
                     <div class="dashboard-grid">
                         <!-- LEFT COLUMN: CONTROLS -->
                         <div class="control-panel">
@@ -537,18 +676,14 @@
                             </div>
 
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; margin-bottom: 10px;">
-                                <a href="manage-subjects.html" style="text-decoration: none; display: block;">
-                                    <button class="btn btn-secondary" type="button"
-                                        style="margin: 0; background: var(--tab-bg); color: var(--text-color); border: 1px solid var(--input-border); width: 100%; font-size: 13px; padding: 12px 4px; display: flex; align-items: center; justify-content: center; gap: 4px;">
-                                        📚 Subjects
-                                    </button>
-                                </a>
-                                <a href="manage-timetable.html" style="text-decoration: none; display: block;">
-                                    <button class="btn btn-secondary" type="button"
-                                        style="margin: 0; background: var(--tab-bg); color: var(--text-color); border: 1px solid var(--input-border); width: 100%; font-size: 13px; padding: 12px 4px; display: flex; align-items: center; justify-content: center; gap: 4px;">
-                                        📅 Timetable
-                                    </button>
-                                </a>
+                                <button class="btn btn-secondary" type="button" onclick="openManageSubjectsModal()"
+                                    style="margin: 0; background: var(--tab-bg); color: var(--text-color); border: 1px solid var(--input-border); width: 100%; font-size: 13px; padding: 12px 4px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                    📚 Subjects
+                                </button>
+                                <button class="btn btn-secondary" type="button" onclick="openManageTimetableModal()"
+                                    style="margin: 0; background: var(--tab-bg); color: var(--text-color); border: 1px solid var(--input-border); width: 100%; font-size: 13px; padding: 12px 4px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                    📅 Timetable
+                                </button>
                             </div>
 
                             <div class="form-group" style="margin-top: 15px; margin-bottom: 15px;">
@@ -1205,6 +1340,126 @@
         </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════
+         MANAGE SUBJECTS MODAL
+    ══════════════════════════════════════════════════════════ -->
+    <div id="manage-subjects-modal" class="modal">
+        <div class="modal-content" style="max-width: 520px; width: 100%; border-radius: 20px; max-height: 85vh; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 8px;">📚 Manage Subjects</h3>
+                <button onclick="closeManageSubjectsModal()" style="background: var(--tab-bg); border: 1px solid var(--border-color); width: 32px; height: 32px; border-radius: 50%; font-size: 18px; cursor: pointer; color: var(--text-color); display: flex; align-items: center; justify-content: center;">×</button>
+            </div>
+
+            <div id="ms-message" style="flex-shrink: 0;"></div>
+
+            <div class="form-group" style="flex-shrink: 0; margin-bottom: 12px;">
+                <label style="font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block;">New Subject Name</label>
+                <input type="text" id="ms-subject-input" placeholder="e.g. Computer Networks"
+                    style="width: 100%; box-sizing: border-box;"
+                    onkeypress="if(event.key==='Enter') msAddSubject()">
+            </div>
+            <button class="btn btn-primary" id="ms-add-btn" onclick="msAddSubject()" style="flex-shrink: 0; margin-bottom: 16px;">➕ ADD SUBJECT</button>
+
+            <div id="ms-subject-list" style="overflow-y: auto; flex: 1; min-height: 80px;">
+                <div class="empty-state"><p>Loading subjects...</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         MANAGE TIMETABLE MODAL
+    ══════════════════════════════════════════════════════════ -->
+    <div id="manage-timetable-modal" class="modal">
+        <div class="modal-content" style="max-width: 600px; width: 100%; border-radius: 20px; max-height: 90vh; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; flex-shrink: 0;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 8px;">📅 Manage Timetable</h3>
+                <button onclick="closeManageTimetableModal()" style="background: var(--tab-bg); border: 1px solid var(--border-color); width: 32px; height: 32px; border-radius: 50%; font-size: 18px; cursor: pointer; color: var(--text-color); display: flex; align-items: center; justify-content: center;">×</button>
+            </div>
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 14px 0; flex-shrink: 0;">Add weekly class timings for automated student notifications.</p>
+
+            <div id="mt-message" style="flex-shrink: 0;"></div>
+
+            <!-- Scrollable body -->
+            <div style="overflow-y: auto; flex: 1; padding-right: 4px;">
+
+                <!-- ADD SLOT FORM -->
+                <div style="background: rgba(99,102,241,0.05); border: 1px solid var(--primary-color); border-radius: 16px; padding: 16px; margin-bottom: 16px;">
+                    <div style="font-size: 14px; font-weight: 700; color: var(--primary-color); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color);">➕ Add Timetable Slot</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label style="font-size: 12px; font-weight: 600; margin-bottom: 4px; display: block;">Day</label>
+                            <select id="mt-slot-day" style="width:100%; padding:10px; border-radius:10px; background:var(--tab-bg); border:1px solid var(--input-border); color:var(--text-color);">
+                                <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+                                <option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label style="font-size: 12px; font-weight: 600; margin-bottom: 4px; display: block;">Subject</label>
+                            <select id="mt-slot-subject" style="width:100%; padding:10px; border-radius:10px; background:var(--tab-bg); border:1px solid var(--input-border); color:var(--text-color);">
+                                <option value="">-- Choose Subject --</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label style="font-size: 12px; font-weight: 600; margin-bottom: 4px; display: block;">Start Time</label>
+                            <input type="time" id="mt-slot-start" style="width:100%; padding:10px; border-radius:10px; background:var(--tab-bg); border:1px solid var(--input-border); color:var(--text-color); box-sizing:border-box;">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label style="font-size: 12px; font-weight: 600; margin-bottom: 4px; display: block;">End Time</label>
+                            <input type="time" id="mt-slot-end" style="width:100%; padding:10px; border-radius:10px; background:var(--tab-bg); border:1px solid var(--input-border); color:var(--text-color); box-sizing:border-box;">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="mt-add-slot-btn" onclick="mtAddSlot()" style="width:100%; margin: 0; height: 42px;">➕ ADD TIME SLOT</button>
+                </div>
+
+                <!-- AI IMPORT -->
+                <div style="background: rgba(99,102,241,0.03); border: 1.5px solid var(--primary-color); border-radius: 16px; padding: 16px; margin-bottom: 16px;">
+                    <div style="font-size: 14px; font-weight: 700; color: #6366f1; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color);">✨ AI Timetable Import (Beta)</div>
+                    <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 12px 0;">Upload a screenshot or paste text of your timetable — AI will parse and import all slots automatically.</p>
+
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                        <button id="mt-ai-tab-text" class="ai-tab-btn active" onclick="mtSwitchAiTab('text')" style="font-size: 12px;">📝 Paste Text</button>
+                        <button id="mt-ai-tab-image" class="ai-tab-btn" onclick="mtSwitchAiTab('image')" style="font-size: 12px;">📷 Upload Image</button>
+                    </div>
+
+                    <div id="mt-ai-pane-text" class="ai-pane active">
+                        <textarea id="mt-ai-raw-text" style="width:100%; height:100px; padding:10px; border-radius:10px; background:var(--tab-bg); border:1px solid var(--input-border); color:var(--text-color); font-size:13px; resize:vertical; box-sizing:border-box; font-family:inherit;" placeholder="Paste timetable text here...&#10;e.g.&#10;Monday&#10;09:00 - 10:00: PHYSICS&#10;10:15 - 11:15: MATHEMATICS-1"></textarea>
+                    </div>
+                    <div id="mt-ai-pane-image" class="ai-pane">
+                        <div style="border: 2px dashed var(--border-color); border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; background: var(--tab-bg);" onclick="document.getElementById('mt-ai-file-input').click()">
+                            <span style="font-size: 28px; display: block; margin-bottom: 6px;">📷</span>
+                            <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Click to select a timetable image</p>
+                            <input type="file" id="mt-ai-file-input" style="display:none;" accept="image/*" onchange="mtHandleFileSelect(event)">
+                        </div>
+                        <div id="mt-ai-file-info" style="display:none; margin-top:8px; font-size:12px; color:var(--primary-color); font-weight:700; text-align:center;"></div>
+                    </div>
+
+                    <button class="btn btn-primary" id="mt-ai-parse-btn" onclick="mtParseWithAi()" style="width:100%; margin-top:14px; margin-bottom:0; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); border:none; height:42px;">✨ PARSE &amp; IMPORT WITH AI</button>
+
+                    <div id="mt-ai-loading" style="display:none; text-align:center; margin-top:12px; padding:10px; background:rgba(99,102,241,0.05); border-radius:10px; border:1px dashed var(--primary-color);">
+                        <span style="font-size:13px; font-weight:700; color:var(--primary-color);">🤖 AI is analyzing... Please wait...</span>
+                    </div>
+
+                    <!-- Preview -->
+                    <div id="mt-ai-preview" style="display:none; margin-top:16px; background:rgba(99,102,241,0.05); padding:16px; border-radius:12px; border:1.5px solid var(--primary-color);">
+                        <div style="font-size:14px; font-weight:800; color:var(--primary-color); margin-bottom:10px;">🤖 Parsed Slots Preview</div>
+                        <div id="mt-ai-preview-list" style="margin-bottom:12px;"></div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn btn-primary" onclick="mtSaveAiSlots('append')" style="flex:1; margin:0; font-size:12px; height:38px;">➕ Append</button>
+                            <button class="btn btn-primary" onclick="mtSaveAiSlots('overwrite')" style="flex:1; margin:0; font-size:12px; height:38px; background:#fbbf24; border:none;">🔄 Overwrite</button>
+                            <button class="btn btn-secondary" onclick="mtCancelAiPreview()" style="flex:1; margin:0; font-size:12px; height:38px;">❌ Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WEEKLY DISPLAY -->
+                <div style="font-size:15px; font-weight:700; margin-bottom:12px; color:var(--text-color);">📅 Weekly Schedule</div>
+                <div id="mt-timetable-display">
+                    <div class="empty-state"><p>Loading timetable...</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- GUIDE MODAL -->
     <div id="guide-modal" class="modal">
         <div class="modal-content" style="max-width: 700px; width: 100%; height: 85vh; display: flex; flex-direction: column; padding: 0; overflow: hidden;">
@@ -1642,13 +1897,27 @@
         if (connectedRef) {
             connectedRef.on('value', (snapshot) => {
                 const statusBadge = document.getElementById('connection-status');
+                const sidebarDot = document.getElementById('sidebar-status-dot');
+                const sidebarText = document.getElementById('sidebar-status-text');
+                const isOnline = snapshot.val() === true;
                 if (statusBadge) {
-                    if (snapshot.val() === true) {
+                    if (isOnline) {
                         statusBadge.className = 'status-badge online';
                         statusBadge.innerHTML = '<span class="status-dot"></span><span>Connected</span>';
                     } else {
                         statusBadge.className = 'status-badge offline';
                         statusBadge.innerHTML = '<span class="status-dot"></span><span>Offline</span>';
+                    }
+                }
+                if (sidebarDot && sidebarText) {
+                    if (isOnline) {
+                        sidebarDot.style.background = '#10b981';
+                        sidebarText.textContent = 'Connected';
+                        sidebarText.style.color = '#10b981';
+                    } else {
+                        sidebarDot.style.background = '#ef4444';
+                        sidebarText.textContent = 'Offline';
+                        sidebarText.style.color = '#ef4444';
                     }
                 }
             });
@@ -2448,6 +2717,7 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
             const branch = document.getElementById('setup-branch').value.trim().toUpperCase();
             const section = document.getElementById('setup-section').value.trim();
             let website = document.getElementById('setup-website').value.trim();
+            const crName = (document.getElementById('setup-crname').value.trim()) || (auth.currentUser ? auth.currentUser.displayName : '') || '';
             const phone = document.getElementById('setup-phone').value.trim();
             const subjectsText = document.getElementById('setup-subjects').value.trim();
             const studentsText = document.getElementById('setup-students').value.trim();
@@ -2506,6 +2776,7 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
 
             const classSetupData = {
                 year, college, branch, section, phone, website,
+                crName: crName || user.displayName || "",
                 username: year + college + branch + section,
                 subjects: subjects,
                 students: students,
@@ -2714,6 +2985,9 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
                         hideLoadingScreen();
                     } else {
                         showScreen('setup-screen');
+                        // Autofill CR Name from Google account
+                        const crNameInput = document.getElementById('setup-crname');
+                        if (crNameInput && user.displayName) crNameInput.value = user.displayName;
                         if (user.phoneNumber) {
                             const rawPhone = user.phoneNumber.replace("+91", "").trim();
                             const phoneInput = document.getElementById('setup-phone');
@@ -2726,6 +3000,9 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
                     }
                 } else {
                     showScreen('setup-screen');
+                    // Autofill CR Name from Google account
+                    const crNameInput2 = document.getElementById('setup-crname');
+                    if (crNameInput2 && user.displayName) crNameInput2.value = user.displayName;
                     if (user.phoneNumber) {
                         const rawPhone = user.phoneNumber.replace("+91", "").trim();
                         const phoneInput = document.getElementById('setup-phone');
@@ -3259,6 +3536,30 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
             document.getElementById('class-info').textContent =
                 `Passout ${20}${currentUser.year} - ${currentUser.college} ${currentUser.branch} Section ${currentUser.section}`;
 
+            // --- Update Sidebar CR Info ---
+            const displayCRName = currentUser.crName || currentUser.displayName || 'Class Rep';
+            const sidebarNameEl = document.getElementById('sidebar-user-name');
+            const sidebarRoleEl = document.getElementById('sidebar-user-role');
+            const sidebarInitialsEl = document.getElementById('sidebar-cr-initials');
+            const sidebarPhotoEl = document.getElementById('sidebar-cr-photo');
+            if (sidebarNameEl) sidebarNameEl.textContent = displayCRName;
+            if (sidebarRoleEl) sidebarRoleEl.textContent = currentUser.college
+                ? `${currentUser.college} · ${currentUser.branch} · Sec ${currentUser.section}`
+                : 'Class Representative';
+            // Show Google profile photo if available
+            const photoURL = auth.currentUser && auth.currentUser.photoURL ? auth.currentUser.photoURL : null;
+            if (photoURL && sidebarPhotoEl) {
+                sidebarPhotoEl.src = photoURL;
+                sidebarPhotoEl.style.display = 'block';
+                if (sidebarInitialsEl) sidebarInitialsEl.style.display = 'none';
+            } else if (sidebarInitialsEl) {
+                // Show initials from crName
+                const initials = displayCRName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+                sidebarInitialsEl.textContent = initials || 'CR';
+                sidebarInitialsEl.style.display = 'block';
+            }
+            // ------------------------------
+
             const select = document.getElementById('subject-select');
             select.innerHTML = '<option value="">-- Choose Subject --</option>';
             currentUser.subjects.forEach(subj => {
@@ -3425,24 +3726,32 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
         }
 
         function switchAppTab(tab) {
-            // Remove active class from all tabs and buttons
+            // ── Deactivate all tab content panels ──────────────────
             document.querySelectorAll('#app-screen .tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('#app-screen .tab-btn').forEach(b => b.classList.remove('active'));
 
-            // Activate button by finding the one that matches the tab name
+            // ── Sync top tab-btn bar (uses data-tab for reliable matching) ──
             document.querySelectorAll('#app-screen .tab-btn').forEach(btn => {
-                if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(`'${tab}'`)) {
-                    btn.classList.add('active');
-                }
+                btn.classList.toggle('active', btn.dataset.tab === tab);
             });
 
-            // Activate correct tab content
-            document.getElementById(tab + '-tab').classList.add('active');
+            // ── Activate correct tab content panel ─────────────────
+            const tabEl = document.getElementById(tab + '-tab');
+            if (tabEl) tabEl.classList.add('active');
 
-            // Save active tab to localStorage for restoration on reload
+            // ── Persist active tab for session restore ─────────────
             localStorage.setItem('lastActiveTab', tab);
 
-            // Load content
+            // ── Sync Sidebar active state ───────────────────────────
+            document.querySelectorAll('#app-sidebar .sidebar-nav-item').forEach(btn => {
+                btn.classList.toggle('active', btn.id === 'sidebar-tab-' + tab);
+            });
+
+            // ── Sync Bottom Nav active state ────────────────────────
+            document.querySelectorAll('#app-bottom-nav .bottom-nav-item').forEach(btn => {
+                btn.classList.toggle('active', btn.id === 'bnav-' + tab);
+            });
+
+            // ── Load tab-specific content ───────────────────────────
             if (tab === 'today') renderTodayTab();
             if (tab === 'students') loadStudents();
             if (tab === 'history') renderHistory();
