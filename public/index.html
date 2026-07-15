@@ -6283,20 +6283,71 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
                 item.className = 'list-item';
                 item.draggable = true;
                 item.dataset.idx = idx;
+                item.style.cssText = 'gap:10px; padding: 10px 14px; align-items:center;';
                 item.innerHTML = `
-                    <div style="display:flex;align-items:center;gap:12px;flex:1;">
-                        <div class="drag-handle" style="cursor:grab;font-size:18px;color:var(--text-muted);">⠿</div>
-                        <div class="list-item-name" style="font-weight:600;">${sub}</div>
+                    <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+                        <div class="drag-handle" style="cursor:grab;font-size:16px;color:var(--text-muted);flex-shrink:0;">⠿</div>
+                        <div class="list-item-name" id="ms-name-${idx}" style="font-weight:600;font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${sub}</div>
+                        <input id="ms-input-${idx}" type="text" value="${sub.replace(/"/g,'&quot;')}"
+                            style="display:none;flex:1;padding:6px 10px;border-radius:8px;border:1.5px solid var(--primary-color);background:var(--tab-bg);color:var(--text-color);font-size:13px;font-weight:600;outline:none;min-width:0;"
+                            onkeydown="if(event.key==='Enter')msConfirmRename(${idx});if(event.key==='Escape')msCancelRename(${idx});">
                     </div>
-                    <div class="list-item-actions">
-                        <button class="btn-icon" onclick="msRenameSubject(${idx})" title="Rename">✏️</button>
-                        <button class="btn-icon" onclick="msDeleteSubject(${idx})" title="Delete">🗑️</button>
+                    <div class="list-item-actions" id="ms-actions-${idx}" style="display:flex;gap:6px;flex-shrink:0;">
+                        <button class="btn-small btn-primary" onclick="msStartRename(${idx})" style="padding:5px 12px;font-size:12px;">Edit</button>
+                        <button class="btn-small btn-danger" onclick="msDeleteSubject(${idx})" style="padding:5px 12px;font-size:12px;">Delete</button>
+                    </div>
+                    <div id="ms-rename-actions-${idx}" style="display:none;gap:6px;flex-shrink:0;">
+                        <button class="btn-small btn-primary" onclick="msConfirmRename(${idx})" style="padding:5px 12px;font-size:12px;background:var(--primary-color);">Save</button>
+                        <button class="btn-small btn-secondary" onclick="msCancelRename(${idx})" style="padding:5px 12px;font-size:12px;">Cancel</button>
                     </div>
                 `;
-                // Drag-and-drop for reordering
                 setupDraggableItem(item, 'ms-subject');
                 list.appendChild(item);
             });
+        }
+
+        function msStartRename(idx) {
+            const nameEl = document.getElementById(`ms-name-${idx}`);
+            const inputEl = document.getElementById(`ms-input-${idx}`);
+            const actionsEl = document.getElementById(`ms-actions-${idx}`);
+            const renameActionsEl = document.getElementById(`ms-rename-actions-${idx}`);
+            if (!nameEl || !inputEl) return;
+            nameEl.style.display = 'none';
+            inputEl.style.display = 'block';
+            actionsEl.style.display = 'none';
+            renameActionsEl.style.display = 'flex';
+            inputEl.focus();
+            inputEl.select();
+        }
+
+        function msCancelRename(idx) {
+            const nameEl = document.getElementById(`ms-name-${idx}`);
+            const inputEl = document.getElementById(`ms-input-${idx}`);
+            const actionsEl = document.getElementById(`ms-actions-${idx}`);
+            const renameActionsEl = document.getElementById(`ms-rename-actions-${idx}`);
+            if (!nameEl) return;
+            nameEl.style.display = 'block';
+            inputEl.style.display = 'none';
+            actionsEl.style.display = 'flex';
+            renameActionsEl.style.display = 'none';
+        }
+
+        function msConfirmRename(idx) {
+            const inputEl = document.getElementById(`ms-input-${idx}`);
+            if (!inputEl) return;
+            const newName = inputEl.value.trim();
+            const subjects = currentUser.subjects || [];
+            const oldName = subjects[idx];
+            if (!newName) { showToast('⚠️ Name cannot be empty'); return; }
+            if (newName === oldName) { msCancelRename(idx); return; }
+            if (subjects.some((s, i) => i !== idx && s.toLowerCase() === newName.toLowerCase())) {
+                showToast('⚠️ Subject already exists'); return;
+            }
+            subjects[idx] = newName;
+            currentUser.subjects = subjects;
+            saveSubjectsToCloud();
+            msRenderSubjects();
+            showToast('✅ Subject renamed!');
         }
 
         function msAddSubject() {
@@ -6314,22 +6365,28 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
             showToast('✅ Subject added!');
         }
 
-        function msRenameSubject(idx) {
-            const subjects = currentUser.subjects || [];
-            const oldName = subjects[idx];
-            const newName = prompt('Rename subject:', oldName);
-            if (!newName || !newName.trim() || newName.trim() === oldName) return;
-            subjects[idx] = newName.trim();
-            currentUser.subjects = subjects;
-            saveSubjectsToCloud();
-            msRenderSubjects();
-            showToast('✅ Subject renamed!');
-        }
-
         function msDeleteSubject(idx) {
             const subjects = currentUser.subjects || [];
             const name = subjects[idx];
-            if (!confirm(`Delete subject "${name}"?`)) return;
+            // Inline confirm using toast-style confirmation
+            const list = document.getElementById('ms-subject-list');
+            const item = list && list.children[idx];
+            if (item) {
+                const actionsEl = document.getElementById(`ms-actions-${idx}`);
+                if (actionsEl) {
+                    actionsEl.innerHTML = `
+                        <span style="font-size:12px;color:var(--text-muted);margin-right:4px;">Sure?</span>
+                        <button class="btn-small btn-danger" onclick="msConfirmDelete(${idx})" style="padding:5px 12px;font-size:12px;">Yes, Delete</button>
+                        <button class="btn-small btn-secondary" onclick="msRenderSubjects()" style="padding:5px 12px;font-size:12px;">Cancel</button>
+                    `;
+                }
+            } else {
+                msConfirmDelete(idx);
+            }
+        }
+
+        function msConfirmDelete(idx) {
+            const subjects = currentUser.subjects || [];
             subjects.splice(idx, 1);
             currentUser.subjects = subjects;
             saveSubjectsToCloud();
