@@ -158,38 +158,56 @@ else
     echo -e "${BLUE}Pushing to GitHub...${NC}"
 
     # Try direct push first; if blocked, use PR flow
-    if git push origin "$CURRENT_BRANCH" 2>/dev/null; then
+    PUSH_OUT=$(git push origin "$CURRENT_BRANCH" 2>&1) && PUSH_SUCCESS=true || PUSH_SUCCESS=false
+
+    if [ "$PUSH_SUCCESS" = true ]; then
         echo -e "${GREEN}✔ Pushed directly to $CURRENT_BRANCH${NC}"
-    else
-        echo -e "${YELLOW}⚠ Branch protection active. Using auto PR flow...${NC}"
-
-        # Push commits to auto-deploy branch
-        git push origin "$CURRENT_BRANCH:$DEPLOY_BRANCH" --force
-
-        # Create PR (skip if already exists)
-        PR_URL=$(gh pr create \
-            --base "$CURRENT_BRANCH" \
-            --head "$DEPLOY_BRANCH" \
-            --title "$COMMIT_MSG" \
-            --body "🤖 Auto-deploy by deploy-all.sh" \
-            2>&1)
-
-        if echo "$PR_URL" | grep -q "already exists"; then
-            PR_URL=$(gh pr list --head "$DEPLOY_BRANCH" --base "$CURRENT_BRANCH" --json url --jq '.[0].url')
-            echo -e "${YELLOW}PR already open: $PR_URL${NC}"
-        else
-            echo -e "${BLUE}PR created: $PR_URL${NC}"
+        if echo "$PUSH_OUT" | grep -iq "bypassed"; then
+            echo -e "${YELLOW}Note: Pushed by bypassing rulesets/protection rules.${NC}"
         fi
+    else
+        # If it failed, check if the failure is related to branch protection / ruleset / pull request
+        if echo "$PUSH_OUT" | grep -iqE "protected|ruleset|rule|pull request|gh006"; then
+            echo -e "${YELLOW}⚠ Branch protection active. Using auto PR flow...${NC}"
 
-        # Admin merge — bypasses review requirements
-        if gh pr merge "$DEPLOY_BRANCH" \
-            --merge \
-            --admin \
-            --delete-branch \
-            --subject "$COMMIT_MSG" 2>/dev/null; then
-            echo -e "${GREEN}✔ Auto-merged into $CURRENT_BRANCH${NC}"
+            # Push commits to auto-deploy branch
+            echo -e "${BLUE}Pushing to $DEPLOY_BRANCH branch...${NC}"
+            git push origin "$CURRENT_BRANCH:$DEPLOY_BRANCH" --force
+
+            # Create PR (skip if already exists)
+            PR_URL=$(gh pr create \
+                --base "$CURRENT_BRANCH" \
+                --head "$DEPLOY_BRANCH" \
+                --title "$COMMIT_MSG" \
+                --body "🤖 Auto-deploy by deploy-all.sh" \
+                2>&1)
+
+            if echo "$PR_URL" | grep -q "already exists"; then
+                PR_URL=$(gh pr list --head "$DEPLOY_BRANCH" --base "$CURRENT_BRANCH" --json url --jq '.[0].url')
+                echo -e "${YELLOW}PR already open: $PR_URL${NC}"
+            else
+                echo -e "${BLUE}PR created: $PR_URL${NC}"
+            fi
+
+            # Admin merge — bypasses review requirements
+            MERGE_OUT=$(gh pr merge "$DEPLOY_BRANCH" \
+                --merge \
+                --admin \
+                --delete-branch \
+                --subject "$COMMIT_MSG" 2>&1) && MERGE_SUCCESS=true || MERGE_SUCCESS=false
+
+            if [ "$MERGE_SUCCESS" = true ]; then
+                echo -e "${GREEN}✔ Auto-merged into $CURRENT_BRANCH${NC}"
+            else
+                echo -e "${RED}✖ Merge failed. Merge manually: $PR_URL${NC}"
+                echo -e "${RED}Merge Error Details:${NC}"
+                echo "$MERGE_OUT"
+            fi
         else
-            echo -e "${RED}✖ Merge failed. Merge manually: $PR_URL${NC}"
+            echo -e "${RED}✖ Direct git push failed with error:${NC}"
+            echo "$PUSH_OUT"
+            echo -e "${RED}Please resolve the Git error manually before re-running deployment.${NC}"
+            exit 1
         fi
     fi
 fi
