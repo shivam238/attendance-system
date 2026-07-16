@@ -3557,6 +3557,125 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
 
             // Set up push notifications listener
             setupAttendanceListenerForPush();
+
+            // Auto-detect timetable silently if not set yet
+            setTimeout(tryAutoDetectTimetableInBackground, 4000);
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // ═════  SILENT BACKGROUND TIMETABLE AUTO-DETECTION  ═════════════
+        // Triggers after login if:
+        //   1. User has NO timetable configured
+        //   2. Attendance history has >= 30 records (roughly 1 month of data)
+        // Builds timetable via AI and saves automatically — no user action needed.
+        // ═══════════════════════════════════════════════════════════════
+        async function tryAutoDetectTimetableInBackground() {
+            try {
+                if (!currentUser || !currentUser.username) return;
+
+                // Only run if timetable is empty
+                const existingTimetable = currentUser.timetable || [];
+                if (existingTimetable.length > 0) return;
+
+                const subjects = currentUser.subjects || [];
+                if (!subjects.length) return;
+
+                // Fetch attendance history
+                const u = currentUser.username;
+                const snap = await db.ref('attendance').orderByKey()
+                    .startAt(u).endAt(u + '\uf8ff')
+                    .once('value');
+                const attendanceData = snap.val() || {};
+                const recordCount = Object.keys(attendanceData).length;
+
+                // Need at least 30 records (~1 month) for reliable pattern detection
+                const MIN_RECORDS = 30;
+                if (recordCount < MIN_RECORDS) return;
+
+                // Build subject → day frequency map (same logic as manual auto-detect)
+                const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+                const subjectDayFreq = {};
+
+                Object.keys(attendanceData).forEach(key => {
+                    const match = key.match(/^(.+?)_(\d{4}-\d{2}-\d{2})_(.+)$/);
+                    if (!match) return;
+                    const dateStr = match[2];
+                    const subj = match[3];
+                    if (!subjects.includes(subj)) return;
+                    const dayOfWeek = DAY_NAMES[new Date(dateStr + 'T00:00:00').getDay()];
+                    if (!subjectDayFreq[subj]) subjectDayFreq[subj] = {};
+                    subjectDayFreq[subj][dayOfWeek] = (subjectDayFreq[subj][dayOfWeek] || 0) + 1;
+                });
+
+                if (!Object.keys(subjectDayFreq).length) return;
+
+                // Build pattern summary for AI (only days with >= 33% of max frequency)
+                let patternSummary = 'Detected class day patterns from attendance history:\n';
+                const detectedSubjects = [];
+
+                Object.entries(subjectDayFreq).forEach(([subj, dayMap]) => {
+                    const maxFreq = Math.max(...Object.values(dayMap));
+                    const threshold = Math.max(1, Math.floor(maxFreq * 0.33));
+                    const regularDays = Object.entries(dayMap)
+                        .filter(([, freq]) => freq >= threshold)
+                        .sort((a, b) => {
+                            const order = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+                            return order.indexOf(a[0]) - order.indexOf(b[0]);
+                        })
+                        .map(([day, freq]) => `${day}(seen ${freq}x)`);
+                    if (regularDays.length) {
+                        patternSummary += `- ${subj}: ${regularDays.join(', ')}\n`;
+                        detectedSubjects.push(subj);
+                    }
+                });
+
+                if (!detectedSubjects.length) return;
+
+                // Send to AI for time slot suggestions
+                const aiPrompt = `${patternSummary}
+Based on these real attendance patterns, generate a realistic weekly timetable for a college engineering class.
+For each subject on each detected day, suggest a plausible 1-hour class time slot (start and end times in HH:MM 24-hour format) typical for Indian engineering colleges (usually between 08:00 and 17:00, with slots like 08:00-09:00, 09:00-10:00, 10:00-11:00, 11:00-12:00, 13:00-14:00, 14:00-15:00, 15:00-16:00, 16:00-17:00). Avoid overlapping times on the same day.
+
+Return ONLY a JSON array (no explanation, no markdown) in this exact format:
+[{"day":"Monday","subject":"PHYSICS","start":"09:00","end":"10:00"}, ...]`;
+
+                const response = await fetch('https://attenmo-support-worker.sm3165599.workers.dev/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages: [{ role: 'user', content: aiPrompt }],
+                        systemInstruction: 'You are a timetable generator. Return ONLY valid JSON arrays. No markdown, no explanation.'
+                    })
+                });
+
+                const raw = await response.text();
+                let replyText = '';
+                raw.split('\n').forEach(line => {
+                    if (line.startsWith('data: ') && !line.includes('[DONE]')) {
+                        try { const p = JSON.parse(line.slice(6)); if (p.text) replyText += p.text; } catch(_) {}
+                    }
+                });
+
+                const jsonMatch = replyText.match(/\[\s*\{[\s\S]*?\}\s*\]/);
+                if (!jsonMatch) return;
+
+                const detectedSlots = JSON.parse(jsonMatch[0]);
+                if (!detectedSlots || !detectedSlots.length) return;
+
+                // Save timetable silently
+                currentUser.timetable = detectedSlots;
+                mtSaveTimetableToCloud();
+
+                // Restart reminder scheduler with the new timetable
+                startClassReminderScheduler();
+
+                // Show a friendly notification to the user
+                showToast(`✨ Timetable auto-detected! ${detectedSlots.length} slots set from your attendance history. Check 📅 Timetable to verify.`);
+
+            } catch (e) {
+                // Silent fail — this is a background task, never crash the app
+                console.warn('Background timetable auto-detect failed:', e);
+            }
         }
 
         // 👇👇👇 YAHAN SE ADD KARO 👇👇👇
