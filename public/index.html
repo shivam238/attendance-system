@@ -27,11 +27,9 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://accounts.google.com" crossorigin>
     <link rel="dns-prefetch" href="https://www.gstatic.com">
     <link rel="dns-prefetch" href="https://firebase.googleapis.com">
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
-    <link rel="dns-prefetch" href="https://accounts.google.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 
     <link rel="icon" type="image/webp" href="logo.webp">
@@ -1791,10 +1789,10 @@
     <div id="toast-container" class="toast-container"></div>
 
     <!-- Firebase Core (must load before app scripts) -->
-    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
 
     <!-- Google Identity Services (for Classroom OAuth without disrupting current auth) -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1803,14 +1801,14 @@
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <!-- Capacitor Runtime (serves dynamically inside APK, falls back to silent 404 in web) -->
-    <script defer src="capacitor.js"></script>
+    <script src="capacitor.js"></script>
 
     <!-- Core Logic Scripts -->
-    <script defer src="assets/js/firebase-config.js?v=6"></script>
-    <script defer src="assets/js/auth.js?v=12"></script>
-    <script defer src="assets/js/ui.js?v=21"></script>
-    <script defer src="assets/js/history.js?v=10"></script>
-    <script defer src="assets/js/export.js?v=11"></script>
+    <script src="assets/js/firebase-config.js?v=6"></script>
+    <script src="assets/js/auth.js?v=12"></script>
+    <script src="assets/js/ui.js?v=21"></script>
+    <script src="assets/js/history.js?v=10"></script>
+    <script src="assets/js/export.js?v=11"></script>
 
     <script>
         // Redirect to student portal if student session exists
@@ -1864,37 +1862,35 @@
         let otpStore = {};
 
         // Connection status monitoring
-        document.addEventListener('DOMContentLoaded', () => {
-            const connectedRef = db ? db.ref('.info/connected') : null;
-            if (connectedRef) {
-                connectedRef.on('value', (snapshot) => {
-                    const statusBadge = document.getElementById('connection-status');
-                    const sidebarDot = document.getElementById('sidebar-status-dot');
-                    const sidebarText = document.getElementById('sidebar-status-text');
-                    const isOnline = snapshot.val() === true;
-                    if (statusBadge) {
-                        if (isOnline) {
-                            statusBadge.className = 'status-badge online';
-                            statusBadge.innerHTML = '<span class="status-dot"></span><span>Connected</span>';
-                        } else {
-                            statusBadge.className = 'status-badge offline';
-                            statusBadge.innerHTML = '<span class="status-dot"></span><span>Offline</span>';
-                        }
+        const connectedRef = db ? db.ref('.info/connected') : null;
+        if (connectedRef) {
+            connectedRef.on('value', (snapshot) => {
+                const statusBadge = document.getElementById('connection-status');
+                const sidebarDot = document.getElementById('sidebar-status-dot');
+                const sidebarText = document.getElementById('sidebar-status-text');
+                const isOnline = snapshot.val() === true;
+                if (statusBadge) {
+                    if (isOnline) {
+                        statusBadge.className = 'status-badge online';
+                        statusBadge.innerHTML = '<span class="status-dot"></span><span>Connected</span>';
+                    } else {
+                        statusBadge.className = 'status-badge offline';
+                        statusBadge.innerHTML = '<span class="status-dot"></span><span>Offline</span>';
                     }
-                    if (sidebarDot && sidebarText) {
-                        if (isOnline) {
-                            sidebarDot.style.background = '#10b981';
-                            sidebarText.textContent = 'Connected';
-                            sidebarText.style.color = '#10b981';
-                        } else {
-                            sidebarDot.style.background = '#ef4444';
-                            sidebarText.textContent = 'Offline';
-                            sidebarText.style.color = '#ef4444';
-                        }
+                }
+                if (sidebarDot && sidebarText) {
+                    if (isOnline) {
+                        sidebarDot.style.background = '#10b981';
+                        sidebarText.textContent = 'Connected';
+                        sidebarText.style.color = '#10b981';
+                    } else {
+                        sidebarDot.style.background = '#ef4444';
+                        sidebarText.textContent = 'Offline';
+                        sidebarText.style.color = '#ef4444';
                     }
-                });
-            }
-        });
+                }
+            });
+        }
 
         window.onload = function () {
             const urlParams = new URLSearchParams(window.location.search);
@@ -2887,7 +2883,7 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
                         showScreen('app-screen');
                         initializeApp();
                         hideLoadingScreen();
-                        // Loaded from cache (instant-on)
+                        console.log("🚀 App loaded from cache (Instant-On)");
                     } catch (e) {
                         console.error("Cache error:", e);
                     }
@@ -3014,7 +3010,7 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
             const expiry = localStorage.getItem('classroom_token_expiry');
             if (saved && expiry && Date.now() < parseInt(expiry)) {
                 googleClassroomAccessToken = saved;
-                // Classroom token restored from localStorage
+                console.log('✅ Classroom token restored from localStorage');
             } else {
                 localStorage.removeItem('classroom_token');
                 localStorage.removeItem('classroom_token_expiry');
@@ -5233,7 +5229,7 @@ Return ONLY a JSON array (no explanation, no markdown) in this exact format:
                         : `attenmo-attendance-${record.rollNo}`;
                     const notification = new Notification(title, {
                         body: body,
-                        icon: 'icon-192.png',
+                        icon: 'logo-opt.png',
                         tag: notifTag,
                         renotify: true,
                         requireInteraction: isSuspicious  // Keep suspicious alerts visible until dismissed
@@ -7194,7 +7190,7 @@ Return ONLY a JSON array (no explanation, no markdown) in this exact format:
                 try {
                     const n = new Notification(title, {
                         body,
-                        icon: 'icon-192.png',
+                        icon: 'logo-opt.png',
                         tag,
                         renotify: true,
                         requireInteraction: false
@@ -7660,6 +7656,7 @@ Submissions/Timestamps/Top Performers: Not available in current session database
 
         function checkAndTriggerPushAlerts(classId) {
             if (!classId) return;
+            console.log("📢 checkAndTriggerPushAlerts check running for class:", classId);
 
             db.ref('users').orderByChild('username').equalTo(classId).once('value').then(userSnap => {
                 let students = [];
@@ -7746,6 +7743,7 @@ Submissions/Timestamps/Top Performers: Not available in current session database
                                                 .then(res => res.json())
                                                 .then(data => {
                                                     if (data.success) {
+                                                        console.log(`Push notification sent successfully to ${student.name} (${rollNo}) for ${sub}`);
                                                         db.ref(`sent_push_alerts/${classId}/${rollNo}/${sub}`).set(alertState);
                                                     }
                                                 })
@@ -8051,6 +8049,9 @@ Submissions/Timestamps/Top Performers: Not available in current session database
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./service-worker.js')
+                    .then((reg) => {
+                        console.log('Service Worker registered successfully!', reg.scope);
+                    })
                     .catch((err) => {
                         console.error('Service Worker registration failed:', err);
                     });

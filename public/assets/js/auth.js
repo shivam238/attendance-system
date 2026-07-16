@@ -1,8 +1,6 @@
 // Auth management for AttenMo
 
-const AUTH_SESSION_TTL_MS = 120 * 1000;
 let pendingAuthTimeoutId = null;
-let lastProcessedSk = null;
 
 function signInWithGoogleOAuthCredential(googleOAuthIdToken) {
     if (!googleOAuthIdToken) {
@@ -130,6 +128,7 @@ function openBrowserLoginPage(options) {
         url += '?flow=student';
         sessionStorage.setItem('attenmo_student_login_origin', options.studentOrigin || 'index');
     }
+    console.log('[Auth] Opening browser with URL:', url);
     window.open(url, '_system');
 }
 
@@ -144,11 +143,6 @@ function verifyCapacitorLoginToken() {
     }
 
     if (msgDiv) msgDiv.innerHTML = '<span style="color: var(--text-color);">🔄 Authenticating...</span>';
-
-    if (token.startsWith('sk_')) {
-        claimAuthSession(token, { studentFlow: false });
-        return;
-    }
 
     signInWithGoogleOAuthCredential(token)
         .then((result) => {
@@ -627,12 +621,13 @@ function finishIndexStudentLogin(user) {
 // Google OAuth ID token from deep link → signInWithCredential
 function loginWithToken(googleOAuthIdToken, options) {
     options = options || {};
+    console.log('[Auth] loginWithToken, length:', googleOAuthIdToken ? googleOAuthIdToken.length : 0);
     if (!googleOAuthIdToken) {
         console.error('[Auth] loginWithToken called with empty token');
         return;
     }
     if (googleOAuthIdToken === lastProcessedToken) {
-        // Duplicate token — skip re-authentication
+        console.log('[Auth] Token already processed, skipping duplicate authentication.');
         return;
     }
     lastProcessedToken = googleOAuthIdToken;
@@ -648,6 +643,7 @@ function loginWithToken(googleOAuthIdToken, options) {
     const isStudentFlow = !!options.studentFlow;
 
     const onSuccess = function (result, msgDiv, onDone) {
+        console.log('[Auth] signInWithCredential succeeded, user:', result.user.email || result.user.uid);
         if (msgDiv) msgDiv.innerHTML = '<span style="color: #10b981;">✅ Signed in successfully!</span>';
         setTimeout(onDone, isStudentFlow ? 1000 : 1200);
     };
@@ -693,133 +689,10 @@ function loginWithToken(googleOAuthIdToken, options) {
         .catch(function (error) { onError(error, msgDiv); });
 }
 
-// Secure session key generator for manual/direct generation if needed (uses crypto random session keys)
-function generateSessionKey() {
-    const array = new Uint8Array(16);
-    window.crypto.getRandomValues(array);
-    return 'sk_' + Array.from(array, function (b) {
-        return ('0' + b.toString(16)).slice(-2);
-    }).join('').toUpperCase();
-}
-
-function claimAuthSession(sk, options) {
-    options = options || {};
-    if (!sk) {
-        console.error('[Auth] claimAuthSession called with empty session key');
-        return Promise.reject(new Error('Session key is required'));
-    }
-    if (sk === lastProcessedSk) {
-        return Promise.resolve();
-    }
-    lastProcessedSk = sk;
-
-    if (pendingAuthTimeoutId) {
-        clearTimeout(pendingAuthTimeoutId);
-        pendingAuthTimeoutId = null;
-    }
-
-    const studentOrigin = options.studentOrigin
-        || sessionStorage.getItem('attenmo_student_login_origin')
-        || (isTrackStudentPortalPage() ? 'track' : 'index');
-    const isStudentFlow = !!options.studentFlow;
-
-    const onSuccess = function (result, msgDiv, onDone) {
-        if (msgDiv) msgDiv.innerHTML = '<span style="color: #10b981;">✅ Signed in successfully!</span>';
-        setTimeout(onDone, isStudentFlow ? 1000 : 1200);
-    };
-
-    const onError = function (error, msgDiv) {
-        console.error('[Auth] claimAuthSession failed:', error.code, error.message);
-        if (msgDiv) {
-            msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Invalid or expired login session. Please try again.</span>';
-        }
-    };
-
-    const studentCapModal = document.getElementById('student-capacitor-login-modal');
-    const studentCapMsg = document.getElementById('student-cap-message')
-        || document.getElementById('portal-auth-message');
-    const msgDiv = isStudentFlow 
-        ? studentCapMsg 
-        : (document.getElementById('capacitor-login-message') || document.getElementById('login-message'));
-
-    if (isStudentFlow) {
-        if (studentCapModal) studentCapModal.classList.add('active');
-        if (msgDiv) {
-            msgDiv.innerHTML = '<span style="color: var(--text-color);">🔄 Authenticating from browser...</span>';
-        }
-    } else {
-        openCapacitorLoginModal();
-        if (msgDiv) {
-            msgDiv.innerHTML = '<span style="color: var(--text-color);">🔄 Authenticating from browser...</span>';
-        }
-    }
-
-    const sessionRef = firebase.database().ref('student_auth_sessions/' + sk);
-    let customToken = null;
-
-    return sessionRef.transaction(function (currentData) {
-        if (currentData) {
-            if (currentData.used === true) {
-                return; // Abort
-            }
-            const now = Date.now();
-            if (now - currentData.createdAt > AUTH_SESSION_TTL_MS) {
-                return; // Abort
-            }
-            customToken = currentData.customToken;
-            // Mark as used by returning null to delete the ephemeral session record.
-            // Under RTDB rules, the client only has write permission to delete (!newData.exists()).
-            return null;
-        }
-        return currentData;
-    }, function (error, committed, snapshot) {
-        if (error) {
-            onError(error, msgDiv);
-            return;
-        }
-        if (!committed || !customToken) {
-            onError(new Error('Session invalid, expired, or already claimed.'), msgDiv);
-            return;
-        }
-
-        auth.signInWithCustomToken(customToken)
-            .then(function (result) {
-                onSuccess(result, msgDiv, function () {
-                    if (isStudentFlow) {
-                        if (studentCapModal) studentCapModal.classList.remove('active');
-                        const useTrackFlow = studentOrigin === 'track' || isTrackStudentPortalPage();
-                        if (useTrackFlow) {
-                            finishTrackStudentLogin(result.user);
-                        } else {
-                            finishIndexStudentLogin(result.user);
-                        }
-                        clearStudentLoginSessionFlags();
-                    } else {
-                        closeCapacitorLoginModal();
-                    }
-                });
-            })
-            .catch(function (signInError) {
-                onError(signInError, msgDiv);
-            });
-    });
-}
-
 function handleLoginDeepLink(urlObj) {
-    const sk = urlObj.searchParams.get('sk');
-    if (sk) {
-        const studentFlow = urlObj.searchParams.get('flow') === 'student';
-        claimAuthSession(sk, {
-            studentFlow: studentFlow,
-            studentOrigin: studentFlow
-                ? (sessionStorage.getItem('attenmo_student_login_origin') || (isTrackStudentPortalPage() ? 'track' : 'index'))
-                : null
-        });
-        return;
-    }
-
     const token = urlObj.searchParams.get('token');
     if (token) {
+        console.log('[Auth] Received deep-link token:', token.substring(0, 80));
         const studentFlow = urlObj.searchParams.get('flow') === 'student';
         loginWithToken(token, {
             studentFlow: studentFlow,
@@ -866,13 +739,18 @@ if (window.Capacitor && window.Capacitor.isNativePlatform() && !window._attenmoA
         };
 
         if (window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+            console.log('[Auth] Capacitor App plugin available, setting up deep link listeners');
             window.Capacitor.Plugins.App.addListener('appUrlOpen', (data) => {
+                console.log('[Auth] appUrlOpen event fired, URL:', data.url);
                 checkDeepLink(data.url);
             });
 
             window.Capacitor.Plugins.App.getLaunchUrl().then(function (launchUrl) {
                 if (launchUrl && launchUrl.url) {
+                    console.log('[Auth] getLaunchUrl returned, URL:', launchUrl.url);
                     checkDeepLink(launchUrl.url);
+                } else {
+                    console.log('[Auth] getLaunchUrl returned no URL');
                 }
             }).catch(function (err) {
                 console.error('[Auth] getLaunchUrl error:', err);
