@@ -3586,21 +3586,30 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
                     .startAt(u).endAt(u + '\uf8ff')
                     .once('value');
                 const attendanceData = snap.val() || {};
-                const recordCount = Object.keys(attendanceData).length;
 
-                // Need at least 30 records (~1 month) for reliable pattern detection
-                const MIN_RECORDS = 30;
-                if (recordCount < MIN_RECORDS) return;
+                // ── Smart check: count UNIQUE dates, not raw records ──────────────
+                // 30 records with 6 subjects = only 5 days → too little to detect pattern
+                // We need at least 14 unique days (~2 real school weeks) for reliability
+                const uniqueDates = new Set();
+                Object.keys(attendanceData).forEach(key => {
+                    const m = key.match(/_(\d{4}-\d{2}-\d{2})_/);
+                    if (m) uniqueDates.add(m[1]);
+                });
+                const MIN_UNIQUE_DAYS = 14;
+                if (uniqueDates.size < MIN_UNIQUE_DAYS) return;
 
-                // Build subject → day frequency map (same logic as manual auto-detect)
+                // ── Build subject → weekday frequency map ─────────────────────────
+                // Key format: username_YYYY-MM-DD_SubjectName
+                // Anchor on date to safely handle usernames with underscores
                 const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
                 const subjectDayFreq = {};
 
                 Object.keys(attendanceData).forEach(key => {
-                    const match = key.match(/^(.+?)_(\d{4}-\d{2}-\d{2})_(.+)$/);
-                    if (!match) return;
-                    const dateStr = match[2];
-                    const subj = match[3];
+                    // Anchor on the ISO date — everything after it is the subject name
+                    const m = key.match(/_(\d{4}-\d{2}-\d{2})_(.+)$/);
+                    if (!m) return;
+                    const dateStr = m[1];
+                    const subj    = m[2];
                     if (!subjects.includes(subj)) return;
                     const dayOfWeek = DAY_NAMES[new Date(dateStr + 'T00:00:00').getDay()];
                     if (!subjectDayFreq[subj]) subjectDayFreq[subj] = {};
@@ -3609,13 +3618,16 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
 
                 if (!Object.keys(subjectDayFreq).length) return;
 
-                // Build pattern summary for AI (only days with >= 33% of max frequency)
+                // ── Pattern filter: only keep days where subject appeared ≥50% of ─
+                // its own peak frequency. Prevents one-off "fluke" days being included.
+                // Example: Physics seen Mon×8, Tue×1 → threshold=4 → Tuesday dropped ✓
                 let patternSummary = 'Detected class day patterns from attendance history:\n';
                 const detectedSubjects = [];
 
                 Object.entries(subjectDayFreq).forEach(([subj, dayMap]) => {
                     const maxFreq = Math.max(...Object.values(dayMap));
-                    const threshold = Math.max(1, Math.floor(maxFreq * 0.33));
+                    // ≥50% of peak (minimum 2 occurrences to avoid single-day noise)
+                    const threshold = Math.max(2, Math.ceil(maxFreq * 0.5));
                     const regularDays = Object.entries(dayMap)
                         .filter(([, freq]) => freq >= threshold)
                         .sort((a, b) => {
@@ -3631,7 +3643,7 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
 
                 if (!detectedSubjects.length) return;
 
-                // Send to AI for time slot suggestions
+                // ── Ask AI for time slot suggestions ──────────────────────────────
                 const aiPrompt = `${patternSummary}
 Based on these real attendance patterns, generate a realistic weekly timetable for a college engineering class.
 For each subject on each detected day, suggest a plausible 1-hour class time slot (start and end times in HH:MM 24-hour format) typical for Indian engineering colleges (usually between 08:00 and 17:00, with slots like 08:00-09:00, 09:00-10:00, 10:00-11:00, 11:00-12:00, 13:00-14:00, 14:00-15:00, 15:00-16:00, 16:00-17:00). Avoid overlapping times on the same day.
@@ -3669,7 +3681,6 @@ Return ONLY a JSON array (no explanation, no markdown) in this exact format:
                 // Restart reminder scheduler with the new timetable
                 startClassReminderScheduler();
 
-                // Show a friendly notification to the user
                 showToast(`✨ Timetable auto-detected! ${detectedSlots.length} slots set from your attendance history. Check 📅 Timetable to verify.`);
 
             } catch (e) {
