@@ -1338,11 +1338,10 @@
             <div style="overflow-y: auto; flex: 1; padding-right: 4px;">
 
                 <!-- ═══ EDIT MODE PANEL (hidden by default) ═══ -->
-                <div id="mt-edit-panel" style="display: none;">
+                <div id="mt-edit-panel" style="display: none; margin-bottom: 16px;">
 
                     <!-- ADD SLOT FORM -->
-                    <div style="background: rgba(99,102,241,0.05); border: 1px solid var(--primary-color); border-radius: 16px; padding: 16px; margin-bottom: 16px;">
-                        <div style="font-size: 14px; font-weight: 700; color: var(--primary-color); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color);">➕ Add Timetable Slot</div>
+                    <div style="background: var(--tab-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px; margin-bottom: 12px;">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
                             <div class="form-group" style="margin: 0;">
                                 <label style="font-size: 12px; font-weight: 600; margin-bottom: 4px; display: block;">Day</label>
@@ -1366,40 +1365,44 @@
                                 <input type="time" id="mt-slot-end" style="width:100%; padding:10px; border-radius:10px; background:var(--tab-bg); border:1px solid var(--input-border); color:var(--text-color); box-sizing:border-box;">
                             </div>
                         </div>
-                        <button class="btn btn-primary" id="mt-add-slot-btn" onclick="mtAddSlot()" style="width:100%; margin: 0; height: 42px;">➕ ADD TIME SLOT</button>
+                        <button class="btn btn-primary" id="mt-add-slot-btn" onclick="mtAddSlot()" style="width:100%; margin: 0; height: 40px; font-size: 13px;">➕ Add Slot</button>
                     </div>
 
-                    <!-- AI IMPORT -->
-                    <div style="background: rgba(99,102,241,0.03); border: 1.5px solid var(--primary-color); border-radius: 16px; padding: 16px; margin-bottom: 16px;">
-                        <div style="font-size: 14px; font-weight: 700; color: #6366f1; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color);">✨ AI Timetable Import (Beta)</div>
-                        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 12px 0;">Upload a screenshot or paste text of your timetable — AI will parse and import all slots automatically.</p>
-                        <div style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
-                            <button id="mt-ai-tab-text" class="ai-tab-btn active" onclick="mtSwitchAiTab('text')" style="font-size: 12px;">📝 Paste Text</button>
-                            <button id="mt-ai-tab-image" class="ai-tab-btn" onclick="mtSwitchAiTab('image')" style="font-size: 12px;">📷 Upload Image</button>
-                        </div>
-                        <div id="mt-ai-pane-text" class="ai-pane active">
-                            <textarea id="mt-ai-raw-text" style="width:100%; height:100px; padding:10px; border-radius:10px; background:var(--tab-bg); border:1px solid var(--input-border); color:var(--text-color); font-size:13px; resize:vertical; box-sizing:border-box; font-family:inherit;" placeholder="Paste timetable text here...&#10;e.g.&#10;Monday&#10;09:00 - 10:00: PHYSICS&#10;10:15 - 11:15: MATHEMATICS-1"></textarea>
-                        </div>
-                        <div id="mt-ai-pane-image" class="ai-pane">
-                            <div style="border: 2px dashed var(--border-color); border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; background: var(--tab-bg);" onclick="document.getElementById('mt-ai-file-input').click()">
-                                <span style="font-size: 28px; display: block; margin-bottom: 6px;">📷</span>
-                                <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Click to select a timetable image</p>
-                                <input type="file" id="mt-ai-file-input" style="display:none;" accept="image/*" onchange="mtHandleFileSelect(event)">
+                    <!-- AI IMPORT — collapsible -->
+                    <div style="border: 1px solid var(--border-color); border-radius: 14px; overflow: hidden;">
+                        <button onclick="mtToggleAiAccordion()" style="width:100%; background: var(--tab-bg); border: none; padding: 11px 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; color: var(--text-color);">
+                            <span style="font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 7px;">✨ AI Import <span style="font-size: 10px; background: #6366f1; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: 700;">BETA</span></span>
+                            <span id="mt-ai-accordion-arrow" style="font-size: 13px; color: var(--text-muted);">▾</span>
+                        </button>
+                        <div id="mt-ai-accordion-body" style="display: none; padding: 14px; border-top: 1px solid var(--border-color);">
+                            <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 10px 0;">Paste text or upload a screenshot — AI will import all slots.</p>
+                            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                                <button id="mt-ai-tab-text" class="ai-tab-btn active" onclick="mtSwitchAiTab('text')" style="font-size: 12px;">📝 Paste Text</button>
+                                <button id="mt-ai-tab-image" class="ai-tab-btn" onclick="mtSwitchAiTab('image')" style="font-size: 12px;">📷 Upload Image</button>
                             </div>
-                            <div id="mt-ai-file-info" style="display:none; margin-top:8px; font-size:12px; color:var(--primary-color); font-weight:700; text-align:center;"></div>
-                        </div>
-                        <button class="btn btn-primary" id="mt-ai-parse-btn" onclick="mtParseWithAi()" style="width:100%; margin-top:14px; margin-bottom:0; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); border:none; height:42px;">✨ PARSE &amp; IMPORT WITH AI</button>
-                        <div id="mt-ai-loading" style="display:none; text-align:center; margin-top:12px; padding:10px; background:rgba(99,102,241,0.05); border-radius:10px; border:1px dashed var(--primary-color);">
-                            <span style="font-size:13px; font-weight:700; color:var(--primary-color);">🤖 AI is analyzing... Please wait...</span>
-                        </div>
-                        <!-- Preview -->
-                        <div id="mt-ai-preview" style="display:none; margin-top:16px; background:rgba(99,102,241,0.05); padding:16px; border-radius:12px; border:1.5px solid var(--primary-color);">
-                            <div style="font-size:14px; font-weight:800; color:var(--primary-color); margin-bottom:10px;">🤖 Parsed Slots Preview</div>
-                            <div id="mt-ai-preview-list" style="margin-bottom:12px;"></div>
-                            <div style="display:flex; gap:8px;">
-                                <button class="btn btn-primary" onclick="mtSaveAiSlots('append')" style="flex:1; margin:0; font-size:12px; height:38px;">➕ Append</button>
-                                <button class="btn btn-primary" onclick="mtSaveAiSlots('overwrite')" style="flex:1; margin:0; font-size:12px; height:38px; background:#fbbf24; border:none;">🔄 Overwrite</button>
-                                <button class="btn btn-secondary" onclick="mtCancelAiPreview()" style="flex:1; margin:0; font-size:12px; height:38px;">❌ Cancel</button>
+                            <div id="mt-ai-pane-text" class="ai-pane active">
+                                <textarea id="mt-ai-raw-text" style="width:100%; height:90px; padding:10px; border-radius:10px; background:var(--tab-bg); border:1px solid var(--input-border); color:var(--text-color); font-size:13px; resize:vertical; box-sizing:border-box; font-family:inherit;" placeholder="e.g.&#10;Monday&#10;09:00 - 10:00: PHYSICS"></textarea>
+                            </div>
+                            <div id="mt-ai-pane-image" class="ai-pane">
+                                <div style="border: 2px dashed var(--border-color); border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; background: var(--tab-bg);" onclick="document.getElementById('mt-ai-file-input').click()">
+                                    <span style="font-size: 24px; display: block; margin-bottom: 4px;">📷</span>
+                                    <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Click to select image</p>
+                                    <input type="file" id="mt-ai-file-input" style="display:none;" accept="image/*" onchange="mtHandleFileSelect(event)">
+                                </div>
+                                <div id="mt-ai-file-info" style="display:none; margin-top:8px; font-size:12px; color:var(--primary-color); font-weight:700; text-align:center;"></div>
+                            </div>
+                            <button class="btn btn-primary" id="mt-ai-parse-btn" onclick="mtParseWithAi()" style="width:100%; margin-top:12px; margin-bottom:0; background: linear-gradient(135deg, #6366f1, #a855f7); border:none; height:40px; font-size:13px;">✨ Parse &amp; Import with AI</button>
+                            <div id="mt-ai-loading" style="display:none; text-align:center; margin-top:10px; padding:10px; background:rgba(99,102,241,0.05); border-radius:10px;">
+                                <span style="font-size:13px; font-weight:700; color:var(--primary-color);">🤖 AI is analyzing...</span>
+                            </div>
+                            <div id="mt-ai-preview" style="display:none; margin-top:12px; background:rgba(99,102,241,0.05); padding:14px; border-radius:12px; border:1.5px solid var(--primary-color);">
+                                <div style="font-size:14px; font-weight:800; color:var(--primary-color); margin-bottom:10px;">🤖 Parsed Slots Preview</div>
+                                <div id="mt-ai-preview-list" style="margin-bottom:12px;"></div>
+                                <div style="display:flex; gap:8px;">
+                                    <button class="btn btn-primary" onclick="mtSaveAiSlots('append')" style="flex:1; margin:0; font-size:12px; height:36px;">➕ Append</button>
+                                    <button class="btn btn-primary" onclick="mtSaveAiSlots('overwrite')" style="flex:1; margin:0; font-size:12px; height:36px; background:#fbbf24; border:none;">🔄 Overwrite</button>
+                                    <button class="btn btn-secondary" onclick="mtCancelAiPreview()" style="flex:1; margin:0; font-size:12px; height:36px;">❌ Cancel</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -6420,6 +6423,16 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
                 desc.textContent = 'Your weekly class schedule at a glance.';
             }
         }
+
+        function mtToggleAiAccordion() {
+            const body = document.getElementById('mt-ai-accordion-body');
+            const arrow = document.getElementById('mt-ai-accordion-arrow');
+            if (!body) return;
+            const open = body.style.display === 'none';
+            body.style.display = open ? 'block' : 'none';
+            if (arrow) arrow.style.transform = open ? 'rotate(180deg)' : '';
+        }
+
 
         function mtPopulateSubjectDropdown() {
             const sel = document.getElementById('mt-slot-subject');
