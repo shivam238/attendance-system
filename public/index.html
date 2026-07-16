@@ -383,11 +383,6 @@
          MOBILE FLOATING BOTTOM NAVIGATION BAR (< 769px in app mode)
     ═══════════════════════════════════════════════════════════════ -->
     <nav id="app-bottom-nav" aria-label="Mobile App Navigation">
-        <!-- CR Tab -->
-        <button class="bottom-nav-item" id="bnav-cr" onclick="switchAppTab('cr')">
-            <span class="bottom-nav-icon">📲</span>
-            <span class="bottom-nav-label">QR</span>
-        </button>
 
         <!-- Today Tab -->
         <button class="bottom-nav-item" id="bnav-today" onclick="switchAppTab('today')">
@@ -423,7 +418,8 @@
             <span class="bottom-nav-icon">📊</span>
             <span class="bottom-nav-label">History</span>
         </button>
-        <!-- Hidden sentinel: keeps bnav-requests sync from silently failing -->
+        <!-- Hidden sentinels: keeps tab sync from silently failing -->
+        <button class="bottom-nav-item" id="bnav-cr" onclick="switchAppTab('cr')" style="display:none;" aria-hidden="true"></button>
         <button class="bottom-nav-item" id="bnav-requests" onclick="switchAppTab('requests')" style="display:none;" aria-hidden="true"></button>
     </nav>
 
