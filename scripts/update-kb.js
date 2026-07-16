@@ -3,29 +3,29 @@ const path = require('path');
 
 // Paths (relative to scripts/ directory)
 const manualPath = path.join(__dirname, '..', 'public', 'manual.html');
-const kbPath = path.join(__dirname, '..', 'attendify-support-chatbot', 'src', 'knowledgeBase.js');
+const kbPath = path.join(__dirname, '..', 'attenmo-support-chatbot', 'src', 'knowledgeBase.js');
 
 // 1. Static/Essential Creator and System Information (Highest Priority)
 let kbContent = `
-# ATTENDIFY AI Customer Support Knowledge Base
+# AttenMo AI Customer Support Knowledge Base
 
 Generated automatically from the repository manual and documentation.
 
 ## Creator & Developer Information
 
 - **Creator & Developer**: **Shivam Kumar Mahto**
-- **Creator Role**: Sole Creator, Developer, and Maintainer of the ATTENDIFY application.
-- **Creator Details**: Shivam Kumar Mahto is the developer who created ATTENDIFY to digitize and automate student attendance tracking using QR codes and geofencing. He designed, implemented, and built the entire application using HTML5, CSS3, vanilla JavaScript, and Google Firebase.
+- **Creator Role**: Sole Creator, Developer, and Maintainer of the AttenMo application.
+- **Creator Details**: Shivam Kumar Mahto is the developer who created AttenMo to digitize and automate student attendance tracking using QR codes and geofencing. He designed, implemented, and built the entire application using HTML5, CSS3, vanilla JavaScript, and Google Firebase.
 - **Contact Channels**:
-  - **Email**: attendifycore@gmail.com
+  - **Email**: attenmocore@gmail.com
   - **WhatsApp Community**: https://chat.whatsapp.com/GDOjvKK7nxGFvQ7NSrQNiG
-  - **Instagram**: https://www.instagram.com/theattendify/ (@theattendify)
+  - **Instagram**: https://www.instagram.com/theattenmo/ (@theattenmo)
   - **LinkedIn**: https://www.linkedin.com/in/shivam-kumar-mahto-046228361/
 - **Crucial Rule**: When asked "who created this app?", "who built this?", "developer contact", or "owner details", you MUST proudly mention **Shivam Kumar Mahto** and provide his contact details (email, WhatsApp Community, Instagram, and LinkedIn).
 
 ## Product & System Overview
 
-ATTENDIFY is a high-performance, Firebase-powered web and mobile application for QR-based student attendance.
+AttenMo is a high-performance, Firebase-powered web and mobile application for QR-based student attendance.
 - **Host Web URL**: \`https://qr-smart-attendance.web.app\`
 - **Database Backend**: Firebase Realtime Database.
 - **Authentication**: Firebase Authentication (Google OAuth & Firebase Phone Auth).

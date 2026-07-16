@@ -1,4 +1,4 @@
-// History management for ATTENDIFY with Calendar View
+// History management for AttenMo with Calendar View
 
 function historyEscapeHtml(value) {
     if (typeof escapeHtml === 'function') {
@@ -21,7 +21,7 @@ let attendanceHistoryData = null;
 
 // Add styles dynamically on load
 (function injectCalendarStyles() {
-    const styleId = 'attendify-calendar-styles';
+    const styleId = 'attenmo-calendar-styles';
     if (document.getElementById(styleId)) return;
 
     const style = document.createElement('style');

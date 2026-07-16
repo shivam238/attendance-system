@@ -1,8 +1,8 @@
-# 🤝 Contributing to ATTENDIFY
+# 🤝 Contributing to AttenMo
 
-Thank you for your interest in ATTENDIFY! This document explains how you can contribute to the project.
+Thank you for your interest in AttenMo! This document explains how you can contribute to the project.
 
-> **⚠️ Important:** ATTENDIFY is a **proprietary project**. Direct code contributions via pull requests are **not accepted** at this time. However, there are several valuable ways you can help improve the platform.
+> **⚠️ Important:** AttenMo is a **proprietary project**. Direct code contributions via pull requests are **not accepted** at this time. However, there are several valuable ways you can help improve the platform.
 
 ---
 
@@ -27,7 +27,7 @@ Found a bug? Please report it so we can fix it.
 ---
 
 ### 💡 Feature Requests & Suggestions
-Have an idea that would make ATTENDIFY better?
+Have an idea that would make AttenMo better?
 
 - Open a [new issue](https://github.com/shivam238/attendance-system/issues/new) with the `enhancement` label.
 - Describe the use case clearly — *why* is this feature needed?
@@ -51,7 +51,7 @@ Spotted a typo, unclear wording, or outdated info in the docs?
 ---
 
 ### ⭐ Star & Share
-The simplest contribution — **star the repo** and share ATTENDIFY with classmates, educators, and institutions who could benefit from it!
+The simplest contribution — **star the repo** and share AttenMo with classmates, educators, and institutions who could benefit from it!
 
 ---
 
@@ -72,7 +72,7 @@ For general questions or collaboration inquiries, reach out to the developer dir
 
 - 💬 **WhatsApp Community**: [Join Here](https://chat.whatsapp.com/GDOjvKK7nxGFvQ7NSrQNiG)
 - 💼 **LinkedIn**: [Shivam Kumar Mahto](https://www.linkedin.com/in/shivam-kumar-mahto-046228361/)
-- 📷 **Instagram**: [@theattendify](https://www.instagram.com/theattendify/)
+- 📷 **Instagram**: [@theattenmo](https://www.instagram.com/theattenmo/)
 
 ---
 
@@ -84,4 +84,4 @@ See [License.txt](./License.txt) for full terms.
 
 ---
 
-*© 2026 ATTENDIFY. All rights reserved.*
+*© 2026 AttenMo. All rights reserved.*

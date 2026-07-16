@@ -1,6 +1,6 @@
 {
-  "name": "attendify-functions",
-  "description": "Firebase Cloud Functions for ATTENDIFY mobile auth",
+  "name": "attenmo-functions",
+  "description": "Firebase Cloud Functions for AttenMo mobile auth",
   "engines": {
     "node": "20"
   },

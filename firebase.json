@@ -10,7 +10,7 @@
         "**/.*",
         "**/.*/**",
         "**/node_modules/**",
-        "attendify-support-chatbot/**"
+        "attenmo-support-chatbot/**"
       ],
       "redirects": [
         {
@@ -54,7 +54,7 @@
         "**/.*",
         "**/.*/**",
         "**/node_modules/**",
-        "attendify-support-chatbot/**"
+        "attenmo-support-chatbot/**"
       ],
       "redirects": [
         {

@@ -1,4 +1,4 @@
-// Central Firebase Configuration for ATTENDIFY
+// Central Firebase Configuration for AttenMo
 const firebaseConfig = {
     apiKey: "AIzaSyD1EDACdh01a2n81qKUtYsCPV0m--JfwFU",
     authDomain: "firstfile-c763521e.firebaseapp.com",
@@ -14,7 +14,7 @@ const firebaseConfig = {
 // Initialize Firebase. Keep the app shell usable even if the CDN SDK is blocked
 // or fails to load, otherwise the loading screen can stay up forever.
 if (typeof firebase === 'undefined') {
-    window.attendifyFirebaseUnavailable = true;
+    window.attenmoFirebaseUnavailable = true;
     console.error("Firebase SDK failed to load. Authentication and database features are unavailable.");
 } else if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);

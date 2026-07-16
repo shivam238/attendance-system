@@ -1,5 +1,5 @@
 #!/bin/bash
-# ATTENDIFY Interactive Rollback & Deploy Utility
+# AttenMo Interactive Rollback & Deploy Utility
 set -e
 
 GREEN='\033[0;32m'
@@ -27,7 +27,7 @@ if [ ${#lines[@]} -eq 0 ]; then
 fi
 
 echo -e "${BLUE}===================================================${NC}"
-echo -e "${BLUE}        ATTENDIFY ROLLBACK & DEPLOY SELECTOR        ${NC}"
+echo -e "${BLUE}        AttenMo ROLLBACK & DEPLOY SELECTOR        ${NC}"
 echo -e "${BLUE}===================================================${NC}"
 echo "Select a commit to revert workspace files to:"
 echo ""

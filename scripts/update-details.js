@@ -3,8 +3,8 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 // Paths (relative to scripts/ directory)
-const configPath = path.join(__dirname, '..', 'attendify-config.json');
-const statePath = path.join(__dirname, '..', 'attendify-config-state.json');
+const configPath = path.join(__dirname, '..', 'attenmo-config.json');
+const statePath = path.join(__dirname, '..', 'attenmo-config-state.json');
 
 // Files to update
 const targetFiles = [
@@ -24,17 +24,17 @@ const targetFiles = [
 // Default fallback values representing the current state of the repo
 const defaultState = {
     developerName: "Shivam Kumar Mahto",
-    developerEmail: "attendifycore@gmail.com",
+    developerEmail: "attenmocore@gmail.com",
     whatsappCommunity: "https://chat.whatsapp.com/GDOjvKK7nxGFvQ7NSrQNiG",
-    instagramLink: "https://www.instagram.com/theattendify/",
-    instagramHandle: "@theattendify",
+    instagramLink: "https://www.instagram.com/theattenmo/",
+    instagramHandle: "@theattenmo",
     linkedinLink: "https://www.linkedin.com/in/shivam-kumar-mahto-046228361/",
     copyrightYear: "2026"
 };
 
 // 1. Read the target config
 if (!fs.existsSync(configPath)) {
-    console.error("❌ attendify-config.json not found! Please create it.");
+    console.error("❌ attenmo-config.json not found! Please create it.");
     process.exit(1);
 }
 const currentConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
@@ -63,7 +63,7 @@ for (const key of keys) {
 }
 
 if (!hasChanges) {
-    console.log("✔ No detail changes detected in attendify-config.json.");
+    console.log("✔ No detail changes detected in attenmo-config.json.");
 } else {
     console.log("🔄 Changes detected in configuration details. Propagating updates across files...");
     
@@ -104,7 +104,7 @@ if (!hasChanges) {
 
     // 5. Update state path to reflect current state
     fs.writeFileSync(statePath, JSON.stringify(currentConfig, null, 2), 'utf8');
-    console.log("✔ Saved new state to attendify-config-state.json.");
+    console.log("✔ Saved new state to attenmo-config-state.json.");
 }
 
 // 6. Always run update-kb.js to ensure the chatbot's knowledgeBase.js is synchronized

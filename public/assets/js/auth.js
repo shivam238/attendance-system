@@ -1,4 +1,4 @@
-// Auth management for ATTENDIFY
+// Auth management for AttenMo
 
 let pendingAuthTimeoutId = null;
 
@@ -126,7 +126,7 @@ function openBrowserLoginPage(options) {
     let url = 'https://' + domain + '/login-app.html';
     if (options.studentFlow) {
         url += '?flow=student';
-        sessionStorage.setItem('attendify_student_login_origin', options.studentOrigin || 'index');
+        sessionStorage.setItem('attenmo_student_login_origin', options.studentOrigin || 'index');
     }
     console.log('[Auth] Opening browser with URL:', url);
     window.open(url, '_system');
@@ -159,7 +159,7 @@ function verifyCapacitorLoginToken() {
 
 function logoutUser() {
     if (!confirm('Are you sure you want to logout?')) return;
-    window.attendifyIntentionalLogout = true;
+    window.attenmoIntentionalLogout = true;
 
     // Clear user profile cache to prevent instant-on page restoration
     if (auth.currentUser) {
@@ -566,30 +566,30 @@ function isTrackStudentPortalPage() {
 
 function persistStudentLoginContext() {
     if (typeof activeStudentCode !== 'undefined' && activeStudentCode) {
-        sessionStorage.setItem('attendify_student_code', activeStudentCode);
+        sessionStorage.setItem('attenmo_student_code', activeStudentCode);
     } else {
         const codeFromUrl = new URLSearchParams(window.location.search).get('code');
         if (codeFromUrl) {
-            sessionStorage.setItem('attendify_student_code', codeFromUrl);
+            sessionStorage.setItem('attenmo_student_code', codeFromUrl);
         }
     }
 }
 
 function restoreStudentLoginContext() {
     if (typeof activeStudentCode !== 'undefined' && !activeStudentCode) {
-        const storedCode = sessionStorage.getItem('attendify_student_code');
+        const storedCode = sessionStorage.getItem('attenmo_student_code');
         if (storedCode) {
             activeStudentCode = storedCode;
         }
     }
-    return sessionStorage.getItem('attendify_student_code')
+    return sessionStorage.getItem('attenmo_student_code')
         || (typeof activeStudentCode !== 'undefined' ? activeStudentCode : null)
         || new URLSearchParams(window.location.search).get('code');
 }
 
 function clearStudentLoginSessionFlags() {
-    sessionStorage.removeItem('attendify_student_login_origin');
-    sessionStorage.removeItem('attendify_student_code');
+    sessionStorage.removeItem('attenmo_student_login_origin');
+    sessionStorage.removeItem('attenmo_student_code');
 }
 
 function finishTrackStudentLogin(user) {
@@ -598,7 +598,7 @@ function finishTrackStudentLogin(user) {
         autoCompleteStudentGoogleLogin(user.uid);
         return true;
     }
-    sessionStorage.setItem('attendify_track_login_resume', user.uid);
+    sessionStorage.setItem('attenmo_track_login_resume', user.uid);
     if (!isTrackStudentPortalPage()) {
         window.location.href = 'track.html';
     }
@@ -610,7 +610,7 @@ function finishIndexStudentLogin(user) {
     const studentModal = document.getElementById('student-modal');
     const studentCapModal = document.getElementById('student-capacitor-login-modal');
     if (studentCapModal) studentCapModal.classList.add('active');
-    if (studentModal && sessionStorage.getItem('attendify_student_code')) {
+    if (studentModal && sessionStorage.getItem('attenmo_student_code')) {
         studentModal.classList.add('active');
     }
     if (typeof updateStudentAuthUI === 'function') {
@@ -638,7 +638,7 @@ function loginWithToken(googleOAuthIdToken, options) {
     }
 
     const studentOrigin = options.studentOrigin
-        || sessionStorage.getItem('attendify_student_login_origin')
+        || sessionStorage.getItem('attenmo_student_login_origin')
         || (isTrackStudentPortalPage() ? 'track' : 'index');
     const isStudentFlow = !!options.studentFlow;
 
@@ -697,20 +697,20 @@ function handleLoginDeepLink(urlObj) {
         loginWithToken(token, {
             studentFlow: studentFlow,
             studentOrigin: studentFlow
-                ? (sessionStorage.getItem('attendify_student_login_origin') || (isTrackStudentPortalPage() ? 'track' : 'index'))
+                ? (sessionStorage.getItem('attenmo_student_login_origin') || (isTrackStudentPortalPage() ? 'track' : 'index'))
                 : null
         });
     }
 }
 
 // Register deep link listener for Capacitor environment (once only)
-if (window.Capacitor && window.Capacitor.isNativePlatform() && !window._attendifyAuthDeepLinkRegistered) {
-    window._attendifyAuthDeepLinkRegistered = true;
+if (window.Capacitor && window.Capacitor.isNativePlatform() && !window._attenmoAuthDeepLinkRegistered) {
+    window._attenmoAuthDeepLinkRegistered = true;
     document.addEventListener('DOMContentLoaded', () => {
         const checkDeepLink = (url) => {
             try {
-                if (url && url.includes('attendify://')) {
-                    const urlObj = new URL(url.replace('attendify://', 'https://dummy-domain/'));
+                if (url && url.includes('attenmo://')) {
+                    const urlObj = new URL(url.replace('attenmo://', 'https://dummy-domain/'));
                     const role = urlObj.searchParams.get('role');
 
                     if (url.includes('classroom') || role) {

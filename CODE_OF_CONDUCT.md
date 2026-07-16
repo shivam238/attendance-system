@@ -1,8 +1,8 @@
-# 📜 Code of Conduct — ATTENDIFY
+# 📜 Code of Conduct — AttenMo
 
 ## Our Pledge
 
-We as members, contributors, and maintainers of the **ATTENDIFY** community pledge to make participation in our project and community a **harassment-free experience** for everyone, regardless of age, body size, visible or invisible disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, caste, color, religion, or sexual identity and orientation.
+We as members, contributors, and maintainers of the **AttenMo** community pledge to make participation in our project and community a **harassment-free experience** for everyone, regardless of age, body size, visible or invisible disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, caste, color, religion, or sexual identity and orientation.
 
 We pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community.
 
@@ -41,7 +41,7 @@ The maintainer has the right and responsibility to **remove, edit, or reject** c
 
 ## Scope
 
-This Code of Conduct applies within all **project spaces** — including the GitHub repository (issues, discussions, pull requests), the WhatsApp Community, social media channels associated with ATTENDIFY, and any other official community forums.
+This Code of Conduct applies within all **project spaces** — including the GitHub repository (issues, discussions, pull requests), the WhatsApp Community, social media channels associated with AttenMo, and any other official community forums.
 
 It also applies when an individual is **officially representing the project** in public spaces.
 
@@ -51,7 +51,7 @@ It also applies when an individual is **officially representing the project** in
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the project maintainer:
 
-- 💬 **WhatsApp Community**: [ATTENDIFY Community](https://chat.whatsapp.com/GDOjvKK7nxGFvQ7NSrQNiG)
+- 💬 **WhatsApp Community**: [AttenMo Community](https://chat.whatsapp.com/GDOjvKK7nxGFvQ7NSrQNiG)
 - 💼 **LinkedIn**: [Shivam Kumar Mahto](https://www.linkedin.com/in/shivam-kumar-mahto-046228361/)
 
 All complaints will be reviewed and investigated **promptly and fairly**. The maintainer is obligated to respect the privacy and security of the reporter of any incident.
@@ -86,4 +86,4 @@ This Code of Conduct is adapted from the [Contributor Covenant](https://www.cont
 
 ---
 
-*© 2026 ATTENDIFY. All rights reserved.*
+*© 2026 AttenMo. All rights reserved.*

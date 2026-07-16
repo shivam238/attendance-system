@@ -1,5 +1,5 @@
 #!/bin/bash
-# ATTENDIFY Unified Build, Deploy & Sync Script
+# AttenMo Unified Build, Deploy & Sync Script
 
 set -e
 
@@ -10,7 +10,7 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 echo -e "${BLUE}===================================================${NC}"
-echo -e "${BLUE}          ATTENDIFY UNIFIED DEPLOYMENT SCRIPT       ${NC}"
+echo -e "${BLUE}          AttenMo UNIFIED DEPLOYMENT SCRIPT       ${NC}"
 echo -e "${BLUE}===================================================${NC}"
 
 COMMIT_MSG="$1"
@@ -72,7 +72,7 @@ echo -e "\n${BLUE}[6/10] Installing APK (ADB)${NC}"
 
 if adb devices | grep -w "device" >/dev/null
 then
-    adb install -r ATTENDIFY.apk
+    adb install -r AttenMo.apk
 else
     echo -e "${YELLOW}No Android device connected. Skipping.${NC}"
 fi
@@ -121,10 +121,10 @@ fi
 
 echo -e "\n${BLUE}[9/10] Cloudflare Worker${NC}"
 
-if [ -d attendify-support-worker ]; then
+if [ -d attenmo-support-worker ]; then
 
 (
-cd attendify-support-worker
+cd attenmo-support-worker
 
 if command -v npx >/dev/null
 then
@@ -214,5 +214,5 @@ fi
 
 echo
 echo -e "${GREEN}===================================================${NC}"
-echo -e "${GREEN}      ATTENDIFY DEPLOYMENT FINISHED SUCCESSFULLY    ${NC}"
+echo -e "${GREEN}      AttenMo DEPLOYMENT FINISHED SUCCESSFULLY    ${NC}"
 echo -e "${GREEN}===================================================${NC}"

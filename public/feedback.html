@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Share your feedback about ATTENDIFY — help us improve the QR attendance system with your suggestions and ratings.">
-    <title>Feedback Form | ATTENDIFY</title>
+    <meta name="description" content="Share your feedback about AttenMo — help us improve the QR attendance system with your suggestions and ratings.">
+    <title>Feedback Form | AttenMo</title>
     <!-- Open Graph -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Feedback Form | ATTENDIFY">
-    <meta property="og:description" content="Share your feedback and help improve ATTENDIFY — the smart QR attendance platform.">
-    <meta property="og:image" content="https://attendify.web.app/icon-512.png">
-    <meta property="og:url" content="https://attendify.web.app/feedback.html">
+    <meta property="og:title" content="Feedback Form | AttenMo">
+    <meta property="og:description" content="Share your feedback and help improve AttenMo — the smart QR attendance platform.">
+    <meta property="og:image" content="https://attenmo.web.app/icon-512.png">
+    <meta property="og:url" content="https://attenmo.web.app/feedback.html">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="Feedback Form | ATTENDIFY">
-    <meta name="twitter:image" content="https://attendify.web.app/icon-512.png">
+    <meta name="twitter:title" content="Feedback Form | AttenMo">
+    <meta name="twitter:image" content="https://attenmo.web.app/icon-512.png">
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="stylesheet" href="assets/css/subpages.css">
     <script src="assets/js/theme.js" defer></script>
@@ -197,13 +197,13 @@
             </svg>
         </div>
         <h1>Feedback & Analytics</h1>
-        <p class="subtitle">Please take a moment to help us improve ATTENDIFY by sharing your experience.</p>
+        <p class="subtitle">Please take a moment to help us improve AttenMo by sharing your experience.</p>
 
         <!-- Native Glassmorphic Feedback Form -->
         <div class="feedback-card">
             <form id="native-feedback-form" onsubmit="submitFeedback(event)">
                 <div class="rating-section">
-                    <span class="rating-label">How would you rate ATTENDIFY?</span>
+                    <span class="rating-label">How would you rate AttenMo?</span>
                     <div class="star-rating">
                         <span class="star" data-value="5">★</span>
                         <span class="star" data-value="4">★</span>
@@ -235,7 +235,7 @@
             <div id="feedback-success-state" style="display: none; text-align: center; padding: 20px 10px;">
                 <div class="success-icon">🎉</div>
                 <h2>Thank You!</h2>
-                <p>Your feedback has been successfully submitted. We appreciate your support in making ATTENDIFY better.</p>
+                <p>Your feedback has been successfully submitted. We appreciate your support in making AttenMo better.</p>
                 <a id="email-feedback-btn" href="#" class="btn-submit" style="display: inline-block; text-decoration: none; margin-top: 24px; max-width: 260px; margin-left: auto; margin-right: auto; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">📧 Send Email Copy</a>
                 <button onclick="resetFeedbackForm()" class="btn-submit" style="margin-top: 12px; max-width: 220px; margin-left: auto; margin-right: auto;">Send Another Response</button>
             </div>
@@ -251,7 +251,7 @@
                 <a href="privacy-policy.html">Privacy Policy</a>
                 <a href="terms.html">Terms &amp; Conditions</a>
             </div>
-            <p class="footer-copyright">&copy; 2026 ATTENDIFY. All rights reserved. Developed by Shivam Kumar Mahto.</p>
+            <p class="footer-copyright">&copy; 2026 AttenMo. All rights reserved. Developed by Shivam Kumar Mahto.</p>
         </footer>
     </div>
 
@@ -314,9 +314,9 @@
                     document.getElementById('native-feedback-form').style.display = 'none';
                     document.getElementById('feedback-success-state').style.display = 'block';
                     
-                    const subject = encodeURIComponent(`[ATTENDIFY Feedback] ${category}`);
-                    const body = encodeURIComponent(`Category: ${category}\nRating: ${selectedRating} Stars\n\nComments:\n${text}\n\nSubmitted via ATTENDIFY.`);
-                    const mailtoUrl = `mailto:attendifycore@gmail.com?subject=${subject}&body=${body}`;
+                    const subject = encodeURIComponent(`[AttenMo Feedback] ${category}`);
+                    const body = encodeURIComponent(`Category: ${category}\nRating: ${selectedRating} Stars\n\nComments:\n${text}\n\nSubmitted via AttenMo.`);
+                    const mailtoUrl = `mailto:attenmocore@gmail.com?subject=${subject}&body=${body}`;
                     
                     const emailBtn = document.getElementById('email-feedback-btn');
                     if (emailBtn) {

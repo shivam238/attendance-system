@@ -48,7 +48,7 @@ if (authJs.includes('access_token') || loginApp.includes('access_token')) {
     pass('No OAuth access_token in mobile auth flow');
 }
 
-if (loginApp.match(/attendify:\/\/[^"']*[?&]token=/)) {
+if (loginApp.match(/attenmo:\/\/[^"']*[?&]token=/)) {
     fail('login-app.html must not put OAuth tokens in deep link URL');
 } else {
     pass('login-app.html deep link contains no OAuth token param');
@@ -84,7 +84,7 @@ if (!authJs.includes('getRandomValues')) {
     pass('auth.js uses crypto random session keys');
 }
 
-if (!authJs.includes('_attendifyAuthDeepLinkRegistered')) {
+if (!authJs.includes('_attenmoAuthDeepLinkRegistered')) {
     fail('auth.js must guard against duplicate deep-link registration');
 } else {
     pass('auth.js prevents duplicate deep-link listener registration');

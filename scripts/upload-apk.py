@@ -6,8 +6,8 @@ import urllib.request
 import urllib.error
 
 REPO = "shivam238/attendance-system"
-FILE_PATH = "ATTENDIFY.apk"
-FILE_NAME = "ATTENDIFY.apk"
+FILE_PATH = "AttenMo.apk"
+FILE_NAME = "AttenMo.apk"
 
 def get_github_token():
     # Try to find a GitHub token (ghp_...) in ~/.git-credentials
@@ -62,7 +62,7 @@ def main():
     tag_name = release["tag_name"]
     print(f"Latest release found: {tag_name} (ID: {release_id})")
 
-    # Check if ATTENDIFY.apk already exists in assets
+    # Check if AttenMo.apk already exists in assets
     existing_asset_id = None
     for asset in release.get("assets", []):
         if asset["name"] == FILE_NAME:

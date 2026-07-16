@@ -1,0 +1,6 @@
+{
+  "name": "AttenMo Support Chatbot",
+  "description": "An embeddable AI customer support chatbot widget for the AttenMo QR Attendance web application, designed to help students, CRs, and educators troubleshoot and navigate the platform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

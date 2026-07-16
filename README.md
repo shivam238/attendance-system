@@ -1,4 +1,4 @@
-# 📱 ATTENDIFY
+# 📱 AttenMo
 
 A high-performance, **Firebase-powered web application** for seamless student attendance management using **dynamic QR codes**, **smart geofencing**, **Google Meet integration**, and a built-in **anti-proxy detection engine**.
 
@@ -75,17 +75,17 @@ A high-performance, **Firebase-powered web application** for seamless student at
 ## 🌐 Live URLs
 
 - **Main App**: https://qr-smart-attendance.web.app
-- **AI Support Worker**: https://attendify-support-worker.sm3165599.workers.dev
+- **AI Support Worker**: https://attenmo-support-worker.sm3165599.workers.dev
 
 ---
 
 ## 📱 Mobile Application (Android APK)
 
-ATTENDIFY is fully integrated with **Capacitor** to build a native Android app.
+AttenMo is fully integrated with **Capacitor** to build a native Android app.
 
 ### 📥 Download Android App
 Download the compiled, ready-to-install Android APK directly from our official release:
-👉 **[Download ATTENDIFY APK (Latest)](https://github.com/shivam238/attendance-system/releases/latest/download/ATTENDIFY.apk)**
+👉 **[Download AttenMo APK (Latest)](https://github.com/shivam238/attendance-system/releases/latest/download/AttenMo.apk)**
 
 ### 🌟 Mobile-Specific Features
 - **Instant Entry**: Detects Capacitor and automatically bypasses the landing page to load the login screen instantly.
@@ -102,7 +102,7 @@ bash deploy-all.sh "Your commit message"
 
 This single command executes:
 1. **Regenerates PDF Manual**: Creates a fresh `public/QR Attendance System - Complete User Manual.pdf` from the updated `manual.html`.
-2. **Compiles Android APK**: Builds `ATTENDIFY.apk` using Android Gradle and Capacitor.
+2. **Compiles Android APK**: Builds `AttenMo.apk` using Android Gradle and Capacitor.
 3. **Auto-Publishes to GitHub Releases**: Uses `upload-apk.py` to connect via the GitHub API, deletes the old APK asset, and uploads the new APK to the latest release automatically.
 4. **Installs on Test Device**: Automatically pushes and updates the app via ADB on any connected Android smartphone.
 5. **Firebase Hosting Deploy**: Deploys front-end static assets to Firebase.
@@ -121,9 +121,9 @@ bash build-app.sh
 This project is **proprietary and confidential**. All rights are reserved. Copying, redistribution, modification, or commercial use of this codebase and its compiled assets (including the APK) is strictly prohibited without the express written permission of the developer.
 
 **Developed by Shivam Kumar Mahto**  
-🔗 [GitHub](https://github.com/shivam238) | 💬 [WhatsApp Community](https://chat.whatsapp.com/GDOjvKK7nxGFvQ7NSrQNiG) | 📷 [Instagram](https://www.instagram.com/theattendify/) | 💼 [LinkedIn](https://www.linkedin.com/in/shivam-kumar-mahto-046228361/)
+🔗 [GitHub](https://github.com/shivam238) | 💬 [WhatsApp Community](https://chat.whatsapp.com/GDOjvKK7nxGFvQ7NSrQNiG) | 📷 [Instagram](https://www.instagram.com/theattenmo/) | 💼 [LinkedIn](https://www.linkedin.com/in/shivam-kumar-mahto-046228361/)
 
-© 2026 Shivam Kumar Mahto (ATTENDIFY). All rights reserved.
+© 2026 Shivam Kumar Mahto (AttenMo). All rights reserved.
 
 
 ---

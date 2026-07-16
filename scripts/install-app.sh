@@ -1,6 +1,6 @@
 #!/bin/bash
-# ATTENDIFY Android APK Quick Installer
-# Directly installs the compiled ATTENDIFY.apk onto a connected device via ADB.
+# AttenMo Android APK Quick Installer
+# Directly installs the compiled AttenMo.apk onto a connected device via ADB.
 
 # Define terminal colors for beautiful output
 GREEN='\033[0;32m'
@@ -10,11 +10,11 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}===================================================${NC}"
-echo -e "${BLUE}          ATTENDIFY APK DIRECT INSTALLER            ${NC}"
+echo -e "${BLUE}          AttenMo APK DIRECT INSTALLER            ${NC}"
 echo -e "${BLUE}===================================================${NC}"
 
 # Check if APK exists
-APK_PATH="./ATTENDIFY.apk"
+APK_PATH="./AttenMo.apk"
 if [ ! -f "$APK_PATH" ]; then
     echo -e "${RED}❌ Error: $APK_PATH not found!${NC}"
     echo -e "${YELLOW}Please build the APK first by running: ${BLUE}bash scripts/build-app.sh${NC}"

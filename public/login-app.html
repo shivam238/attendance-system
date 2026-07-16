@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ATTENDIFY — Secure Mobile Login</title>
+    <title>AttenMo — Secure Mobile Login</title>
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
     <link rel="preload" as="image" href="logo.webp" type="image/webp">
     <link rel="icon" type="image/webp" href="logo.webp">
@@ -253,9 +253,9 @@
     <div class="container">
         <div class="card">
             <div class="logo-wrap">
-                <img src="logo.webp" alt="ATTENDIFY Logo" class="logo" width="56" height="56" fetchpriority="high" decoding="async" onerror="this.src='logo-opt.png'">
+                <img src="logo.webp" alt="AttenMo Logo" class="logo" width="56" height="56" fetchpriority="high" decoding="async" onerror="this.src='logo-opt.png'">
             </div>
-            <h1><span class="brand-text">ATTENDIFY</span></h1>
+            <h1><span class="brand-text">AttenMo</span></h1>
             <p id="page-subtitle">Secure Browser Sign-In for Mobile App</p>
 
             <!-- Default connecting state -->
@@ -290,11 +290,11 @@
                 <div class="spinner" style="margin-bottom: 20px;"></div>
                 <h3 style="margin-bottom: 8px; font-weight: 700; color: var(--text-color);">🎉 Sign-in Successful!</h3>
                 <p id="token-display" style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px; line-height: 1.5;">
-                    Redirecting you back to the <strong>ATTENDIFY</strong> app...
+                    Redirecting you back to the <strong>AttenMo</strong> app...
                 </p>
                 <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 16px;">
                     <p style="color: var(--text-muted); font-size: 12px; font-weight: 500;">
-                        If the app did not open, please close this page and reopen from ATTENDIFY.
+                        If the app did not open, please close this page and reopen from AttenMo.
                     </p>
                 </div>
             </div>
@@ -335,7 +335,7 @@
         }
 
         function redirectToAppWithToken(googleOAuthIdToken, studentFlow) {
-            var deepLink = 'attendify://login?token=' + encodeURIComponent(googleOAuthIdToken);
+            var deepLink = 'attenmo://login?token=' + encodeURIComponent(googleOAuthIdToken);
             if (studentFlow) {
                 deepLink += '&flow=student';
             }
@@ -397,7 +397,7 @@
             }
             document.getElementById('connecting-state').style.display = 'none';
             document.getElementById('login-section').style.display = 'block';
-            if (window.attendifyFirebaseUnavailable || !auth) {
+            if (window.attenmoFirebaseUnavailable || !auth) {
                 showFatalAuthError('Google sign-in could not load. Please check your internet connection and refresh.');
             }
         });

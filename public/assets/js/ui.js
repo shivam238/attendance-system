@@ -13,7 +13,7 @@ let shouldShowLandingTopOnLaunch = false;
 try {
     const url = new URL(window.location.href);
     shouldShowLandingTopOnLaunch = url.searchParams.get('showLanding') === '1';
-    window.attendifyShowLandingTopOnLaunch = shouldShowLandingTopOnLaunch;
+    window.attenmoShowLandingTopOnLaunch = shouldShowLandingTopOnLaunch;
     if (shouldShowLandingTopOnLaunch) {
         url.searchParams.delete('showLanding');
         const cleanPath = `${url.pathname}${url.search}${url.hash}`;
@@ -21,7 +21,7 @@ try {
     }
 } catch (e) {
     shouldShowLandingTopOnLaunch = false;
-    window.attendifyShowLandingTopOnLaunch = false;
+    window.attenmoShowLandingTopOnLaunch = false;
 }
 
 function consumeLandingTopLaunchRequest() {
@@ -63,7 +63,7 @@ function showScreen(screenId) {
             landingPage.classList.toggle('is-hidden', !isAuthScreen);
             if (isAuthScreen) {
                 const showLandingTop = consumeLandingTopLaunchRequest();
-                if ((isNative || localStorage.getItem('attendify_skip_landing') === 'true') && !showLandingTop) {
+                if ((isNative || localStorage.getItem('attenmo_skip_landing') === 'true') && !showLandingTop) {
                     landingPage.classList.add('login-locked');
                 } else {
                     document.body.classList.remove('native-login-active');
@@ -92,13 +92,13 @@ function showCRLogin() {
             card.classList.remove('ws-selected');
             // Push a history entry so browser back returns to workspace (web only)
             if (!isNative) {
-                history.pushState({ attendifyScreen: 'login-screen' }, '', window.location.href);
+                history.pushState({ attenmoScreen: 'login-screen' }, '', window.location.href);
             }
             showScreen('login-screen');
         }, 220);
     } else {
         if (!isNative) {
-            history.pushState({ attendifyScreen: 'login-screen' }, '', window.location.href);
+            history.pushState({ attenmoScreen: 'login-screen' }, '', window.location.href);
         }
         showScreen('login-screen');
     }
@@ -155,7 +155,7 @@ function handleLandingScroll() {
         
         // Set local storage flag so the user skips the landing page on next visits
         try {
-            localStorage.setItem('attendify_skip_landing', 'true');
+            localStorage.setItem('attenmo_skip_landing', 'true');
         } catch (e) {
             console.error('Failed to set skip landing flag:', e);
         }
@@ -289,14 +289,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!isNativeEnv) {
         // Seed the initial history entry so we have something to fall back to
-        history.replaceState({ attendifyScreen: 'root' }, '', window.location.href);
+        history.replaceState({ attenmoScreen: 'root' }, '', window.location.href);
 
         window.addEventListener('popstate', (e) => {
             const activeScreen = document.querySelector('.screen.active');
             // Only intercept if user is currently on the CR login screen
             if (activeScreen && activeScreen.id === 'login-screen') {
                 // Push a fresh root state so back works again next time
-                history.pushState({ attendifyScreen: 'root' }, '', window.location.href);
+                history.pushState({ attenmoScreen: 'root' }, '', window.location.href);
                 showScreen('workspace-screen');
             }
         });
@@ -517,7 +517,7 @@ function toggleNavDrawer() {
 }
 
 function contactDeveloper() {
-    window.open('https://www.instagram.com/theattendify/', '_blank');
+    window.open('https://www.instagram.com/theattenmo/', '_blank');
 }
 
 function openLogoPopup() {

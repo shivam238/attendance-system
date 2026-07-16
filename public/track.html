@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="ATTENDIFY Student Portal — Track your subject-wise attendance percentage, history, and approval status in real time.">
-    <title>Student Portal | ATTENDIFY</title>
+    <meta name="description" content="AttenMo Student Portal — Track your subject-wise attendance percentage, history, and approval status in real time.">
+    <title>Student Portal | AttenMo</title>
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo-opt.png">
     
@@ -885,7 +885,7 @@
             <a href="privacy-policy.html" class="nav-drawer-item" onclick="toggleNavDrawer();"><span class="nav-drawer-icon">🔒</span>Privacy & Policy</a>
             <a href="terms.html" class="nav-drawer-item" onclick="toggleNavDrawer();"><span class="nav-drawer-icon">📄</span>Terms & Conditions</a>
         </div>
-        <div class="nav-drawer-footer">© 2026 ATTENDIFY</div>
+        <div class="nav-drawer-footer">© 2026 AttenMo</div>
     </div>
     <div id="nav-drawer-overlay" class="nav-drawer-overlay" onclick="toggleNavDrawer()"></div>
 
@@ -908,7 +908,7 @@
         </div>
 
         <div class="header">
-            <img src="logo.webp" alt="ATTENDIFY Logo" class="logo" loading="lazy">
+            <img src="logo.webp" alt="AttenMo Logo" class="logo" loading="lazy">
             <h1>🎓 <span class="brand-text">Student Portal</span></h1>
             <p style="font-weight: 500;">Track your subject-wise attendance metrics instantly</p>
         </div>
@@ -1424,11 +1424,11 @@
                     });
                 }
 
-                const resumeUid = sessionStorage.getItem('attendify_track_login_resume');
+                const resumeUid = sessionStorage.getItem('attenmo_track_login_resume');
                 if (resumeUid) {
                     const resumeTrackLogin = (user) => {
                         if (user && user.uid === resumeUid) {
-                            sessionStorage.removeItem('attendify_track_login_resume');
+                            sessionStorage.removeItem('attenmo_track_login_resume');
                             clearStudentLoginSessionFlags();
                             window._trackLoginPending = false;
                             autoCompleteStudentGoogleLogin(user.uid);
@@ -1445,8 +1445,8 @@
 
         function checkStudentClassroomDeepLink(url) {
             try {
-                if (url && url.includes('attendify://')) {
-                    const urlObj = new URL(url.replace('attendify://', 'https://dummy-domain/'));
+                if (url && url.includes('attenmo://')) {
+                    const urlObj = new URL(url.replace('attenmo://', 'https://dummy-domain/'));
                     const token = urlObj.searchParams.get('token') || urlObj.searchParams.get('classroom_token');
                     const role = urlObj.searchParams.get('role');
                     const flow = urlObj.searchParams.get('flow');
@@ -2598,7 +2598,7 @@
                     new Notification(title, {
                         body: body,
                         icon: 'logo-opt.png',
-                        tag: 'attendify-shortage',
+                        tag: 'attenmo-shortage',
                         renotify: true
                     });
                 } catch (e) {
@@ -2994,9 +2994,9 @@
         function exitPortal() {
             if (confirm("Are you sure you want to log out of the student portal?")) {
                 localStorage.removeItem('student_session');
-                sessionStorage.removeItem('attendify_student_login_origin');
-                sessionStorage.removeItem('attendify_student_code');
-                sessionStorage.removeItem('attendify_track_login_resume');
+                sessionStorage.removeItem('attenmo_student_login_origin');
+                sessionStorage.removeItem('attenmo_student_code');
+                sessionStorage.removeItem('attenmo_track_login_resume');
                 window._trackLoginPending = false;
                 currentStudent = null;
                 classUserData = null;
@@ -3031,7 +3031,7 @@
         }
 
         // ===== AI ATTENDANCE ASSISTANT =====
-        const AI_WORKER_URL = 'https://attendify-support-worker.sm3165599.workers.dev';
+        const AI_WORKER_URL = 'https://attenmo-support-worker.sm3165599.workers.dev';
         let aiChatHistory = []; // { role: 'user'|'assistant', content: '' }
         let aiIsLoading = false;
         let aiFabDragReady = false;
@@ -3116,7 +3116,7 @@
 
         function saveAIFABPosition(fab) {
             const rect = fab.getBoundingClientRect();
-            localStorage.setItem('attendify_student_ai_fab_position', JSON.stringify({
+            localStorage.setItem('attenmo_student_ai_fab_position', JSON.stringify({
                 xRatio: rect.left / Math.max(1, window.innerWidth - fab.offsetWidth),
                 yRatio: rect.top / Math.max(1, window.innerHeight - fab.offsetHeight)
             }));
@@ -3124,13 +3124,13 @@
 
         function restoreAIFABPosition(fab) {
             try {
-                const saved = JSON.parse(localStorage.getItem('attendify_student_ai_fab_position') || 'null');
+                const saved = JSON.parse(localStorage.getItem('attenmo_student_ai_fab_position') || 'null');
                 if (!saved) return;
                 const left = saved.xRatio * Math.max(1, window.innerWidth - fab.offsetWidth);
                 const top = saved.yRatio * Math.max(1, window.innerHeight - fab.offsetHeight);
                 moveAIFABTo(fab, left, top);
             } catch (e) {
-                localStorage.removeItem('attendify_student_ai_fab_position');
+                localStorage.removeItem('attenmo_student_ai_fab_position');
             }
         }
 
@@ -3189,7 +3189,7 @@ Smart Planner:
 ${bunkBudgetInfo}
 == END DATA ==
 
-You are the ATTENDIFY AI Attendance Assistant. You have access to this student's real-time attendance data above. 
+You are the AttenMo AI Attendance Assistant. You have access to this student's real-time attendance data above. 
 Answer their questions precisely and honestly based on this data:
 1. "My attendance percentage": Show overall percentage (${overallPct}%) and subject-wise percentages.
 2. "Missing classes": Show total missed classes (${totalMissed}) and subject-wise breakdown of missed classes.
@@ -3391,9 +3391,9 @@ Bug reporting: If the student mentions any bug, error, crash, slow loading, or u
                     };
                     db.ref('feedbacks').push(reportEntry);
                     
-                    const subject = encodeURIComponent(`[ATTENDIFY Bug Report] ${reportEntry.category}`);
+                    const subject = encodeURIComponent(`[AttenMo Bug Report] ${reportEntry.category}`);
                     const body = encodeURIComponent(`Source: ${reportEntry.source}\nCategory: ${reportEntry.category}\n\nSummary:\n${reportEntry.text}\n\nSubmitted via AI Support.`);
-                    const mailtoUrl = `mailto:attendifycore@gmail.com?subject=${subject}&body=${body}`;
+                    const mailtoUrl = `mailto:attenmocore@gmail.com?subject=${subject}&body=${body}`;
                     
                     showBugToast('🐞 Issue logged! Click to send email copy.', mailtoUrl);
                 } catch (e) {

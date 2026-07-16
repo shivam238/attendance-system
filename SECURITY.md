@@ -1,6 +1,6 @@
-# 🔐 Security Policy — ATTENDIFY
+# 🔐 Security Policy — AttenMo
 
-This document outlines the security architecture, implemented protections, and vulnerability reporting process for the **ATTENDIFY** smart attendance platform.
+This document outlines the security architecture, implemented protections, and vulnerability reporting process for the **AttenMo** smart attendance platform.
 
 ---
 
@@ -34,7 +34,7 @@ Security updates are applied only to the latest release. Users should always use
 
 ## 🏗️ Security Architecture Overview
 
-ATTENDIFY implements a **multi-layered security model** designed to prevent attendance fraud at every point of entry:
+AttenMo implements a **multi-layered security model** designed to prevent attendance fraud at every point of entry:
 
 ```
 ┌──────────────────────────────────────────────────────┐
@@ -177,7 +177,7 @@ The `student_auth_sessions` node provides a **secure one-time relay mechanism** 
 
 ## 🤖 AI Chatbot Worker Security
 
-The support chatbot runs on **Cloudflare Workers** (`attendify-support-worker`) and:
+The support chatbot runs on **Cloudflare Workers** (`attenmo-support-worker`) and:
 - Never receives or stores personally identifiable user data.
 - Uses API keys stored as **Cloudflare Worker environment secrets** — never exposed to the client.
 - Implements a **fallback chain**: Gemini 2.5 Flash → OpenRouter, ensuring no API key fallback is visible in client code.
@@ -199,14 +199,14 @@ The support chatbot runs on **Cloudflare Workers** (`attendify-support-worker`) 
 
 ## 🚨 Reporting a Vulnerability
 
-We take security issues seriously. If you discover a vulnerability in ATTENDIFY, please **do not open a public GitHub issue**.
+We take security issues seriously. If you discover a vulnerability in AttenMo, please **do not open a public GitHub issue**.
 
 ### How to Report
 
 **Contact the developer privately:**
 
-- 📧 **Email**: attendifycore@gmail.com *(preferred for sensitive disclosures)*
-- 💬 **WhatsApp Community**: [ATTENDIFY Community](https://chat.whatsapp.com/GDOjvKK7nxGFvQ7NSrQNiG)
+- 📧 **Email**: attenmocore@gmail.com *(preferred for sensitive disclosures)*
+- 💬 **WhatsApp Community**: [AttenMo Community](https://chat.whatsapp.com/GDOjvKK7nxGFvQ7NSrQNiG)
 - 💼 **LinkedIn**: [Shivam Kumar Mahto](https://www.linkedin.com/in/shivam-kumar-mahto-046228361/)
 
 ### What to Include

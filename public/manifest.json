@@ -1,6 +1,6 @@
 {
-  "name": "Attendify",
-  "short_name": "Attendify",
+  "name": "AttenMo",
+  "short_name": "AttenMo",
   "description": "Smart Geofenced QR Attendance System",
   "start_url": "./index.html",
   "display": "standalone",

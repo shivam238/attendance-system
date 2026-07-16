@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ATTENDIFY — Google Classroom Connect</title>
+    <title>AttenMo — Google Classroom Connect</title>
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
     <link rel="preload" as="image" href="logo.webp" type="image/webp">
     <link rel="icon" type="image/webp" href="logo.webp">
@@ -194,7 +194,7 @@
 <body>
     <div class="container">
         <div class="card">
-            <img src="logo.webp" alt="ATTENDIFY Logo" class="logo" onerror="this.src='logo-opt.png'">
+            <img src="logo.webp" alt="AttenMo Logo" class="logo" onerror="this.src='logo-opt.png'">
             <h1>🎓 <span class="brand-text">Google Classroom</span></h1>
             <p id="sub-title">Connect Classroom to your mobile app</p>
 
@@ -224,7 +224,7 @@
                 <div class="spinner" style="margin-bottom: 20px;"></div>
                 <h3 style="margin-bottom: 8px; font-weight: 700; color: var(--text-color);">🎉 Connection Authorized!</h3>
                 <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px; line-height: 1.5;">
-                    Redirecting you back to the <strong>ATTENDIFY</strong> app...
+                    Redirecting you back to the <strong>AttenMo</strong> app...
                 </p>
                 <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 16px;">
                     <a href="javascript:void(0)" onclick="showManualTokenFallback()" style="color: var(--text-muted); font-size: 12px; text-decoration: underline; font-weight: 500;">
@@ -235,7 +235,7 @@
                 <!-- Hidden manual fallback container -->
                 <div id="manual-fallback-container" style="display: none; margin-top: 20px; text-align: left;">
                     <div class="instruction-box" style="margin-bottom: 12px;">
-                        Copy the connection code below, return to the <strong>ATTENDIFY</strong> app, and paste it to connect.
+                        Copy the connection code below, return to the <strong>AttenMo</strong> app, and paste it to connect.
                     </div>
                     <textarea id="token-display" class="token-area" readonly></textarea>
                     <button id="copy-btn" class="btn btn-primary" onclick="copyToken()" style="width: 100%;">
@@ -312,7 +312,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('connecting-state').style.display = 'none';
             document.getElementById('login-section').style.display = 'block';
-            if (window.attendifyFirebaseUnavailable || !auth) {
+            if (window.attenmoFirebaseUnavailable || !auth) {
                 document.getElementById('message').innerHTML = '<span class="error">❌ Google sign-in could not load. Please check your internet connection and refresh.</span>';
             }
         });
@@ -327,7 +327,7 @@
 
             // Attempt to deep link redirect back to app
             setTimeout(() => {
-                window.location.href = `attendify://classroom?token=${encodeURIComponent(accessToken)}&role=${encodeURIComponent(role)}`;
+                window.location.href = `attenmo://classroom?token=${encodeURIComponent(accessToken)}&role=${encodeURIComponent(role)}`;
             }, 500);
         }
 

@@ -1,5 +1,5 @@
 {
-  "name": "attendify",
+  "name": "attenmo",
   "version": "1.0.0",
   "description": "A high-performance, **Firebase-powered web application** for seamless student attendance management using **dynamic QR codes**, **smart geofencing**, **Google Meet integration**, and a built-in **anti-proxy detection engine**.",
   "main": "service-worker.js",

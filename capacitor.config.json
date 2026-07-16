@@ -1,6 +1,6 @@
 {
-  "appId": "com.attendify.app",
-  "appName": "ATTENDIFY",
+  "appId": "com.attenmo.app",
+  "appName": "AttenMo",
   "webDir": "public",
   "bundledWebRuntime": false,
   "server": {
