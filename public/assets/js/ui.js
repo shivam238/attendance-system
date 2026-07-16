@@ -46,7 +46,12 @@ function showScreen(screenId) {
         if (screenId === 'app-screen') {
             document.body.classList.remove('native-login-active');
             document.body.classList.add('app-layout-active');
-            document.body.classList.add('sidebar-active');
+            // sidebar-active only on desktop — mobile uses bottom nav
+            if (window.innerWidth >= 769) {
+                document.body.classList.add('sidebar-active');
+            } else {
+                document.body.classList.remove('sidebar-active');
+            }
         } else if ((screenId === 'login-screen' || screenId === 'workspace-screen') && isNative) {
             document.body.classList.remove('app-layout-active');
             document.body.classList.remove('sidebar-active');
@@ -302,6 +307,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     // ────────────────────────────────────────────────────────────────────────
+
+    // ── Responsive sidebar-active class sync on resize/rotate ──────────────
+    window.addEventListener('resize', () => {
+        if (!document.body.classList.contains('app-layout-active')) return;
+        if (window.innerWidth >= 769) {
+            document.body.classList.add('sidebar-active');
+        } else {
+            document.body.classList.remove('sidebar-active');
+        }
+    });
 });
 
 let landingRevealItems = [];
