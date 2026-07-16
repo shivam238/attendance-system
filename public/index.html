@@ -5075,11 +5075,16 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
                 }
             } else if ('Notification' in window && Notification.permission === 'granted') {
                 try {
+                    // Use distinct tags so suspicious alerts never replace normal ones
+                    const notifTag = isSuspicious
+                        ? `attenmo-suspicious-${record.rollNo}`
+                        : `attenmo-attendance-${record.rollNo}`;
                     const notification = new Notification(title, {
                         body: body,
                         icon: 'logo-opt.png',
-                        tag: 'attenmo-attendance',
-                        renotify: true
+                        tag: notifTag,
+                        renotify: true,
+                        requireInteraction: isSuspicious  // Keep suspicious alerts visible until dismissed
                     });
                     
                     notification.onclick = function() {
@@ -6520,7 +6525,61 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
             const timetable = currentUser.timetable || [];
             const slot = timetable[idx];
             if (!slot) return;
-            if (!confirm(`Delete ${slot.subject} on ${slot.day} (${slot.start}–${slot.end})?`)) return;
+            // Show inline confirmation using a styled toast-confirm
+            mtShowDeleteConfirm(idx, slot);
+        }
+
+        function mtShowDeleteConfirm(idx, slot) {
+            // Remove any existing confirm overlay
+            const existing = document.getElementById('mt-delete-confirm');
+            if (existing) existing.remove();
+
+            const overlay = document.createElement('div');
+            overlay.id = 'mt-delete-confirm';
+            overlay.style.cssText = `
+                position: fixed; inset: 0; z-index: 10000;
+                display: flex; align-items: center; justify-content: center;
+                background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+                animation: fadeIn 0.15s ease;
+            `;
+            overlay.innerHTML = `
+                <div style="
+                    background: var(--card-bg, #1e1e2e); border: 1.5px solid rgba(239,68,68,0.35);
+                    border-radius: 18px; padding: 24px 22px; max-width: 320px; width: 90%;
+                    box-shadow: 0 8px 40px rgba(0,0,0,0.5); text-align: center;
+                ">
+                    <div style="font-size: 32px; margin-bottom: 10px;">🗑️</div>
+                    <div style="font-weight: 700; font-size: 15px; color: var(--text-color); margin-bottom: 6px;">
+                        Delete this slot?
+                    </div>
+                    <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5;">
+                        <strong>${slot.subject}</strong><br>
+                        ${slot.day} &nbsp;·&nbsp; ${slot.start} – ${slot.end}
+                    </div>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button onclick="mtConfirmDelete(${idx})" style="
+                            background: linear-gradient(135deg,#ef4444,#dc2626); color:#fff;
+                            border: none; border-radius: 10px; padding: 9px 22px;
+                            font-size: 14px; font-weight: 600; cursor: pointer;
+                        ">Delete</button>
+                        <button onclick="document.getElementById('mt-delete-confirm').remove()" style="
+                            background: rgba(255,255,255,0.08); color: var(--text-color);
+                            border: 1px solid var(--border-color); border-radius: 10px;
+                            padding: 9px 22px; font-size: 14px; font-weight: 600; cursor: pointer;
+                        ">Cancel</button>
+                    </div>
+                </div>
+            `;
+            // Tap outside to cancel
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+            document.body.appendChild(overlay);
+        }
+
+        function mtConfirmDelete(idx) {
+            const overlay = document.getElementById('mt-delete-confirm');
+            if (overlay) overlay.remove();
+            const timetable = currentUser.timetable || [];
+            if (!timetable[idx]) return;
             timetable.splice(idx, 1);
             currentUser.timetable = timetable;
             mtSaveTimetableToCloud();
@@ -6865,6 +6924,23 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
 
             const today = getLocalDateKey();
 
+            // Build timetable summary for AI context
+            const timetable = currentUser.timetable || [];
+            let timetableLines = '';
+            if (timetable.length > 0) {
+                const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+                const byDay = {};
+                DAYS.forEach(d => byDay[d] = []);
+                timetable.forEach(slot => { if (byDay[slot.day]) byDay[slot.day].push(slot); });
+                DAYS.forEach(day => {
+                    const slots = byDay[day];
+                    if (!slots.length) return;
+                    slots.sort((a,b) => (a.start||'').localeCompare(b.start||''));
+                    timetableLines += `\n  ${day}:`;
+                    slots.forEach(s => { timetableLines += `\n    - ${s.subject}: ${s.start} – ${s.end}`; });
+                });
+            }
+
             return `You are the AttenMo AI Assistant for the CR (Class Representative) of:
 Class: ${className}
 Subjects: ${subjects}
@@ -6872,6 +6948,9 @@ Total Students: ${totalStudents}
 Today's Date: ${today}
 
 You have FULL ACCESS to the class attendance records. Below is the live data:
+
+=== WEEKLY TIMETABLE ===
+${timetableLines || '  (No timetable configured yet)'}
 
 === STUDENT ATTENDANCE RECORDS (per subject) ===
 ${studentLines || '  (No attendance recorded yet)'}
@@ -6894,6 +6973,7 @@ Submissions/Timestamps/Top Performers: Not available in current session database
 - For "who is absent today", find students NOT present in today's attendance.
 - For low-attendance alerts, flag anyone below 75% in any subject.
 - Always use exact names and roll numbers from the data provided.
+- Use the WEEKLY TIMETABLE above to answer questions like "what class is next?", "what time is Physics today?", etc. Cross-reference with Today's Date to determine the current day.
 - For CR/Teacher Queries regarding "Assignment submissions", "Missing submissions", "Top performers (assignment-wise)", "Submission timestamps", or "Classroom assignment statistics", politely explain that Google Classroom Coursework Sync is currently disabled/inactive in this session, and only student attendance and registration rosters are currently synchronized. Do NOT hallucinate any submission data. You may, however, answer attendance-related statistics (e.g. top attendance performers).
 - Bug reporting: If the CR mentions any bug, error, crash, or unexpected behavior in the app, respond helpfully. At the very end of your response, on a new line, append: [BUG_REPORT:{"summary":"<one sentence summary>","category":"<bug|performance|ui|crash|other>"}]. Only do this for real reported problems, not general questions.`;
         }
