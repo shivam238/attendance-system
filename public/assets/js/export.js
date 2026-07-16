@@ -135,14 +135,16 @@ function populateSubjectDropdown() {
         return;
     }
 
+    let html = '';
     subjects.forEach(sub => {
-        list.innerHTML += `
+        html += `
             <label style="display:flex; align-items:center; gap:8px; font-size:12px; cursor:pointer;">
                 <input type="checkbox" class="export-subject-checkbox" value="${escapeAttribute(sub)}" checked onchange="updateExportPreview()">
                 ${escapeHtml(sub)}
             </label>
         `;
     });
+    list.innerHTML = html;
 }
 
 function toggleAllSubjects(select) {

@@ -8,7 +8,7 @@
     <title>Manage Timetable | AttenMo</title>
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
-    <link rel="apple-touch-icon" href="logo-opt.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
 
     <link rel="stylesheet" href="assets/css/style.css?v=17">
     <link rel="stylesheet" href="assets/css/subpages.css">
@@ -352,11 +352,11 @@
     </div>
 
     <!-- Firebase Core -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
-    <script src="assets/js/firebase-config.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
+    <script defer src="assets/js/firebase-config.js"></script>
 
     <script>
         let currentUserData = null;
@@ -392,12 +392,14 @@
         }
 
         // Auth state checking
-        auth.onAuthStateChanged((user) => {
-            if (user && !user.isAnonymous) {
-                loadClassData(user.uid);
-            } else {
-                window.location.href = 'index.html';
-            }
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged((user) => {
+                if (user && !user.isAnonymous) {
+                    loadClassData(user.uid);
+                } else {
+                    window.location.href = 'index.html';
+                }
+            });
         });
 
         function loadClassData(uid) {

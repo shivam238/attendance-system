@@ -7,7 +7,7 @@
     <meta name="description" content="AttenMo Student Portal — Track your subject-wise attendance percentage, history, and approval status in real time.">
     <title>Student Portal | AttenMo</title>
     <link rel="icon" type="image/webp" href="logo.webp">
-    <link rel="apple-touch-icon" href="logo-opt.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
     
     <!-- App Styles -->
     <style>
@@ -1397,21 +1397,21 @@
     <!-- Toast Notifications Container -->
     <div id="toast-container" class="toast-container"></div>
     <!-- Firebase Core (must load before app scripts) -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
-    <script src="assets/js/firebase-config.js"></script>
-    <script src="capacitor.js"></script>
-    <script src="assets/js/auth.js?v=11"></script>
-    <script src="assets/js/ui.js?v=11"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
+    <script defer src="assets/js/firebase-config.js"></script>
+    <script defer src="capacitor.js"></script>
+    <script defer src="assets/js/auth.js?v=11"></script>
+    <script defer src="assets/js/ui.js?v=11"></script>
     <script>
         // ===== GOOGLE CLASSROOM STUDENT FEED =====
         let studentClassroomToken = null;
 
         // Classroom-only deep links (login tokens handled by auth.js)
-        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-            document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                 if (window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
                     window.Capacitor.Plugins.App.addListener('appUrlOpen', (data) => {
                         checkStudentClassroomDeepLink(data.url);
@@ -1440,8 +1440,8 @@
                         auth.onAuthStateChanged(resumeTrackLogin);
                     }
                 }
-            });
-        }
+            }
+        });
 
         function checkStudentClassroomDeepLink(url) {
             try {
@@ -2511,7 +2511,6 @@
                         window.pushListenersInitialized = true;
                         
                         PushNotifications.addListener('registration', (token) => {
-                            console.log('Push registration success, token:', token.value);
                             window.lastFCMToken = token.value;
                             if (currentClassId && currentRollNo) {
                                 db.ref('fcm_tokens/' + currentClassId + '/' + currentRollNo).set(token.value)
@@ -2524,7 +2523,7 @@
                         });
 
                         PushNotifications.addListener('pushNotificationReceived', (notification) => {
-                            console.log('Push received:', notification);
+                            // Handled via foreground UI or capacitor alerts
                         });
                     }
 
@@ -2597,7 +2596,7 @@
                 try {
                     new Notification(title, {
                         body: body,
-                        icon: 'logo-opt.png',
+                        icon: 'icon-192.png',
                         tag: 'attenmo-shortage',
                         renotify: true
                     });
@@ -2608,7 +2607,6 @@
         }
 
         function updateThreshold() {
-            console.log("updateThreshold called");
             const thresholdInput = document.getElementById('attendance-threshold');
             if (!thresholdInput) return;
 
@@ -2618,8 +2616,6 @@
             thresholdInput.value = val;
 
             localStorage.setItem('attendance_threshold', val);
-            console.log("New threshold:", val);
-            console.log("currentClassId:", currentClassId, "currentRollNo:", currentRollNo);
 
             if (currentClassId && currentRollNo) {
                 db.ref('student_preferences/' + currentClassId + '/' + currentRollNo).update({ threshold: val })

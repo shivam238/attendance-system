@@ -244,16 +244,17 @@
         }
     </style>
     <!-- Firebase CDN SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="assets/js/firebase-config.js?v=6"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-functions-compat.js"></script>
+    <script defer src="assets/js/firebase-config.js?v=6"></script>
 </head>
 <body>
     <div class="container">
         <div class="card">
             <div class="logo-wrap">
-                <img src="logo.webp" alt="AttenMo Logo" class="logo" width="56" height="56" fetchpriority="high" decoding="async" onerror="this.src='logo-opt.png'">
+                <img src="logo.webp" alt="AttenMo Logo" class="logo" width="56" height="56" fetchpriority="high" decoding="async" onerror="this.src='icon-192.png'">
             </div>
             <h1><span class="brand-text">AttenMo</span></h1>
             <p id="page-subtitle">Secure Browser Sign-In for Mobile App</p>
@@ -334,12 +335,11 @@
             messageEl.className = 'error';
         }
 
-        function redirectToAppWithToken(googleOAuthIdToken, studentFlow) {
-            var deepLink = 'attenmo://login?token=' + encodeURIComponent(googleOAuthIdToken);
+        function redirectToAppWithSession(sessionKey, studentFlow) {
+            var deepLink = 'attenmo://login?sk=' + encodeURIComponent(sessionKey);
             if (studentFlow) {
                 deepLink += '&flow=student';
             }
-            console.log('[Login-App] Deep link token prefix:', googleOAuthIdToken.substring(0, 80));
             setTimeout(function () {
                 window.location.href = deepLink;
             }, 500);
@@ -364,16 +364,10 @@
             provider.setCustomParameters({ prompt: 'select_account' });
 
             auth.signInWithPopup(provider).then(function (result) {
-                var credential = firebase.auth.GoogleAuthProvider.credentialFromResult(result);
-                console.log('Credential:', credential);
-                console.log('Google OAuth ID Token:', credential ? credential.idToken : null);
-
                 var googleOAuthIdToken = resolveGoogleOAuthIdToken(result);
                 if (!googleOAuthIdToken) {
                     throw new Error('Google OAuth ID Token missing.');
                 }
-
-                console.log('[Login-App] ✔ Google OAuth ID Token present, length:', googleOAuthIdToken.length);
 
                 var user = result.user;
                 document.getElementById('connecting-state').style.display = 'none';
@@ -384,7 +378,22 @@
                 msgDiv.textContent = '';
                 msgDiv.className = '';
 
-                redirectToAppWithToken(googleOAuthIdToken, isStudentFlow);
+                // Generate secure random session key (sk_ followed by 32 hex chars)
+                var array = new Uint8Array(16);
+                window.crypto.getRandomValues(array);
+                var sk = 'sk_' + Array.from(array, function (b) {
+                    return ('0' + b.toString(16)).slice(-2);
+                }).join('').toUpperCase();
+
+                // Note: the createMobileAuthSession function writes the session node in RTDB,
+                // setting createdAt to the current timestamp, and used: false.
+                var createSessionFn = firebase.functions().httpsCallable('createMobileAuthSession');
+                createSessionFn({ sk: sk }).then(function () {
+                    redirectToAppWithSession(sk, isStudentFlow);
+                }).catch(function (err) {
+                    console.error('[Login-App] Failed to create mobile auth session:', err);
+                    showFatalAuthError('Failed to initialize mobile session: ' + err.message);
+                });
             }).catch(function (error) {
                 console.error('[Login-App] Sign-in error:', error);
                 showFatalAuthError('Sign-in failed: ' + error.message);

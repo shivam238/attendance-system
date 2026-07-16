@@ -11,7 +11,6 @@ const ASSETS = [
     './assets/js/firebase-config.js?v=6',
     './assets/js/export.js?v=10',
     './logo.webp',
-    './logo-opt.png',
     './icon-192.png',
     './icon-512.png',
     './manifest.json',
