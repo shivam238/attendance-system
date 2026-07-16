@@ -12,5 +12,12 @@
       "*.google.com",
       "*.google.co.in"
     ]
+  },
+  "plugins": {
+    "GoogleAuth": {
+      "scopes": ["profile", "email"],
+      "serverClientId": "841328143028-50gkc47h2i4djtr5scnoilo16bgkp79e.apps.googleusercontent.com",
+      "forceCodeForRefreshToken": false
+    }
   }
 }
