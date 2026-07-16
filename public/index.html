@@ -3548,6 +3548,9 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
             showCRAIFAB();
             loadCRContextData();
 
+            // Start class reminder scheduler
+            startClassReminderScheduler();
+
             // Set up push notifications listener
             setupAttendanceListenerForPush();
         }
@@ -6959,6 +6962,111 @@ Return ONLY a JSON array (no explanation, no markdown) in this exact format:
             } catch (e) {
                 localStorage.removeItem('attenmo_ai_fab_position');
             }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // ═════  CLASS REMINDER SCHEDULER  ══════════════════════════════
+        // ═══════════════════════════════════════════════════════════════
+        let _reminderIntervalId = null;
+        let _notifiedSlots = new Set(); // tracks keys already notified today
+        let _reminderLastDay = null;    // resets Set on new day
+
+        function startClassReminderScheduler() {
+            // Clear any previous interval (e.g. on re-login)
+            if (_reminderIntervalId) clearInterval(_reminderIntervalId);
+            _notifiedSlots.clear();
+            _reminderLastDay = null;
+
+            // Run immediately, then every 60 seconds
+            _runReminderCheck();
+            _reminderIntervalId = setInterval(_runReminderCheck, 60 * 1000);
+        }
+
+        function _runReminderCheck() {
+            try {
+                const timetable = (currentUser && currentUser.timetable) || [];
+                if (!timetable.length) return;
+
+                const now = new Date();
+                const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+                const todayName = DAY_NAMES[now.getDay()];
+                const todayKey = now.toISOString().slice(0, 10); // YYYY-MM-DD
+
+                // Reset Set on new calendar day
+                if (_reminderLastDay !== todayKey) {
+                    _notifiedSlots.clear();
+                    _reminderLastDay = todayKey;
+                }
+
+                const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+                timetable.forEach(slot => {
+                    if (slot.day !== todayName) return;
+                    if (!slot.start) return;
+
+                    const [sh, sm] = slot.start.split(':').map(Number);
+                    const slotMinutes = sh * 60 + sm;
+                    const diff = slotMinutes - nowMinutes;
+
+                    // Notify at 10 min and 2 min before
+                    const THRESHOLDS = [10, 2];
+                    THRESHOLDS.forEach(threshold => {
+                        if (diff !== threshold) return;
+                        const notifKey = `${todayKey}_${slot.day}_${slot.subject}_${slot.start}_${threshold}m`;
+                        if (_notifiedSlots.has(notifKey)) return;
+                        _notifiedSlots.add(notifKey);
+
+                        const label = threshold === 10 ? 'in 10 minutes' : 'in 2 minutes — get ready!';
+                        const title = `⏰ ${slot.subject}`;
+                        const body  = `Class starts ${label} (${slot.start} – ${slot.end})`;
+
+                        _fireClassReminder(title, body, notifKey);
+                    });
+                });
+            } catch (e) {
+                console.warn('Reminder check error:', e);
+            }
+        }
+
+        function _fireClassReminder(title, body, tag) {
+            // Capacitor native notification (Android/iOS)
+            if (window.Capacitor && window.Capacitor.isNativePlatform() &&
+                window.Capacitor.isPluginAvailable('LocalNotifications')) {
+                try {
+                    const { LocalNotifications } = window.Capacitor.Plugins;
+                    LocalNotifications.schedule({
+                        notifications: [{
+                            title,
+                            body,
+                            id: Math.floor(Math.random() * 1000000),
+                            schedule: null,
+                            sound: 'default',
+                            attachments: null,
+                            actionTypeId: '',
+                            extra: null
+                        }]
+                    });
+                } catch (e) {
+                    console.error('LocalNotifications error:', e);
+                }
+            } else if ('Notification' in window && Notification.permission === 'granted') {
+                // Web notification
+                try {
+                    const n = new Notification(title, {
+                        body,
+                        icon: 'logo-opt.png',
+                        tag,
+                        renotify: true,
+                        requireInteraction: false
+                    });
+                    n.onclick = () => { window.focus(); n.close(); };
+                } catch (e) {
+                    console.error('Web Notification error:', e);
+                }
+            }
+
+            // Also show in-app toast
+            showToast(`${title}\n${body}`);
         }
 
         // Pre-loads attendance + request data in background for snappy AI responses
