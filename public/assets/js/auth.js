@@ -17,92 +17,14 @@ function signInWithGoogleOAuthCredential(googleOAuthIdToken) {
     return auth.signInWithCredential(credential);
 }
 
-// ── Native Google Sign-In (no browser, no "Continue?" dialog) ──────────────
-async function _nativeGoogleSignIn(options) {
+function startCapacitorGoogleLogin(options) {
     options = options || {};
 
-    const msgDiv = options.messageEl
-        || document.getElementById(options.messageElId || 'capacitor-login-message');
-
-    const GoogleAuth = window.Capacitor &&
-        window.Capacitor.Plugins &&
-        window.Capacitor.Plugins.GoogleAuth;
-
-    if (!GoogleAuth) {
-        // Plugin not available — fall back to browser flow
-        console.warn('[Auth] GoogleAuth plugin not found, falling back to browser flow');
-        _browserFallbackGoogleLogin(options);
-        return;
+    if (options.openModal === 'cr') {
+        openCapacitorLoginModal();
+    } else if (typeof options.openModal === 'function') {
+        options.openModal();
     }
-
-    if (msgDiv) {
-        msgDiv.innerHTML = '<span style="color: var(--text-color);">🔄 Opening Google Sign-In...</span>';
-    }
-
-    try {
-        // Initialize plugin
-        await GoogleAuth.initialize({
-            clientId: '841328143028-50gkc47h2i4djtr5scnoilo16bgkp79e.apps.googleusercontent.com',
-            scopes: ['profile', 'email'],
-            grantOfflineAccess: false
-        });
-
-        // Trigger native account picker
-        const googleUser = await GoogleAuth.signIn();
-        console.log('[Auth] Native Google Sign-In success:', googleUser.email || googleUser.id);
-
-        // Get ID token from the response
-        const idToken = googleUser.authentication && googleUser.authentication.idToken;
-        if (!idToken) {
-            throw new Error('No ID token returned from native sign-in');
-        }
-
-        if (msgDiv) {
-            msgDiv.innerHTML = '<span style="color: var(--text-color);">🔄 Authenticating...</span>';
-        }
-
-        // Sign into Firebase with the Google ID token
-        const credential = firebase.auth.GoogleAuthProvider.credential(idToken);
-        const result = await auth.signInWithCredential(credential);
-
-        console.log('[Auth] Firebase sign-in with native token succeeded:', result.user.email);
-
-        if (msgDiv) {
-            msgDiv.innerHTML = '<span style="color: #10b981;">✅ Signed in successfully!</span>';
-        }
-
-        // Close modal after short delay
-        setTimeout(function () {
-            if (options.openModal === 'cr') {
-                closeCapacitorLoginModal();
-            } else if (typeof options.onSuccess === 'function') {
-                options.onSuccess(result.user);
-            }
-        }, 800);
-
-    } catch (err) {
-        console.error('[Auth] Native Google Sign-In error:', err);
-
-        // User cancelled — don't show error
-        if (err.error === 'popup_closed_by_user' ||
-            (err.message && err.message.includes('12501'))) {
-            if (msgDiv) msgDiv.innerHTML = '';
-            if (options.openModal === 'cr') closeCapacitorLoginModal();
-            return;
-        }
-
-        // Other error — show message and offer browser fallback
-        if (msgDiv) {
-            msgDiv.innerHTML = '<span style="color: #ef4444;">❌ Sign-in failed. Trying browser...</span>';
-        }
-        setTimeout(function () {
-            _browserFallbackGoogleLogin(options);
-        }, 1000);
-    }
-}
-
-function _browserFallbackGoogleLogin(options) {
-    options = options || {};
 
     openBrowserLoginPage({
         studentFlow: !!options.studentFlow,
@@ -115,7 +37,9 @@ function _browserFallbackGoogleLogin(options) {
         msgDiv.innerHTML = '<span style="color: var(--text-color);">🔄 Waiting for Google Sign-In...</span>';
     }
 
-    if (pendingAuthTimeoutId) clearTimeout(pendingAuthTimeoutId);
+    if (pendingAuthTimeoutId) {
+        clearTimeout(pendingAuthTimeoutId);
+    }
 
     pendingAuthTimeoutId = setTimeout(function () {
         pendingAuthTimeoutId = null;
@@ -128,19 +52,6 @@ function _browserFallbackGoogleLogin(options) {
             options.onTimeout();
         }
     }, 5 * 60 * 1000);
-}
-
-function startCapacitorGoogleLogin(options) {
-    options = options || {};
-
-    if (options.openModal === 'cr') {
-        openCapacitorLoginModal();
-    } else if (typeof options.openModal === 'function') {
-        options.openModal();
-    }
-
-    // Try native sign-in first; falls back to browser if plugin unavailable
-    _nativeGoogleSignIn(options);
 }
 
 function signInWithGoogle() {

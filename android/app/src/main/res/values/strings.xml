@@ -4,5 +4,4 @@
     <string name="title_activity_main">AttenMo</string>
     <string name="package_name">com.attenmo.app</string>
     <string name="custom_url_scheme">com.attenmo.app</string>
-    <string name="server_client_id">841328143028-50gkc47h2i4djtr5scnoilo16bgkp79e.apps.googleusercontent.com</string>
 </resources>
