@@ -1321,91 +1321,96 @@
     ══════════════════════════════════════════════════════════ -->
     <div id="manage-timetable-modal" class="modal">
         <div class="modal-content" style="max-width: 600px; width: 100%; border-radius: 20px; max-height: 90vh; display: flex; flex-direction: column;">
+
+            <!-- Header -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; flex-shrink: 0;">
-                <h3 style="margin: 0; font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 8px;">📅 Manage Timetable</h3>
-                <button onclick="closeManageTimetableModal()" style="background: var(--tab-bg); border: 1px solid var(--border-color); width: 32px; height: 32px; border-radius: 50%; font-size: 18px; cursor: pointer; color: var(--text-color); display: flex; align-items: center; justify-content: center;">×</button>
+                <h3 style="margin: 0; font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 8px;">📅 Weekly Timetable</h3>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button id="mt-edit-toggle-btn" onclick="mtToggleEditMode()" style="padding: 7px 14px; border-radius: 10px; background: var(--primary-color); border: none; color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">✏️ Edit</button>
+                    <button onclick="closeManageTimetableModal()" style="background: var(--tab-bg); border: 1px solid var(--border-color); width: 32px; height: 32px; border-radius: 50%; font-size: 18px; cursor: pointer; color: var(--text-color); display: flex; align-items: center; justify-content: center;">×</button>
+                </div>
             </div>
-            <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 14px 0; flex-shrink: 0;">Add weekly class timings for automated student notifications.</p>
+            <p id="mt-header-desc" style="font-size: 12px; color: var(--text-muted); margin: 0 0 14px 0; flex-shrink: 0;">Your weekly class schedule at a glance.</p>
 
             <div id="mt-message" style="flex-shrink: 0;"></div>
 
             <!-- Scrollable body -->
             <div style="overflow-y: auto; flex: 1; padding-right: 4px;">
 
-                <!-- ADD SLOT FORM -->
-                <div style="background: rgba(99,102,241,0.05); border: 1px solid var(--primary-color); border-radius: 16px; padding: 16px; margin-bottom: 16px;">
-                    <div style="font-size: 14px; font-weight: 700; color: var(--primary-color); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color);">➕ Add Timetable Slot</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                        <div class="form-group" style="margin: 0;">
-                            <label style="font-size: 12px; font-weight: 600; margin-bottom: 4px; display: block;">Day</label>
-                            <select id="mt-slot-day" style="width:100%; padding:10px; border-radius:10px; background:var(--tab-bg); border:1px solid var(--input-border); color:var(--text-color);">
-                                <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
-                                <option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option>
-                            </select>
+                <!-- ═══ EDIT MODE PANEL (hidden by default) ═══ -->
+                <div id="mt-edit-panel" style="display: none;">
+
+                    <!-- ADD SLOT FORM -->
+                    <div style="background: rgba(99,102,241,0.05); border: 1px solid var(--primary-color); border-radius: 16px; padding: 16px; margin-bottom: 16px;">
+                        <div style="font-size: 14px; font-weight: 700; color: var(--primary-color); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color);">➕ Add Timetable Slot</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                            <div class="form-group" style="margin: 0;">
+                                <label style="font-size: 12px; font-weight: 600; margin-bottom: 4px; display: block;">Day</label>
+                                <select id="mt-slot-day" style="width:100%; padding:10px; border-radius:10px; background:var(--tab-bg); border:1px solid var(--input-border); color:var(--text-color);">
+                                    <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+                                    <option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin: 0;">
+                                <label style="font-size: 12px; font-weight: 600; margin-bottom: 4px; display: block;">Subject</label>
+                                <select id="mt-slot-subject" style="width:100%; padding:10px; border-radius:10px; background:var(--tab-bg); border:1px solid var(--input-border); color:var(--text-color);">
+                                    <option value="">-- Choose Subject --</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin: 0;">
+                                <label style="font-size: 12px; font-weight: 600; margin-bottom: 4px; display: block;">Start Time</label>
+                                <input type="time" id="mt-slot-start" style="width:100%; padding:10px; border-radius:10px; background:var(--tab-bg); border:1px solid var(--input-border); color:var(--text-color); box-sizing:border-box;">
+                            </div>
+                            <div class="form-group" style="margin: 0;">
+                                <label style="font-size: 12px; font-weight: 600; margin-bottom: 4px; display: block;">End Time</label>
+                                <input type="time" id="mt-slot-end" style="width:100%; padding:10px; border-radius:10px; background:var(--tab-bg); border:1px solid var(--input-border); color:var(--text-color); box-sizing:border-box;">
+                            </div>
                         </div>
-                        <div class="form-group" style="margin: 0;">
-                            <label style="font-size: 12px; font-weight: 600; margin-bottom: 4px; display: block;">Subject</label>
-                            <select id="mt-slot-subject" style="width:100%; padding:10px; border-radius:10px; background:var(--tab-bg); border:1px solid var(--input-border); color:var(--text-color);">
-                                <option value="">-- Choose Subject --</option>
-                            </select>
+                        <button class="btn btn-primary" id="mt-add-slot-btn" onclick="mtAddSlot()" style="width:100%; margin: 0; height: 42px;">➕ ADD TIME SLOT</button>
+                    </div>
+
+                    <!-- AI IMPORT -->
+                    <div style="background: rgba(99,102,241,0.03); border: 1.5px solid var(--primary-color); border-radius: 16px; padding: 16px; margin-bottom: 16px;">
+                        <div style="font-size: 14px; font-weight: 700; color: #6366f1; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color);">✨ AI Timetable Import (Beta)</div>
+                        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 12px 0;">Upload a screenshot or paste text of your timetable — AI will parse and import all slots automatically.</p>
+                        <div style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                            <button id="mt-ai-tab-text" class="ai-tab-btn active" onclick="mtSwitchAiTab('text')" style="font-size: 12px;">📝 Paste Text</button>
+                            <button id="mt-ai-tab-image" class="ai-tab-btn" onclick="mtSwitchAiTab('image')" style="font-size: 12px;">📷 Upload Image</button>
                         </div>
-                        <div class="form-group" style="margin: 0;">
-                            <label style="font-size: 12px; font-weight: 600; margin-bottom: 4px; display: block;">Start Time</label>
-                            <input type="time" id="mt-slot-start" style="width:100%; padding:10px; border-radius:10px; background:var(--tab-bg); border:1px solid var(--input-border); color:var(--text-color); box-sizing:border-box;">
+                        <div id="mt-ai-pane-text" class="ai-pane active">
+                            <textarea id="mt-ai-raw-text" style="width:100%; height:100px; padding:10px; border-radius:10px; background:var(--tab-bg); border:1px solid var(--input-border); color:var(--text-color); font-size:13px; resize:vertical; box-sizing:border-box; font-family:inherit;" placeholder="Paste timetable text here...&#10;e.g.&#10;Monday&#10;09:00 - 10:00: PHYSICS&#10;10:15 - 11:15: MATHEMATICS-1"></textarea>
                         </div>
-                        <div class="form-group" style="margin: 0;">
-                            <label style="font-size: 12px; font-weight: 600; margin-bottom: 4px; display: block;">End Time</label>
-                            <input type="time" id="mt-slot-end" style="width:100%; padding:10px; border-radius:10px; background:var(--tab-bg); border:1px solid var(--input-border); color:var(--text-color); box-sizing:border-box;">
+                        <div id="mt-ai-pane-image" class="ai-pane">
+                            <div style="border: 2px dashed var(--border-color); border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; background: var(--tab-bg);" onclick="document.getElementById('mt-ai-file-input').click()">
+                                <span style="font-size: 28px; display: block; margin-bottom: 6px;">📷</span>
+                                <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Click to select a timetable image</p>
+                                <input type="file" id="mt-ai-file-input" style="display:none;" accept="image/*" onchange="mtHandleFileSelect(event)">
+                            </div>
+                            <div id="mt-ai-file-info" style="display:none; margin-top:8px; font-size:12px; color:var(--primary-color); font-weight:700; text-align:center;"></div>
+                        </div>
+                        <button class="btn btn-primary" id="mt-ai-parse-btn" onclick="mtParseWithAi()" style="width:100%; margin-top:14px; margin-bottom:0; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); border:none; height:42px;">✨ PARSE &amp; IMPORT WITH AI</button>
+                        <div id="mt-ai-loading" style="display:none; text-align:center; margin-top:12px; padding:10px; background:rgba(99,102,241,0.05); border-radius:10px; border:1px dashed var(--primary-color);">
+                            <span style="font-size:13px; font-weight:700; color:var(--primary-color);">🤖 AI is analyzing... Please wait...</span>
+                        </div>
+                        <!-- Preview -->
+                        <div id="mt-ai-preview" style="display:none; margin-top:16px; background:rgba(99,102,241,0.05); padding:16px; border-radius:12px; border:1.5px solid var(--primary-color);">
+                            <div style="font-size:14px; font-weight:800; color:var(--primary-color); margin-bottom:10px;">🤖 Parsed Slots Preview</div>
+                            <div id="mt-ai-preview-list" style="margin-bottom:12px;"></div>
+                            <div style="display:flex; gap:8px;">
+                                <button class="btn btn-primary" onclick="mtSaveAiSlots('append')" style="flex:1; margin:0; font-size:12px; height:38px;">➕ Append</button>
+                                <button class="btn btn-primary" onclick="mtSaveAiSlots('overwrite')" style="flex:1; margin:0; font-size:12px; height:38px; background:#fbbf24; border:none;">🔄 Overwrite</button>
+                                <button class="btn btn-secondary" onclick="mtCancelAiPreview()" style="flex:1; margin:0; font-size:12px; height:38px;">❌ Cancel</button>
+                            </div>
                         </div>
                     </div>
-                    <button class="btn btn-primary" id="mt-add-slot-btn" onclick="mtAddSlot()" style="width:100%; margin: 0; height: 42px;">➕ ADD TIME SLOT</button>
                 </div>
+                <!-- ═══ END EDIT PANEL ═══ -->
 
-                <!-- AI IMPORT -->
-                <div style="background: rgba(99,102,241,0.03); border: 1.5px solid var(--primary-color); border-radius: 16px; padding: 16px; margin-bottom: 16px;">
-                    <div style="font-size: 14px; font-weight: 700; color: #6366f1; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color);">✨ AI Timetable Import (Beta)</div>
-                    <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 12px 0;">Upload a screenshot or paste text of your timetable — AI will parse and import all slots automatically.</p>
-
-                    <div style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
-                        <button id="mt-ai-tab-text" class="ai-tab-btn active" onclick="mtSwitchAiTab('text')" style="font-size: 12px;">📝 Paste Text</button>
-                        <button id="mt-ai-tab-image" class="ai-tab-btn" onclick="mtSwitchAiTab('image')" style="font-size: 12px;">📷 Upload Image</button>
-                    </div>
-
-                    <div id="mt-ai-pane-text" class="ai-pane active">
-                        <textarea id="mt-ai-raw-text" style="width:100%; height:100px; padding:10px; border-radius:10px; background:var(--tab-bg); border:1px solid var(--input-border); color:var(--text-color); font-size:13px; resize:vertical; box-sizing:border-box; font-family:inherit;" placeholder="Paste timetable text here...&#10;e.g.&#10;Monday&#10;09:00 - 10:00: PHYSICS&#10;10:15 - 11:15: MATHEMATICS-1"></textarea>
-                    </div>
-                    <div id="mt-ai-pane-image" class="ai-pane">
-                        <div style="border: 2px dashed var(--border-color); border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; background: var(--tab-bg);" onclick="document.getElementById('mt-ai-file-input').click()">
-                            <span style="font-size: 28px; display: block; margin-bottom: 6px;">📷</span>
-                            <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Click to select a timetable image</p>
-                            <input type="file" id="mt-ai-file-input" style="display:none;" accept="image/*" onchange="mtHandleFileSelect(event)">
-                        </div>
-                        <div id="mt-ai-file-info" style="display:none; margin-top:8px; font-size:12px; color:var(--primary-color); font-weight:700; text-align:center;"></div>
-                    </div>
-
-                    <button class="btn btn-primary" id="mt-ai-parse-btn" onclick="mtParseWithAi()" style="width:100%; margin-top:14px; margin-bottom:0; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); border:none; height:42px;">✨ PARSE &amp; IMPORT WITH AI</button>
-
-                    <div id="mt-ai-loading" style="display:none; text-align:center; margin-top:12px; padding:10px; background:rgba(99,102,241,0.05); border-radius:10px; border:1px dashed var(--primary-color);">
-                        <span style="font-size:13px; font-weight:700; color:var(--primary-color);">🤖 AI is analyzing... Please wait...</span>
-                    </div>
-
-                    <!-- Preview -->
-                    <div id="mt-ai-preview" style="display:none; margin-top:16px; background:rgba(99,102,241,0.05); padding:16px; border-radius:12px; border:1.5px solid var(--primary-color);">
-                        <div style="font-size:14px; font-weight:800; color:var(--primary-color); margin-bottom:10px;">🤖 Parsed Slots Preview</div>
-                        <div id="mt-ai-preview-list" style="margin-bottom:12px;"></div>
-                        <div style="display:flex; gap:8px;">
-                            <button class="btn btn-primary" onclick="mtSaveAiSlots('append')" style="flex:1; margin:0; font-size:12px; height:38px;">➕ Append</button>
-                            <button class="btn btn-primary" onclick="mtSaveAiSlots('overwrite')" style="flex:1; margin:0; font-size:12px; height:38px; background:#fbbf24; border:none;">🔄 Overwrite</button>
-                            <button class="btn btn-secondary" onclick="mtCancelAiPreview()" style="flex:1; margin:0; font-size:12px; height:38px;">❌ Cancel</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- WEEKLY DISPLAY -->
-                <div style="font-size:15px; font-weight:700; margin-bottom:12px; color:var(--text-color);">📅 Weekly Schedule</div>
+                <!-- WEEKLY TIMETABLE VIEW (always visible) -->
                 <div id="mt-timetable-display">
                     <div class="empty-state"><p>Loading timetable...</p></div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -6372,8 +6377,12 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
         let mtParsedSlots = [];
         let mtAiImageBase64 = null;
 
+        let mtEditMode = false;
+
         function openManageTimetableModal() {
             document.getElementById('manage-timetable-modal').classList.add('active');
+            mtEditMode = false;
+            mtSyncEditUI();
             mtPopulateSubjectDropdown();
             mtRenderTimetable();
             // Reset AI panel
@@ -6387,6 +6396,29 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
 
         function closeManageTimetableModal() {
             document.getElementById('manage-timetable-modal').classList.remove('active');
+        }
+
+        function mtToggleEditMode() {
+            mtEditMode = !mtEditMode;
+            mtSyncEditUI();
+            mtRenderTimetable();
+        }
+
+        function mtSyncEditUI() {
+            const panel = document.getElementById('mt-edit-panel');
+            const btn   = document.getElementById('mt-edit-toggle-btn');
+            const desc  = document.getElementById('mt-header-desc');
+            if (mtEditMode) {
+                panel.style.display = 'block';
+                btn.innerHTML = '✅ Done';
+                btn.style.background = '#22c55e';
+                desc.textContent = 'Add or remove timetable slots.';
+            } else {
+                panel.style.display = 'none';
+                btn.innerHTML = '✏️ Edit';
+                btn.style.background = 'var(--primary-color)';
+                desc.textContent = 'Your weekly class schedule at a glance.';
+            }
         }
 
         function mtPopulateSubjectDropdown() {
@@ -6407,31 +6439,51 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
             if (!container) return;
             const timetable = currentUser.timetable || [];
             if (timetable.length === 0) {
-                container.innerHTML = '<div class="empty-state"><p>No timetable slots yet. Add one above!</p></div>';
+                container.innerHTML = `<div class="empty-state" style="padding: 40px 20px; text-align: center;">
+                    <div style="font-size: 36px; margin-bottom: 10px;">📭</div>
+                    <p style="font-weight: 600; color: var(--text-muted);">No timetable slots yet.</p>
+                    <p style="font-size: 13px; color: var(--text-muted);">Tap ✏️ Edit above to add your weekly classes.</p>
+                </div>`;
                 return;
             }
             const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+            const DAY_SHORT = { Monday:'MON', Tuesday:'TUE', Wednesday:'WED', Thursday:'THU', Friday:'FRI', Saturday:'SAT', Sunday:'SUN' };
+            const DAY_COLORS = {
+                Monday:    '#6366f1', Tuesday:  '#8b5cf6', Wednesday: '#06b6d4',
+                Thursday:  '#10b981', Friday:   '#f59e0b', Saturday:  '#ef4444', Sunday: '#ec4899'
+            };
             const byDay = {};
             DAYS.forEach(d => byDay[d] = []);
             timetable.forEach((slot, i) => {
                 if (byDay[slot.day]) byDay[slot.day].push({ ...slot, _idx: i });
             });
+
             let html = '';
             DAYS.forEach(day => {
                 const slots = byDay[day];
                 if (!slots.length) return;
-                html += `<div style="margin-bottom:14px;">
-                    <div style="font-size:13px;font-weight:700;color:var(--primary-color);margin-bottom:6px;padding:4px 8px;background:rgba(99,102,241,0.08);border-radius:8px;">${day}</div>`;
-                slots.sort((a,b) => (a.start||'').localeCompare(b.start||'')).forEach(slot => {
-                    html += `<div class="list-item" style="margin-bottom:6px;">
-                        <div style="flex:1;">
-                            <div style="font-weight:700;font-size:14px;">${slot.subject}</div>
-                            <div style="font-size:12px;color:var(--text-muted);">${slot.start} – ${slot.end}</div>
+                const color = DAY_COLORS[day];
+                html += `<div style="margin-bottom: 18px; border-radius: 16px; overflow: hidden; border: 1.5px solid ${color}33;">
+                    <div style="background: ${color}18; padding: 8px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid ${color}33;">
+                        <span style="background: ${color}; color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px;">${DAY_SHORT[day]}</span>
+                        <span style="font-size: 13px; font-weight: 700; color: var(--text-color);">${day}</span>
+                        <span style="font-size: 11px; color: var(--text-muted); margin-left: auto;">${slots.length} class${slots.length > 1 ? 'es' : ''}</span>
+                    </div>`;
+                slots.sort((a,b) => (a.start||'').localeCompare(b.start||'')).forEach((slot, si) => {
+                    const borderTop = si > 0 ? `border-top: 1px solid var(--border-color);` : '';
+                    const deleteBtn = mtEditMode
+                        ? `<button onclick="mtDeleteSlot(${slot._idx})" title="Delete" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; border-radius: 8px; padding: 5px 10px; font-size: 13px; cursor: pointer; flex-shrink: 0;">🗑️</button>`
+                        : '';
+                    html += `<div style="padding: 10px 14px; display: flex; align-items: center; gap: 10px; ${borderTop}">
+                        <div style="width: 4px; height: 36px; background: ${color}; border-radius: 4px; flex-shrink: 0;"></div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-weight: 700; font-size: 14px; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${slot.subject}</div>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">⏰ ${slot.start} – ${slot.end}</div>
                         </div>
-                        <button class="btn-icon" onclick="mtDeleteSlot(${slot._idx})" title="Delete">🗑️</button>
+                        ${deleteBtn}
                     </div>`;
                 });
-                html += '</div>';
+                html += `</div>`;
             });
             container.innerHTML = html;
         }
