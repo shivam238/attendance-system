@@ -79,7 +79,7 @@
         }
     </style>
     <link rel="stylesheet" href="assets/css/style.css?v=28">
-    <link rel="stylesheet" href="assets/css/nav.css?v=1">
+    <link rel="stylesheet" href="assets/css/nav.css?v=2">
     <script src="assets/js/theme.js" defer></script>
 </head>
 
@@ -326,23 +326,23 @@
         <!-- Navigation Items -->
         <nav class="sidebar-nav">
             <span class="sidebar-nav-label">Dashboard</span>
-            <button class="sidebar-nav-item" id="sidebar-tab-cr" onclick="switchAppTab('cr')">
+            <button class="sidebar-nav-item" id="sidebar-tab-cr" onclick="switchAppTab('cr'); closeMobileSidebar();">
                 <span class="sidebar-nav-icon">📲</span>
                 <span class="sidebar-nav-text">Generate QR</span>
             </button>
-            <button class="sidebar-nav-item" id="sidebar-tab-today" onclick="switchAppTab('today')">
+            <button class="sidebar-nav-item" id="sidebar-tab-today" onclick="switchAppTab('today'); closeMobileSidebar();">
                 <span class="sidebar-nav-icon">📅</span>
                 <span class="sidebar-nav-text">Today</span>
             </button>
-            <button class="sidebar-nav-item" id="sidebar-tab-students" onclick="switchAppTab('students')">
+            <button class="sidebar-nav-item" id="sidebar-tab-students" onclick="switchAppTab('students'); closeMobileSidebar();">
                 <span class="sidebar-nav-icon">👥</span>
                 <span class="sidebar-nav-text">Students</span>
             </button>
-            <button class="sidebar-nav-item" id="sidebar-tab-history" onclick="switchAppTab('history')">
+            <button class="sidebar-nav-item" id="sidebar-tab-history" onclick="switchAppTab('history'); closeMobileSidebar();">
                 <span class="sidebar-nav-icon">📊</span>
                 <span class="sidebar-nav-text">History</span>
             </button>
-            <button class="sidebar-nav-item" id="sidebar-tab-requests" onclick="switchAppTab('requests')">
+            <button class="sidebar-nav-item" id="sidebar-tab-requests" onclick="switchAppTab('requests'); closeMobileSidebar();">
                 <span class="sidebar-nav-icon">🙋</span>
                 <span class="sidebar-nav-text">Requests</span>
             </button>
@@ -366,7 +366,7 @@
                 <span class="sidebar-nav-icon">🌙</span>
                 <span class="sidebar-nav-text" id="sidebar-theme-label">Dark Mode</span>
             </button>
-            <button class="sidebar-action-btn" onclick="openProfileModal()">
+            <button class="sidebar-action-btn" onclick="openProfileModal(); closeMobileSidebar();">
                 <span class="sidebar-nav-icon">⚙️</span>
                 <span class="sidebar-nav-text">Settings</span>
             </button>
@@ -376,6 +376,8 @@
             </button>
         </div>
     </aside>
+    <!-- Mobile Sidebar Overlay (tap to close) -->
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="closeMobileSidebar()"></div>
 
     <!-- ════════════════════════════════════════════════════════════
          MOBILE FLOATING BOTTOM NAVIGATION BAR (< 769px in app mode)

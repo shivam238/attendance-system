@@ -594,11 +594,53 @@ body.app-layout-active:not(.sidebar-active) #app-screen .tab.active {
     }
 }
 
+
 @media (max-width: 768px) {
-    /* On mobile: no sidebar, show bottom nav */
+    /* On mobile: no sidebar by default, show bottom nav */
     body.app-layout-active #app-sidebar {
-        display: none !important;
+        display: flex !important;
+        /* Override static positioning — become a slide-in drawer */
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: var(--sidebar-width) !important;
+        max-width: 82vw !important;
+        height: 100% !important;
+        height: 100dvh !important;
+        z-index: 3000 !important;
+        transform: translateX(-110%) !important;
+        transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        box-shadow: 6px 0 40px rgba(0, 0, 0, 0.22) !important;
+        /* Hide visually until opened — still in DOM for transitions */
+        pointer-events: none !important;
     }
+
+    /* When opened on mobile */
+    body.app-layout-active #app-sidebar.mobile-open {
+        transform: translateX(0) !important;
+        pointer-events: auto !important;
+    }
+
+    /* Sidebar tap-to-close overlay */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+        z-index: 2999;
+        opacity: 0;
+        transition: opacity 0.35s ease;
+        pointer-events: none;
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+        opacity: 1;
+        pointer-events: auto;
+    }
+
     body.app-layout-active #app-bottom-nav {
         display: flex !important;
     }
@@ -618,6 +660,7 @@ body.app-layout-active:not(.sidebar-active) #app-screen .tab.active {
         flex-direction: column !important;
     }
 }
+
 
 /* ── SIDEBAR COMPACT (app-screen header on desktop) ──────────── */
 /* Desktop: top bar inside .card becomes class-info bar only */

@@ -521,6 +521,16 @@ function closeGuideModal() {
 }
 
 function toggleNavDrawer() {
+    // If the app dashboard is active and we're on mobile, open the REAL app sidebar as a drawer
+    const appScreen = document.getElementById('app-screen');
+    const isMobile = window.innerWidth <= 768;
+
+    if (appScreen && appScreen.classList.contains('active') && isMobile) {
+        openMobileSidebar();
+        return;
+    }
+
+    // Otherwise open the generic landing page nav drawer (About, Contact, etc.)
     const drawer = document.getElementById('nav-drawer');
     const overlay = document.getElementById('nav-drawer-overlay');
     const buttons = document.querySelectorAll('.hamburger-btn');
@@ -530,6 +540,45 @@ function toggleNavDrawer() {
         buttons.forEach(btn => btn.classList.toggle('open', isOpen));
     }
 }
+
+function openMobileSidebar() {
+    const sidebar = document.getElementById('app-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const buttons = document.querySelectorAll('.hamburger-btn');
+    if (sidebar) {
+        sidebar.classList.add('mobile-open');
+        buttons.forEach(btn => btn.classList.add('open'));
+    }
+    if (overlay) {
+        overlay.style.display = 'block';
+        // Force reflow for transition
+        overlay.offsetHeight;
+        overlay.classList.add('active');
+    }
+    // Prevent background scroll
+    document.body.style.overflow = 'hidden';
+}
+
+function closeMobileSidebar() {
+    const sidebar = document.getElementById('app-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const buttons = document.querySelectorAll('.hamburger-btn');
+    if (sidebar) {
+        sidebar.classList.remove('mobile-open');
+        buttons.forEach(btn => btn.classList.remove('open'));
+    }
+    if (overlay) {
+        overlay.classList.remove('active');
+        setTimeout(() => { overlay.style.display = 'none'; }, 380);
+    }
+    document.body.style.overflow = '';
+}
+
+// closeNavDrawer — called by sidebar nav items on mobile to close the drawer after navigating
+function closeNavDrawer() {
+    closeMobileSidebar();
+}
+
 
 function contactDeveloper() {
     window.open('https://www.instagram.com/theattenmo/', '_blank');
