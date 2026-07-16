@@ -552,10 +552,6 @@ body.app-layout-active.sidebar-active .header-controls {
     flex: 1.2;
 }
 
-/* ── Padding at bottom so content doesn't go under the bottom nav ─── */
-body.app-layout-active:not(.sidebar-active) #app-screen .tab.active {
-    padding-bottom: calc(var(--bottom-nav-height) + 24px) !important;
-}
 
 /* ── RESPONSIVE: show sidebar only on large screens ────────── */
 @media (min-width: 769px) {
@@ -563,12 +559,9 @@ body.app-layout-active:not(.sidebar-active) #app-screen .tab.active {
         flex-direction: row !important;
     }
 
-    /* Show sidebar, hide bottom nav */
+    /* Show sidebar on desktop */
     body.app-layout-active #app-sidebar {
         display: flex !important;
-    }
-    body.app-layout-active #app-bottom-nav {
-        display: none !important;
     }
 
     /* Add sidebar-active class behavior for desktop */
@@ -641,16 +634,13 @@ body.app-layout-active:not(.sidebar-active) #app-screen .tab.active {
         pointer-events: auto;
     }
 
-    body.app-layout-active #app-bottom-nav {
-        display: flex !important;
-    }
 
-    /* Mobile: keep header controls visible (has logout/settings/theme) */
+    /* Mobile: keep header controls visible */
     body.app-layout-active .header-controls {
         display: flex !important;
     }
 
-    /* Hide old tab row — we use bottom nav */
+    /* Hide old tab row */
     body.app-layout-active .tabs-scroll-wrapper {
         display: none !important;
     }
