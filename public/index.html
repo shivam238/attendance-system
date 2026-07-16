@@ -2879,6 +2879,7 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
                     try {
                         const userData = JSON.parse(cachedProfile);
                         currentUser = { uid: user.uid, email: user.email, displayName: user.displayName, ...userData };
+                        currentUser.timetable = userData.timetable || (userData.settings && userData.settings.timetable) || [];
                         showScreen('app-screen');
                         initializeApp();
                         hideLoadingScreen();
@@ -2922,8 +2923,10 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
 
                     // --- CLOUD SETTINGS SYNC ---
                     if (userData.settings) {
-                        if (userData.settings.tabOrder) {
-                            localStorage.setItem('tabOrder', JSON.stringify(userData.settings.tabOrder));
+                        // Sync tab order — key is 'tabs_order' everywhere
+                        const cloudTabOrder = userData.settings.tabs_order || userData.settings.tabOrder;
+                        if (cloudTabOrder) {
+                            localStorage.setItem('tabs_order', JSON.stringify(cloudTabOrder));
                         }
                         if (userData.settings.darkMode !== undefined) {
                             const currentLocalMode = localStorage.getItem('darkMode') === 'true';
@@ -2942,6 +2945,7 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
                     if (isProfileComplete) {
                         localStorage.setItem('user_profile_' + userId, JSON.stringify(userData));
                         currentUser = { uid: userId, email: user.email, displayName: user.displayName, ...userData };
+                        currentUser.timetable = userData.timetable || (userData.settings && userData.settings.timetable) || [];
 
                         if (!document.getElementById('app-screen').classList.contains('active')) {
                             showScreen('app-screen');
@@ -6722,7 +6726,7 @@ Return ONLY a JSON array (no explanation, no markdown) in this exact format:
                 let replyText = '';
                 raw.split('\n').forEach(line => {
                     if (line.startsWith('data: ') && !line.includes('[DONE]')) {
-                        try { const p = JSON.parse(line.slice(6)); if (p.text) replyText = p.text; } catch(_) {}
+                        try { const p = JSON.parse(line.slice(6)); if (p.text) replyText += p.text; } catch(_) {}
                     }
                 });
 
@@ -7008,10 +7012,12 @@ Return ONLY a JSON array (no explanation, no markdown) in this exact format:
                     const slotMinutes = sh * 60 + sm;
                     const diff = slotMinutes - nowMinutes;
 
-                    // Notify at 10 min and 2 min before
+                    // Notify at 10 min and 2 min before.
+                    // Use a 1-minute window (diff > threshold-1 && diff <= threshold)
+                    // so a late-firing 60s interval never skips a notification.
                     const THRESHOLDS = [10, 2];
                     THRESHOLDS.forEach(threshold => {
-                        if (diff !== threshold) return;
+                        if (diff > threshold || diff <= threshold - 1) return;
                         const notifKey = `${todayKey}_${slot.day}_${slot.subject}_${slot.start}_${threshold}m`;
                         if (_notifiedSlots.has(notifKey)) return;
                         _notifiedSlots.add(notifKey);
