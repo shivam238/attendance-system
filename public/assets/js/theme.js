@@ -80,7 +80,7 @@ function toggleDarkMode() {
     }
 
     localStorage.setItem('themePreference', nextPref);
-    // Keep legacy darkMode key in sync (for backward compat with old components)
+    localStorage.setItem('themePreference_updated', Date.now().toString());
     localStorage.setItem('darkMode', nextPref === 'dark' ? 'true' : 'false');
 
     applyTheme();
@@ -89,13 +89,12 @@ function toggleDarkMode() {
 
 function applyThemeSetting(value) {
     localStorage.setItem('themePreference', value);
+    // Timestamp so handleUserSignedIn knows this was a recent local change
+    localStorage.setItem('themePreference_updated', Date.now().toString());
 
     if (value === 'default') {
-        // For 'default', remove the legacy darkMode key entirely so other
-        // devices don't pick it up and override back to a fixed mode
         localStorage.removeItem('darkMode');
     } else {
-        // Keep legacy key synced for dark/light explicit choices
         localStorage.setItem('darkMode', value === 'dark' ? 'true' : 'false');
     }
 

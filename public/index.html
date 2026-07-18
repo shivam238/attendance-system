@@ -3407,18 +3407,33 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
                         // Theme preference cloud sync & migration
                         if (userData.settings.themePreference !== undefined) {
                             const currentLocalPref = localStorage.getItem('themePreference');
+                            const localUpdatedAt = parseInt(localStorage.getItem('themePreference_updated') || '0');
+                            const localChangedRecently = (Date.now() - localUpdatedAt) < 30000; // 30s window
+
                             if (currentLocalPref !== userData.settings.themePreference) {
-                                localStorage.setItem('themePreference', userData.settings.themePreference);
-                                if (window.applyTheme) window.applyTheme();
+                                if (localChangedRecently && currentLocalPref) {
+                                    // Local was just changed by user — push local UP to cloud, don't override
+                                    db.ref('users/' + userId + '/settings').update({ themePreference: currentLocalPref })
+                                        .catch(err => console.error("Theme re-sync Error:", err));
+                                } else {
+                                    // Cloud wins (cross-device sync on fresh load)
+                                    localStorage.setItem('themePreference', userData.settings.themePreference);
+                                    if (window.applyTheme) window.applyTheme();
+                                }
                             }
                         } else if (userData.settings.darkMode !== undefined) {
-                            // Migrate legacy cloud darkMode to themePreference
-                            const migratedPref = userData.settings.darkMode ? 'dark' : 'light';
-                            localStorage.setItem('themePreference', migratedPref);
-                            localStorage.setItem('darkMode', userData.settings.darkMode ? 'true' : 'false');
-                            if (window.applyTheme) window.applyTheme();
-                            // Sync migrated themePreference back to cloud
-                            db.ref('users/' + userId + '/settings').update({ themePreference: migratedPref })
+                            // Migrate legacy cloud darkMode to themePreference (only if user hasn't set one yet)
+                            const currentLocalPref = localStorage.getItem('themePreference');
+                            if (!currentLocalPref || currentLocalPref === 'default') {
+                                // Don't override an explicit local preference with a legacy migration
+                                const migratedPref = userData.settings.darkMode ? 'dark' : 'light';
+                                localStorage.setItem('themePreference', migratedPref);
+                                localStorage.setItem('darkMode', userData.settings.darkMode ? 'true' : 'false');
+                                if (window.applyTheme) window.applyTheme();
+                            }
+                            // Always write themePreference to cloud to retire the legacy darkMode key
+                            const prefToSync = localStorage.getItem('themePreference') || (userData.settings.darkMode ? 'dark' : 'light');
+                            db.ref('users/' + userId + '/settings').update({ themePreference: prefToSync })
                                 .catch(err => console.error("Cloud Migrate Error:", err));
                         }
                     }
