@@ -1,15 +1,19 @@
 function applyTheme() {
-    const saved = localStorage.getItem('darkMode');
-    let isDark;
+    // Suppress transitions during theme change to eliminate repaint lag
+    document.body.classList.add('theme-switching');
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        document.body.classList.remove('theme-switching');
+    }));
 
-    if (saved !== null) {
-        // User has a saved preference — always respect it
-        isDark = saved === 'true';
-    } else {
-        // No saved preference — default to device preference
+    const pref = localStorage.getItem('themePreference') || 'default';
+    let isDark = false;
+
+    if (pref === 'dark') {
+        isDark = true;
+    } else if (pref === 'light') {
+        isDark = false;
+    } else { // 'default' — follow OS
         isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        // Save device preference so it's consistent across navigations
-        localStorage.setItem('darkMode', isDark ? 'true' : 'false');
     }
 
     if (isDark) {
@@ -18,7 +22,13 @@ function applyTheme() {
         document.body.classList.remove('dark-mode');
     }
 
-    // Update subpage theme toggle button (manual.html style)
+    // Update theme select element if it exists in UI
+    const themeSelect = document.getElementById('theme-select');
+    if (themeSelect) {
+        themeSelect.value = pref;
+    }
+
+    // Update subpage theme toggle button (manual.html text-style btn)
     const subpageBtn = document.getElementById('theme-toggle-btn');
     if (subpageBtn) {
         if (subpageBtn.dataset.style === 'text') {
@@ -26,47 +36,87 @@ function applyTheme() {
         }
     }
 
-    // Update main dashboard & student portal theme buttons
+    // Update all .theme-btn icon buttons (login-screen, setup-screen, track.html)
     const appBtns = document.querySelectorAll('.theme-btn');
     appBtns.forEach(btn => {
-        if (btn.dataset.style === 'text') {
-            btn.innerHTML = isDark ? '☀️' : '🌙';
-        }
+        btn.innerHTML = isDark ? '☀️' : '🌙';
     });
 }
+
+// Pending sync queue — stores the last theme pref that couldn't be synced yet
+// because syncSettingToCloud wasn't available (auth not ready)
+var _pendingThemeSync = null;
+
+function syncThemePreference(value) {
+    if (window.syncSettingToCloud) {
+        window.syncSettingToCloud('themePreference', value);
+        _pendingThemeSync = null;
+    } else if (window.parent && window.parent.syncSettingToCloud && window.parent !== window) {
+        window.parent.syncSettingToCloud('themePreference', value);
+        _pendingThemeSync = null;
+    } else {
+        // Auth not ready yet — queue it for when syncSettingToCloud becomes available
+        _pendingThemeSync = value;
+    }
+}
+
+// Called by index.html once syncSettingToCloud is ready (post sign-in)
+window.flushPendingThemeSync = function () {
+    if (_pendingThemeSync !== null && window.syncSettingToCloud) {
+        window.syncSettingToCloud('themePreference', _pendingThemeSync);
+        _pendingThemeSync = null;
+    }
+};
 
 function toggleDarkMode() {
-    // Suppress all CSS transitions for 2 frames — eliminates repaint lag on theme switch
-    document.body.classList.add('theme-switching');
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-        document.body.classList.remove('theme-switching');
-    }));
-
-    const isDark = document.body.classList.toggle('dark-mode');
-    // Save user's explicit manual choice
-    localStorage.setItem('darkMode', isDark);
-
-    // Update subpage button state
-    const subpageBtn = document.getElementById('theme-toggle-btn');
-    if (subpageBtn) {
-        if (subpageBtn.dataset.style === 'text') {
-            subpageBtn.innerHTML = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
-        }
+    const currentPref = localStorage.getItem('themePreference') || 'default';
+    let nextPref;
+    if (currentPref === 'default') {
+        const systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        // Toggle away from current system appearance
+        nextPref = systemDark ? 'light' : 'dark';
+    } else {
+        nextPref = currentPref === 'dark' ? 'light' : 'dark';
     }
 
-    // Update app/portal buttons state
-    const appBtns = document.querySelectorAll('.theme-btn');
-    appBtns.forEach(btn => {
-        if (btn.dataset.style === 'text') {
-            btn.innerHTML = isDark ? '☀️' : '🌙';
-        }
-    });
+    localStorage.setItem('themePreference', nextPref);
+    // Keep legacy darkMode key in sync (for backward compat with old components)
+    localStorage.setItem('darkMode', nextPref === 'dark' ? 'true' : 'false');
 
-    // Cloud Sync if present on dashboard
-    if (window.syncSettingToCloud) {
-        window.syncSettingToCloud('darkMode', isDark);
-    }
+    applyTheme();
+    syncThemePreference(nextPref);
 }
 
-// Run applyTheme on DOMContentLoaded to ensure elements are available
+function applyThemeSetting(value) {
+    localStorage.setItem('themePreference', value);
+
+    if (value === 'default') {
+        // For 'default', remove the legacy darkMode key entirely so other
+        // devices don't pick it up and override back to a fixed mode
+        localStorage.removeItem('darkMode');
+    } else {
+        // Keep legacy key synced for dark/light explicit choices
+        localStorage.setItem('darkMode', value === 'dark' ? 'true' : 'false');
+    }
+
+    applyTheme();
+    syncThemePreference(value);
+}
+
+// Listen to OS prefers-color-scheme changes (only matters when pref is 'default')
+if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        const pref = localStorage.getItem('themePreference') || 'default';
+        if (pref === 'default') {
+            applyTheme();
+        }
+    });
+}
+
+// Expose functions globally
+window.applyTheme = applyTheme;
+window.toggleDarkMode = toggleDarkMode;
+window.applyThemeSetting = applyThemeSetting;
+
+// Run applyTheme on DOMContentLoaded to ensure elements (theme-select, etc.) are ready
 document.addEventListener('DOMContentLoaded', applyTheme);

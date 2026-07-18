@@ -408,6 +408,12 @@ function openProfileModal() {
         const verSecEl = document.getElementById('settings-ver-sec');
         if (verSecEl) verSecEl.value = localStorage.getItem('verificationQRSeconds') || '0';
     }
+
+    // Populate Theme preference dropdown
+    const themeSelect = document.getElementById('theme-select');
+    if (themeSelect) {
+        themeSelect.value = localStorage.getItem('themePreference') || 'default';
+    }
 }
 
 function closeProfileModal() {

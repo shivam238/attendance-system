@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="About AttenMo — a modern QR-based attendance system with geofencing, real-time tracking, and smart reporting built for colleges.">
+    <meta name="description"
+        content="About AttenMo — a modern QR-based attendance system with geofencing, real-time tracking, and smart reporting built for colleges.">
     <title>About | AttenMo</title>
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="About | AttenMo">
-    <meta property="og:description" content="Learn about AttenMo — a modern QR-based attendance system built for colleges.">
+    <meta property="og:description"
+        content="Learn about AttenMo — a modern QR-based attendance system built for colleges.">
     <meta property="og:image" content="https://attenmo.web.app/icon-512.png">
     <meta property="og:url" content="https://attenmo.web.app/about.html">
     <meta name="twitter:card" content="summary">
@@ -20,25 +23,61 @@
 </head>
 
 <body>
+    <script>
+        (function () {
+            var pref = localStorage.getItem('themePreference');
+            var isDark = false;
+            if (pref === 'dark') {
+                isDark = true;
+            } else if (pref === 'light') {
+                isDark = false;
+            } else if (pref === 'default') {
+                isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            } else {
+                // Migration path from legacy darkMode key
+                var saved = localStorage.getItem('darkMode');
+                if (saved !== null) {
+                    isDark = saved === 'true';
+                    localStorage.setItem('themePreference', isDark ? 'dark' : 'light');
+                } else {
+                    isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    localStorage.setItem('themePreference', 'default');
+                }
+            }
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        })();
+    </script>
     <div class="container">
         <div class="subpage-header">
             <a href="index.html" class="back-home">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12" />
+                    <polyline points="12 19 5 12 12 5" />
+                </svg>
                 Back to Dashboard
             </a>
             <button id="theme-toggle-btn" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode"></button>
         </div>
-        
+
         <h1>About the System</h1>
-        
+
         <div class="content-section">
             <h2>Our Mission</h2>
-            <p>AttenMo was born from the need for a modern, efficient, and transparent way to track student attendance. We aim to replace manual registers and tedious roll calls with a seamless digital experience that benefits both teachers and students.</p>
+            <p>AttenMo was born from the need for a modern, efficient, and transparent way to track student attendance.
+                We aim to replace manual registers and tedious roll calls with a seamless digital experience that
+                benefits both teachers and students.</p>
         </div>
 
         <div class="content-section">
             <h2>How it Works</h2>
-            <p>Teachers generate a dynamic, time-limited QR code for their subject. Students simply scan the code using their mobile devices, and their attendance is instantly recorded in our secure cloud database. No more proxy attendance or manual entry errors.</p>
+            <p>Teachers generate a dynamic, time-limited QR code for their subject. Students simply scan the code using
+                their mobile devices, and their attendance is instantly recorded in our secure cloud database. No more
+                proxy attendance or manual entry errors.</p>
         </div>
 
         <div class="feature-grid">
@@ -60,7 +99,8 @@
             </div>
             <div class="feature-item">
                 <div class="feature-title">📍 Geofencing</div>
-                <p>Prevents fake attendance by verifying students are physically present within the classroom boundary.</p>
+                <p>Prevents fake attendance by verifying students are physically present within the classroom boundary.
+                </p>
             </div>
             <div class="feature-item">
                 <div class="feature-title">🆓 100% Free</div>
@@ -82,4 +122,5 @@
         </footer>
     </div>
 </body>
+
 </html>

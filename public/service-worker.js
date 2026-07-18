@@ -1,9 +1,11 @@
-const CACHE_NAME = 'attenmo-cache-v47';
+const CACHE_NAME = 'attenmo-cache-v48';
 const ASSETS = [
     './',
     './index.html',
     './assets/css/style.css?v=28',
+    './assets/css/nav.css',
     './assets/css/subjects.css',
+    './assets/css/subpages.css',
     './assets/js/theme.js',
     './assets/js/auth.js?v=12',
     './assets/js/ui.js?v=21',
@@ -15,6 +17,7 @@ const ASSETS = [
     './icon-192.png',
     './icon-512.png',
     './manifest.json',
+    './track.html',
     './manual.html',
     './about.html',
     './contact.html',
