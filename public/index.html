@@ -3404,38 +3404,24 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
                             localStorage.setItem('tabs_order', JSON.stringify(cloudTabOrder));
                         }
 
-                        // Theme preference cloud sync & migration
-                        if (userData.settings.themePreference !== undefined) {
-                            const currentLocalPref = localStorage.getItem('themePreference');
-                            const localUpdatedAt = parseInt(localStorage.getItem('themePreference_updated') || '0');
-                            const localChangedRecently = (Date.now() - localUpdatedAt) < 30000; // 30s window
+                        // Theme preference sync — LOCAL WINS
+                        // Cloud is only used to initialize a fresh device (no local pref set yet).
+                        // User's explicit local choice is NEVER overridden by cloud on reload.
+                        const currentLocalPref = localStorage.getItem('themePreference');
+                        const cloudPref = (userData.settings && userData.settings.themePreference) ||
+                                          (userData.settings && userData.settings.darkMode !== undefined ?
+                                            (userData.settings.darkMode ? 'dark' : 'light') : null);
 
-                            if (currentLocalPref !== userData.settings.themePreference) {
-                                if (localChangedRecently && currentLocalPref) {
-                                    // Local was just changed by user — push local UP to cloud, don't override
-                                    db.ref('users/' + userId + '/settings').update({ themePreference: currentLocalPref })
-                                        .catch(err => console.error("Theme re-sync Error:", err));
-                                } else {
-                                    // Cloud wins (cross-device sync on fresh load)
-                                    localStorage.setItem('themePreference', userData.settings.themePreference);
-                                    if (window.applyTheme) window.applyTheme();
-                                }
-                            }
-                        } else if (userData.settings.darkMode !== undefined) {
-                            // Migrate legacy cloud darkMode to themePreference (only if user hasn't set one yet)
-                            const currentLocalPref = localStorage.getItem('themePreference');
-                            if (!currentLocalPref || currentLocalPref === 'default') {
-                                // Don't override an explicit local preference with a legacy migration
-                                const migratedPref = userData.settings.darkMode ? 'dark' : 'light';
-                                localStorage.setItem('themePreference', migratedPref);
-                                localStorage.setItem('darkMode', userData.settings.darkMode ? 'true' : 'false');
-                                if (window.applyTheme) window.applyTheme();
-                            }
-                            // Always write themePreference to cloud to retire the legacy darkMode key
-                            const prefToSync = localStorage.getItem('themePreference') || (userData.settings.darkMode ? 'dark' : 'light');
-                            db.ref('users/' + userId + '/settings').update({ themePreference: prefToSync })
-                                .catch(err => console.error("Cloud Migrate Error:", err));
+                        if (!currentLocalPref && cloudPref) {
+                            // First time on this device — initialize from cloud
+                            localStorage.setItem('themePreference', cloudPref);
+                            if (window.applyTheme) window.applyTheme();
+                        } else if (currentLocalPref && cloudPref !== currentLocalPref) {
+                            // Local differs from cloud — push local UP to cloud (local wins)
+                            db.ref('users/' + userId + '/settings').update({ themePreference: currentLocalPref })
+                                .catch(err => console.error("Theme sync to cloud Error:", err));
                         }
+                        // else: both match, nothing to do
                     }
                     // ----------------------------
 
