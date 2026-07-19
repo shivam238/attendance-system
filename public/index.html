@@ -3230,18 +3230,14 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
             };
 
             // If AI timetable slots were parsed, save them to the database
+            // Use a flat array with start/end keys — consistent with all app internals.
             if (parsedSetupTimetable && parsedSetupTimetable.length > 0) {
-                const timetableObj = {};
-                parsedSetupTimetable.forEach(slot => {
-                    const slotKey = db.ref().child('temp').push().key;
-                    timetableObj[slotKey] = {
-                        day: slot.day,
-                        subject: slot.subject.toUpperCase().trim(),
-                        startTime: slot.startTime,
-                        endTime: slot.endTime
-                    };
-                });
-                classSetupData.timetable = timetableObj;
+                classSetupData.timetable = parsedSetupTimetable.map(slot => ({
+                    day:     slot.day,
+                    subject: (slot.subject || '').toUpperCase().trim(),
+                    start:   slot.start || slot.startTime || '',
+                    end:     slot.end   || slot.endTime   || ''
+                }));
             }
 
             db.ref('users/' + user.uid).set(classSetupData).then(() => {
@@ -3354,7 +3350,7 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
                         try {
                             const userData = JSON.parse(cachedProfile);
                             currentUser = { uid: user.uid, email: user.email, displayName: user.displayName, ...userData };
-                            currentUser.timetable = userData.timetable || (userData.settings && userData.settings.timetable) || [];
+                            currentUser.timetable = normalizeTimetable(userData.timetable || (userData.settings && userData.settings.timetable));
                             showScreen('app-screen');
                             initializeApp();
                             hideLoadingScreen();
@@ -3388,6 +3384,29 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
         }
 
 
+
+        // ── Normalize timetable from Firebase to a clean flat array ──────────
+        // Firebase stores timetable as either:
+        //   (a) An object of push()-keyed entries {key: {day, subject, startTime, endTime}}
+        //   (b) A plain array [{day, subject, start, end}]
+        // All internal app code expects: Array<{day, subject, start, end}>
+        function normalizeTimetable(raw) {
+            if (!raw) return [];
+            let arr;
+            if (Array.isArray(raw)) {
+                arr = raw;
+            } else if (typeof raw === 'object') {
+                arr = Object.values(raw);
+            } else {
+                return [];
+            }
+            return arr.filter(Boolean).map(slot => ({
+                day:     slot.day || '',
+                subject: slot.subject || '',
+                start:   slot.start || slot.startTime || '',
+                end:     slot.end   || slot.endTime   || ''
+            })).filter(s => s.day && s.subject);
+        }
 
         function handleUserSignedIn(user) {
             const userId = user.uid;
@@ -3430,7 +3449,7 @@ Do not wrap it in markdown block. Do not include any explanation or other text.`
                     if (isProfileComplete) {
                         localStorage.setItem('user_profile_' + userId, JSON.stringify(userData));
                         currentUser = { uid: userId, email: user.email, displayName: user.displayName, ...userData };
-                        currentUser.timetable = userData.timetable || (userData.settings && userData.settings.timetable) || [];
+                        currentUser.timetable = normalizeTimetable(userData.timetable || (userData.settings && userData.settings.timetable));
 
                         if (!document.getElementById('app-screen').classList.contains('active')) {
                             showScreen('app-screen');
@@ -7224,11 +7243,12 @@ Return ONLY a JSON array (no explanation, no markdown) in this exact format:
         }
 
         function mtSaveTimetableToCloud() {
-            if (window.syncSettingToCloud) {
-                window.syncSettingToCloud('timetable', currentUser.timetable);
-            } else {
-                db.ref(`users/${currentUser.uid}/timetable`).set(currentUser.timetable || []);
-            }
+            // Always write directly to users/${uid}/timetable (root-level).
+            // NEVER use syncSettingToCloud here — that writes to /settings/timetable
+            // which is a different path and would cause a sync mismatch.
+            if (!currentUser || !currentUser.uid) return;
+            db.ref(`users/${currentUser.uid}/timetable`).set(currentUser.timetable || [])
+                .catch(err => console.error('Timetable save error:', err));
         }
 
         function mtSwitchAiTab(tab) {

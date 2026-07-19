@@ -474,7 +474,7 @@
                     subjectSelect.appendChild(opt);
                 });
 
-                renderTimetable(currentUserData.timetable || {});
+                renderTimetable(currentUserData.timetable || null);
             });
         }
 
@@ -489,15 +489,21 @@
                 // Timetable is stored as an object or array under users/${uid}/timetable
                 // Normalize to array for easier processing
                 if (timetable) {
-                    Object.entries(timetable).forEach(([key, slot]) => {
+                    // Timetable can be a plain array (saved by index.html) or a
+                    // push()-keyed object (saved by manage-timetable.html).
+                    // Normalize both to [{key, ...slot}] for uniform rendering.
+                    const entries = Array.isArray(timetable)
+                        ? timetable.map((slot, i) => [String(i), slot])
+                        : Object.entries(timetable);
+                    entries.forEach(([key, slot]) => {
                         if (slot && slot.day === day) {
                             daySlots.push({ key, ...slot });
                         }
                     });
                 }
 
-                // Sort day slots by start time
-                daySlots.sort((a, b) => a.startTime.localeCompare(b.startTime));
+                // Sort day slots by start time (handle both start and startTime key names)
+                daySlots.sort((a, b) => (a.start || a.startTime || '').localeCompare(b.start || b.startTime || ''));
 
                 const dayGroup = document.createElement('div');
                 dayGroup.className = 'day-group';
@@ -512,7 +518,7 @@
                                 <div class="slot-details">
                                     <div class="slot-subject">${escapeHtml(slot.subject)}</div>
                                     <div class="slot-time">
-                                        ⏱️ ${formatTime12h(slot.startTime)} - ${formatTime12h(slot.endTime)}
+                                    ⏱️ ${formatTime12h(slot.start || slot.startTime)} - ${formatTime12h(slot.end || slot.endTime)}
                                     </div>
                                 </div>
                                 <button class="delete-slot-btn" onclick="deleteTimetableSlot('${slot.key}')" title="Delete Slot">🗑️</button>
@@ -559,8 +565,8 @@
                 await newSlotRef.set({
                     day,
                     subject,
-                    startTime,
-                    endTime
+                    start: startTime,
+                    end:   endTime
                 });
 
                 document.getElementById('slot-start-time').value = '';
@@ -772,13 +778,13 @@ Respond ONLY with a valid JSON array of objects containing the keys "day", "subj
                     await timetableRef.remove();
                 }
 
-                // Add all slots
+                // Add all slots using start/end keys (canonical schema for the app)
                 for (const slot of parsedAiSlots) {
                     await timetableRef.push().set({
-                        day: slot.day,
+                        day:     slot.day,
                         subject: slot.subject,
-                        startTime: slot.startTime,
-                        endTime: slot.endTime
+                        start:   slot.start || slot.startTime || '',
+                        end:     slot.end   || slot.endTime   || ''
                     });
                 }
 
